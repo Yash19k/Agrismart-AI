@@ -1,0 +1,2 @@
+# Core dependencies for AGRI SMART AI (Initial Structure)
+# Dependencies will be specified during model development and application setup.
