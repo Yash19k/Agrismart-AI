@@ -1,0 +1,211 @@
+﻿{
+  "nav": {
+    "brand": "AgriSmart",
+    "home": "Home",
+    "howItWorks": "How It Works",
+    "features": "Features",
+    "about": "About",
+    "language": "Language",
+    "login": "Login",
+    "getStarted": "Get Started",
+    "dashboard": "My Farm Dashboard",
+    "logout": "Logout"
+  },
+  "hero": {
+    "badge": "Designed for Indian Farmers",
+    "title": "Protect Your Crop. Grow With Confidence.",
+    "subtitle": "Take a photo of your crop, understand possible problems, and get simple guidance to help protect your farm.",
+    "primaryCta": "📷 Check My Crop",
+    "secondaryCta": "See How It Works →",
+    "trust1": "Simple to use",
+    "trust2": "Your language",
+    "trust3": "Built for farmers",
+    "card": {
+      "cropName": "Tomato Plant",
+      "status": "Photo Analyzed",
+      "issueTitle": "Tomato Early Blight",
+      "confidence": "94% Match",
+      "severity": "Moderate Concern",
+      "quickAction": "Remove lower spotted leaves and improve airflow"
+    }
+  },
+  "howItWorks": {
+    "tag": "Easy 3-Step Process",
+    "title": "Simple Steps. Smarter Farming.",
+    "subtitle": "No complex technical knowledge needed. Designed to give you fast, clear help in seconds.",
+    "step1": {
+      "num": "1",
+      "title": "Take a Photo",
+      "desc": "Take a clear photo of your crop or affected leaf with your mobile phone."
+    },
+    "step2": {
+      "num": "2",
+      "title": "Get Help",
+      "desc": "AgriSmart checks the image and identifies possible crop problems."
+    },
+    "step3": {
+      "num": "3",
+      "title": "Take Action",
+      "desc": "Get simple guidance on what you can do next to protect your harvest."
+    }
+  },
+  "features": {
+    "tag": "All-In-One Support",
+    "title": "Everything You Need to Care for Your Farm",
+    "subtitle": "Practical agricultural tools crafted to support your daily farming decisions.",
+    "f1": {
+      "title": "Crop Disease Detection",
+      "desc": "Check your crop for possible diseases using a photo."
+    },
+    "f2": {
+      "title": "Pest Identification",
+      "desc": "Get help identifying common crop pests before they spread."
+    },
+    "f3": {
+      "title": "Weather Information",
+      "desc": "Check weather information that matters for your farm and spraying."
+    },
+    "f4": {
+      "title": "Smart Irrigation",
+      "desc": "Get guidance to help manage irrigation and save water."
+    },
+    "f5": {
+      "title": "Crop Advisory",
+      "desc": "Get simple recommendations based on your crop and farm conditions."
+    },
+    "f6": {
+      "title": "Farm Dashboard",
+      "desc": "Keep your farm information and crop health insights in one place."
+    }
+  },
+  "beforeAfter": {
+    "tag": "Real Farm Value",
+    "title": "From \"What's Wrong?\" to \"What Should I Do?\"",
+    "subtitle": "Turn confusion into practical, straightforward next steps for your crops.",
+    "before": {
+      "badge": "Without AgriSmart",
+      "heading": "Damaged Leaf & Uncertainty",
+      "quote": "\"Something is wrong with my crop. Is it pest, fungus, or nutrient loss?\"",
+      "state": "Risk of crop loss or wrong pesticide purchase"
+    },
+    "after": {
+      "badge": "With AgriSmart",
+      "possibleIssue": "Possible Issue",
+      "issueName": "Tomato Early Blight",
+      "confidenceLabel": "AI-assisted result",
+      "confidenceVal": "94% Confidence",
+      "actionHeading": "Recommended Next Steps",
+      "action1": "Remove and safely discard affected lower leaves",
+      "action2": "Improve airflow and avoid overhead watering on leaves",
+      "action3": "Apply recommended organic neem spray or copper fungicide"
+    },
+    "disclaimer": "AI-assisted guidance for farmer decision support. For severe outbreaks, always consult your local Krishi Vigyan Kendra (KVK)."
+  },
+  "regional": {
+    "tag": "Multilingual Accessibility",
+    "title": "Agriculture That Speaks Your Language",
+    "subtitle": "Get important crop information in a language that's comfortable for you. 12 Indian regional languages supported natively.",
+    "selectPrompt": "Try selecting your language to see instant local guidance:",
+    "sampleTitle": "Sample Crop Advisory in Your Language:"
+  },
+  "trust": {
+    "tag": "Farmer First",
+    "title": "Built for Farmers",
+    "subtitle": "Transparent, respectful, and reliable support without exaggerated promises.",
+    "item1": "Simple and easy to use on any smartphone",
+    "item2": "Regional language support with native script",
+    "item3": "AI-powered crop assistance in plain language",
+    "item4": "Personalized guidance for your crop & soil",
+    "item5": "Fast loading on 3G, 4G, and rural networks",
+    "item6": "Designed specifically for Indian agriculture"
+  },
+  "cta": {
+    "title": "Ready to Protect Your Crop?",
+    "subtitle": "Get started with AgriSmart and make your farming decisions with better information.",
+    "primary": "🌱 Get Started Free",
+    "secondary": "📷 Check My Crop"
+  },
+  "footer": {
+    "desc": "AI-powered assistance for smarter farming across India.",
+    "product": "Product",
+    "cropDetection": "Crop Detection",
+    "cropAdvisory": "Crop Advisory",
+    "weather": "Weather Alerts",
+    "dashboard": "Farm Dashboard",
+    "resources": "Resources",
+    "howItWorks": "How It Works",
+    "help": "Farmer Help Center",
+    "faqs": "Common Questions",
+    "company": "Company",
+    "about": "About AgriSmart",
+    "contact": "Contact Support",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Use",
+    "copyright": "© 2026 AgriSmart. All rights reserved. Made for Indian Agriculture."
+  },
+  "auth": {
+    "signupTitle": "Create Your AgriSmart Account",
+    "signupSubtitle": "Join thousands of farmers protecting their crops daily.",
+    "loginTitle": "Welcome Back",
+    "loginSubtitle": "Log in to check your farm health and saved advisories.",
+    "name": "Your Name",
+    "namePlaceholder": "Enter your name (e.g. Ramesh Patel)",
+    "email": "Mobile Number or Email",
+    "emailPlaceholder": "Enter your mobile or email",
+    "password": "Password",
+    "passwordPlaceholder": "Create a password (min 6 chars)",
+    "loginPasswordPlaceholder": "Enter your password",
+    "signupBtn": "Create Account",
+    "loginBtn": "Login",
+    "alreadyAccount": "Already have an account? Login",
+    "dontHaveAccount": "Don't have an account? Create one",
+    "forgotPassword": "Forgot password?",
+    "orDemo": "Or use 1-Click Demo Login:"
+  },
+  "onboarding": {
+    "title": "Set Up Your Farm Profile",
+    "subtitle": "This helps us provide tailored advice for your exact land and crop.",
+    "step1": "Location",
+    "step2": "Farm",
+    "step3": "Crop",
+    "step4": "Preferences",
+    "stepOf": "Step {{current}} of {{total}}",
+    "state": "State",
+    "district": "District",
+    "village": "Village / Locality",
+    "farmSize": "Farm Size",
+    "sizeUnit": "Unit",
+    "mainCrop": "Primary Crop",
+    "selectCrop": "Select your main crop",
+    "prefLang": "Preferred Language",
+    "smsAlerts": "Receive free weather and spray alerts via WhatsApp/SMS",
+    "next": "Next Step →",
+    "back": "← Back",
+    "finish": "Complete Setup & Open Farm Dashboard 🌱"
+  },
+  "dashboard": {
+    "greeting": "Namaste",
+    "welcome": "Here is today's crop health overview for your farm in",
+    "checkCropBtn": "📷 Check My Crop Now",
+    "weatherTitle": "Local Farm Weather",
+    "sprayOk": "Ideal Spraying Conditions Today",
+    "sprayWarning": "High humidity - watch out for fungal risks",
+    "humidity": "Humidity",
+    "temp": "Temperature",
+    "rainChance": "Rain Chance",
+    "wind": "Wind Speed",
+    "recentChecks": "Recent Crop Checks",
+    "noChecksTitle": "No crop checks yet",
+    "noChecksDesc": "Take a photo of your crop to get started with instant AI assistance.",
+    "viewDetails": "View Details",
+    "statusHealthy": "Healthy",
+    "statusModerate": "Moderate",
+    "statusAttention": "Needs Action",
+    "scanModalTitle": "Check Crop Health",
+    "scanUploadPrompt": "Upload or take a photo of the affected plant leaf",
+    "analyzing": "Checking your crop with AI...",
+    "analyzingDesc": "Analyzing leaf patterns, discoloration, and disease signatures...",
+    "readAloud": "🔊 Listen in Your Language",
+    "stopAudio": "⏹️ Stop Audio"
+  }
+}

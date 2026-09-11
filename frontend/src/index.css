@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@theme {
+  --color-agri-50: #f2f9f4;
+  --color-agri-100: #e1f2e6;
+  --color-agri-200: #c3e5ce;
+  --color-agri-300: #97d2ab;
+  --color-agri-400: #64b681;
+  --color-agri-500: #3e9960;
+  --color-agri-600: #2d7a4b;
+  --color-agri-700: #26613d;
+  --color-agri-800: #1b4332;
+  --color-agri-900: #17392b;
+  --color-agri-950: #0b2018;
+
+  --color-earth-50: #faf8f5;
+  --color-earth-100: #f4efe8;
+  --color-earth-200: #e8ded4;
+  --color-earth-300: #d7c4b0;
+  --color-earth-400: #be9e7f;
+  --color-earth-500: #aa815d;
+  --color-earth-600: #936a4c;
+  --color-earth-700: #7a543e;
+  --color-earth-800: #654637;
+  --color-earth-900: #533b30;
+
+  --shadow-farmer: 0 4px 20px -2px rgba(27, 67, 50, 0.12), 0 2px 6px -1px rgba(27, 67, 50, 0.08);
+  --shadow-farmer-lg: 0 10px 30px -4px rgba(27, 67, 50, 0.16), 0 4px 10px -2px rgba(27, 67, 50, 0.08);
+}
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #1b4332;
+    background-color: #faf8f5;
+  }
+
+  /* Accessible focus rings */
+  *:focus-visible {
+    outline: 3px solid #2d7a4b;
+    outline-offset: 2px;
+  }
+}
+
+.farmer-touch-target {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+/* Custom animations */
+@keyframes pulse-subtle {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(45, 122, 75, 0.4);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 12px rgba(45, 122, 75, 0);
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2.5s infinite;
+}
+
+@keyframes scan-line {
+  0% {
+    top: 0%;
+    opacity: 0.8;
+  }
+  50% {
+    top: 95%;
+    opacity: 1;
+  }
+  100% {
+    top: 0%;
+    opacity: 0.8;
+  }
+}
+
+.animate-scan-line {
+  animation: scan-line 2s ease-in-out infinite;
+}
