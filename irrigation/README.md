@@ -22,6 +22,7 @@
 12. [REST API Documentation & Usage](#12-rest-api-documentation--usage)
 13. [Verification & Automated Test Suite](#13-verification--automated-test-suite)
 14. [Limitations & Future Field Roadmap](#14-limitations--future-field-roadmap)
+15. [External Real-World Validation](#external-real-world-validation)
 
 ---
 
@@ -368,3 +369,30 @@ python -m pytest tests/ -v
 2. **Soil Matric Potential vs Volumetric Water Content**: The dataset records generic "MOI" (1–100). Agronomically, plant water stress is governed by soil water tension (kilopascals / matric potential) and field capacity, which vary widely between Sand and Clay.
 3. **Rooting Depth Dynamics**: Effective root depth deepens from Germination to Fruit Formation; future iterations should incorporate root zone depletion models (FAO-56 Penman-Monteith).
 4. **Independent Deployment**: This module is completely decoupled and ready for containerized deployment or microservice integration into the primary AgriSmart platform.
+
+---
+
+## External Real-World Validation
+
+The production Smart Irrigation model was evaluated without retraining on an independently collected irrigation dataset from Mendeley Data. The external dataset contains real sensor measurements including soil moisture, air temperature, air humidity, crop type and irrigation ON/OFF status. Because the external dataset does not provide soil type and growth stage, these features were passed as unknown categories. Paddy and Barley are also unseen crop categories relative to the training dataset. Therefore this experiment is a transfer/robustness evaluation, not a complete real-world validation of every production feature. The external dataset was never used for training, model selection, hyperparameter tuning or threshold selection.
+
+### External Validation Benchmark Summary
+
+- **Dataset Source:** Mendeley Data (DOI: [10.17632/67gkrzbwrr.1](https://doi.org/10.17632/67gkrzbwrr.1)), 3,589 records collected via IoT sensor nodes in Iraq over 1 week (3,584 clean valid evaluation records).
+- **Model Evaluated:** `bonus/irrigation/models/irrigation_pipeline.joblib` (frozen, untouched).
+
+| Model / Baseline | Accuracy | Precision | Recall | F1 Score | ROC-AUC | Description |
+|---|---|---|---|---|---|---|
+| **Baseline A (Majority Class)** | 0.8354 | 0.0000 | 0.0000 | 0.0000 | 0.5000 | Always predicts OFF (0) |
+| **Baseline B (Rule: MOI <= 35)** | 0.8337 | 0.4800 | 0.1220 | 0.1946 | N/A | Empirical rule derived from training set |
+| **Baseline B2 (Rule: MOI <= 69)** | 0.2380 | 0.1745 | 0.9729 | 0.2960 | N/A | Binary F1-optimal rule from training set |
+| **Production Model (6 Features)** | 0.8186 | 0.0714 | 0.0085 | 0.0152 | 0.5819 | Frozen production pipeline (OneHot + Scaler + XGBoost) |
+| **Shared-Feature Model (4 Features)** | 0.8175 | 0.0152 | 0.0017 | 0.0030 | 0.6504 | Experimental benchmark trained strictly on 4 core features |
+
+### Transfer Decision & Insights
+
+- **Final Decision:** **Poor transfer**
+- **Root Cause:** The failure to transfer is driven primarily by **environmental domain shift** in soil moisture distributions. In the synthetic training set, irrigation was triggered at lower moisture levels (mean MOI = 32.7, median = 31.0), whereas external Iraqi field sensors operated between 53% and 83% moisture (mean = 55.8, median = 57.0), triggering irrigation even above 55%. The model confidently classified these values as class 0 (no irrigation) or class 2 (excess water).
+- **Secondary Experiment Verification:** Training a 4-feature model on original training data without missing features yielded similarly poor transfer (F1 = 0.0030), demonstrating that domain shift in sensor scale and regional farm practices, rather than missing categorical inputs alone, governs the gap.
+- Full detailed analysis, charts, and robustness slices are available in [reports/external_validation/external_validation.md](reports/external_validation/external_validation.md).
+

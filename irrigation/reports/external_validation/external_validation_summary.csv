@@ -1,0 +1,6 @@
+Model,Accuracy,Precision,Recall,F1,ROC-AUC,Description
+Baseline A (Majority Class),0.8354,0.0,0.0,0.0,0.5,Always predicts OFF (0)
+Baseline B (Rule: MOI <= 35),0.8337,0.48,0.122,0.1946,,Empirical rule derived from original training dataset
+Baseline B2 (Rule: MOI <= 69),0.238,0.1745,0.9729,0.296,,Binary F1-optimal rule derived from training dataset
+Production Model (6 Features),0.8186,0.0714,0.0085,0.0152,0.5819,Frozen production pipeline (OneHot + Scaler + XGBoost)
+Shared-Feature Model (4 Features),0.8175,0.0152,0.0017,0.003,0.6504,"Trained only on training set using crop, MOI, temp, humidity"

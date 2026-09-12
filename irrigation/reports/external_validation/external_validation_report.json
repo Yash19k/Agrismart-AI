@@ -1,0 +1,276 @@
+{
+  "metadata": {
+    "dataset_name": "Irrigation-Dataset (Mendeley Data)",
+    "doi": "10.17632/67gkrzbwrr.1",
+    "url": "https://data.mendeley.com/datasets/67gkrzbwrr/1",
+    "location": "Iraq (custom IoT sensor nodes)",
+    "collection_period": "One week (2022-12-30 to 2023-01-06)",
+    "total_raw_records": 3589,
+    "total_clean_records": 3584,
+    "excluded_records": 5,
+    "excluded_breakdown": {
+      "missing_target": 1,
+      "missing_features": 5,
+      "total_nan_rows": 5
+    },
+    "target_distribution": {
+      "0 (OFF)": 2994,
+      "1 (ON)": 590,
+      "prevalence_percent": 16.46
+    },
+    "crop_counts": {
+      "Barley": 2279,
+      "Paddy": 1305
+    }
+  },
+  "classification_decision": "Poor transfer",
+  "models_summary": [
+    {
+      "Model": "Baseline A (Majority Class)",
+      "Accuracy": 0.8354,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1": 0.0,
+      "ROC-AUC": 0.5,
+      "Description": "Always predicts OFF (0)"
+    },
+    {
+      "Model": "Baseline B (Rule: MOI <= 35)",
+      "Accuracy": 0.8337,
+      "Precision": 0.48,
+      "Recall": 0.122,
+      "F1": 0.1946,
+      "ROC-AUC": null,
+      "Description": "Empirical rule derived from original training dataset"
+    },
+    {
+      "Model": "Baseline B2 (Rule: MOI <= 69)",
+      "Accuracy": 0.238,
+      "Precision": 0.1745,
+      "Recall": 0.9729,
+      "F1": 0.296,
+      "ROC-AUC": null,
+      "Description": "Binary F1-optimal rule derived from training dataset"
+    },
+    {
+      "Model": "Production Model (6 Features)",
+      "Accuracy": 0.8186,
+      "Precision": 0.0714,
+      "Recall": 0.0085,
+      "F1": 0.0152,
+      "ROC-AUC": 0.5819,
+      "Description": "Frozen production pipeline (OneHot + Scaler + XGBoost)"
+    },
+    {
+      "Model": "Shared-Feature Model (4 Features)",
+      "Accuracy": 0.8175,
+      "Precision": 0.0152,
+      "Recall": 0.0017,
+      "F1": 0.003,
+      "ROC-AUC": 0.6504,
+      "Description": "Trained only on training set using crop, MOI, temp, humidity"
+    }
+  ],
+  "confusion_matrix_counts": {
+    "OFF_OFF": 2929,
+    "OFF_ON": 65,
+    "ON_OFF": 585,
+    "ON_ON": 5
+  },
+  "environmental_distributions": {
+    "soil_moisture": {
+      "training": {
+        "min": 1.0,
+        "max": 100.0,
+        "mean": 43.78,
+        "median": 41.0,
+        "std": 27.2
+      },
+      "external": {
+        "min": 5.0,
+        "max": 83.0,
+        "mean": 55.82,
+        "median": 57.0,
+        "std": 9.63
+      }
+    },
+    "temperature": {
+      "training": {
+        "min": 13.0,
+        "max": 46.0,
+        "mean": 28.91,
+        "median": 29.0,
+        "std": 9.69
+      },
+      "external": {
+        "min": 16.0,
+        "max": 33.0,
+        "mean": 19.71,
+        "median": 20.0,
+        "std": 2.37
+      }
+    },
+    "humidity": {
+      "training": {
+        "min": 15.0,
+        "max": 91.0,
+        "mean": 63.32,
+        "median": 69.0,
+        "std": 22.63
+      },
+      "external": {
+        "min": 2.0,
+        "max": 95.0,
+        "mean": 65.04,
+        "median": 63.0,
+        "std": 5.76
+      }
+    }
+  },
+  "ood_analysis": {
+    "soil_moisture_ood_count": 0,
+    "soil_moisture_ood_pct": 0.0,
+    "temperature_ood_count": 0,
+    "temperature_ood_pct": 0.0,
+    "humidity_ood_count": 22,
+    "humidity_ood_pct": 0.61,
+    "total_records_outside_any_training_range": 22,
+    "pct_records_outside_any_training_range": 0.61,
+    "pct_records_within_all_training_ranges": 99.39
+  },
+  "confidence_analysis": {
+    "mean_max_prob": 0.9718,
+    "median_max_prob": 0.9656,
+    "high_confidence_count": 3584,
+    "high_confidence_pct": 100.0,
+    "medium_confidence_count": 0,
+    "medium_confidence_pct": 0.0,
+    "low_confidence_count": 0,
+    "low_confidence_pct": 0.0,
+    "mean_prob_in_range": 0.9716,
+    "mean_prob_ood": 0.9996
+  },
+  "robustness_by_crop": {
+    "Paddy": {
+      "accuracy": 0.8161,
+      "precision": 0.0714,
+      "recall": 0.0278,
+      "f1": 0.04,
+      "roc_auc": null,
+      "count": 1305,
+      "actual_irrigation_count": 180,
+      "predicted_irrigation_count": 70
+    },
+    "Barley": {
+      "accuracy": 0.8201,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "roc_auc": null,
+      "count": 2279,
+      "actual_irrigation_count": 410,
+      "predicted_irrigation_count": 0
+    }
+  },
+  "robustness_by_moisture_band": [
+    {
+      "band": "1\u201320",
+      "count": 39,
+      "accuracy": 0.4359,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "actual_irrigation": 2,
+      "pred_irrigation": 20
+    },
+    {
+      "band": "21\u201340",
+      "count": 135,
+      "accuracy": 0.163,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "actual_irrigation": 89,
+      "pred_irrigation": 24
+    },
+    {
+      "band": "41\u201360",
+      "count": 2652,
+      "accuracy": 0.8122,
+      "precision": 0.0455,
+      "recall": 0.0021,
+      "f1": 0.004,
+      "actual_irrigation": 478,
+      "pred_irrigation": 22
+    },
+    {
+      "band": "61\u201380",
+      "count": 756,
+      "accuracy": 0.9775,
+      "precision": 1.0,
+      "recall": 0.1905,
+      "f1": 0.32,
+      "actual_irrigation": 21,
+      "pred_irrigation": 4
+    },
+    {
+      "band": "81\u2013100",
+      "count": 2,
+      "accuracy": 1.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "actual_irrigation": 0,
+      "pred_irrigation": 0
+    }
+  ],
+  "robustness_by_temperature_band": [
+    {
+      "band": "<= 18\u00b0C",
+      "count": 894,
+      "accuracy": 0.4821,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "actual_irrigation": 463,
+      "pred_irrigation": 0
+    },
+    {
+      "band": "18\u00b0C \u2013 20\u00b0C",
+      "count": 1591,
+      "accuracy": 0.9478,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "actual_irrigation": 83,
+      "pred_irrigation": 0
+    },
+    {
+      "band": "20\u00b0C \u2013 22\u00b0C",
+      "count": 941,
+      "accuracy": 0.9787,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "actual_irrigation": 20,
+      "pred_irrigation": 0
+    },
+    {
+      "band": "> 22\u00b0C",
+      "count": 158,
+      "accuracy": 0.4684,
+      "precision": 0.0714,
+      "recall": 0.2083,
+      "f1": 0.1064,
+      "actual_irrigation": 24,
+      "pred_irrigation": 70
+    }
+  ],
+  "shared_feature_benchmark": {
+    "accuracy": 0.8175,
+    "precision": 0.0152,
+    "recall": 0.0017,
+    "f1": 0.003,
+    "roc_auc": 0.6504
+  }
+}
