@@ -47,6 +47,18 @@ data/
 *.h5
 *.onnx
 
+# Database
+*.sqlite3
+db.sqlite3
+
+# Media and uploads
+media/
+app/media/
+
+# Frontend dependencies and builds
+node_modules/
+dist/
+
 # OS files
 .DS_Store
 Thumbs.db

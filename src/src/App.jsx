@@ -1,0 +1,52 @@
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { LanguageProvider } from './context/LanguageContext';
+
+import LandingPage from './pages/LandingPage';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
+import Dashboard from './pages/Dashboard';
+import DiseaseDetectionPage from './pages/DiseaseDetectionPage';
+import IrrigationPage from './pages/IrrigationPage';
+
+import './i18n/config';
+
+// Protected route: redirect to login if not authenticated
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+};
+
+// Public-only route: redirect authenticated users to dashboard
+const PublicOnlyRoute = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
+};
+
+export function App() {
+  return (
+    <BrowserRouter>
+      <LanguageProvider>
+        <AuthProvider>
+          <Routes>
+            {/* Public routes (redirect to dashboard if logged in) */}
+            <Route path="/" element={<PublicOnlyRoute><LandingPage /></PublicOnlyRoute>} />
+            <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
+            <Route path="/signup" element={<PublicOnlyRoute><SignupPage /></PublicOnlyRoute>} />
+
+            {/* Protected routes */}
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/disease" element={<ProtectedRoute><DiseaseDetectionPage /></ProtectedRoute>} />
+            <Route path="/irrigation" element={<ProtectedRoute><IrrigationPage /></ProtectedRoute>} />
+
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </AuthProvider>
+      </LanguageProvider>
+    </BrowserRouter>
+  );
+}
+
+export default App;

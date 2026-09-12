@@ -1,0 +1,94 @@
+/* ==========================================================================
+   AgriSmart AI — Disease Detection Component Styles
+   Farmer-friendly, clean agricultural UI palette & animations
+   ========================================================================== */
+
+:root {
+  --agri-primary: #166534;
+  --agri-primary-light: #22c55e;
+  --agri-tint: #dcfce7;
+  --agri-bg: #f7faf7;
+  --agri-text: #17231b;
+  --agri-muted: #647067;
+  --agri-warning: #f59e0b;
+  --agri-danger: #dc2626;
+  --agri-blue: #2563eb;
+}
+
+/* ── Scanning Animation for Analysis Loader ── */
+@keyframes scanningBeam {
+  0% {
+    top: 0%;
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    top: 96%;
+    opacity: 0.2;
+  }
+}
+
+.scanner-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #22c55e, #166534, #22c55e, transparent);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.8);
+  animation: scanningBeam 2s ease-in-out infinite alternate;
+}
+
+/* ── Pulse glow for loader circle ── */
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 18px rgba(34, 197, 94, 0);
+  }
+}
+
+.pulse-circle {
+  animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ── Timeline vertical connector ── */
+.timeline-stem {
+  position: absolute;
+  top: 14px;
+  bottom: -14px;
+  left: 17px;
+  width: 2px;
+  background: #e2e8f0;
+}
+
+.timeline-item:last-child .timeline-stem {
+  display: none;
+}
+
+/* ── Severity segmented bars ── */
+.severity-bar-segment {
+  height: 8px;
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+}
+
+/* ── Custom scrollbar for horizontal containers ── */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ── Smooth subtle card transitions ── */
+.disease-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.disease-card:hover {
+  transform: translateY(-1px);
+}
