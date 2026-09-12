@@ -1,0 +1,713 @@
+{
+  "dataset_metadata": {
+    "total_rows_raw": 16411,
+    "total_rows_cleaned": 16283,
+    "duplicates_removed": 128,
+    "target_distribution": {
+      "0": 8934,
+      "1": 6227,
+      "2": 1122
+    },
+    "synthetic_characteristics": {
+      "temp_humidity_correlation": -0.9761,
+      "repeating_temp_cycles": true,
+      "synthetic_flag": true
+    }
+  },
+  "selected_model": {
+    "name": "XGBoost",
+    "pipeline_path": "C:\\Maithil\\Agri-Smart\\Bonus\\irrigation\\models\\irrigation_pipeline.joblib",
+    "top_features": {
+      "temperature": 0.225,
+      "soil_moisture": 0.1261,
+      "growth_stage_Maturation": 0.075,
+      "growth_stage_Fruit/Grain/Bulb Formation": 0.0667,
+      "humidity": 0.0518,
+      "crop_Chilli": 0.0511,
+      "growth_stage_Pollination": 0.0508,
+      "growth_stage_Harvest": 0.0494,
+      "growth_stage_Germination": 0.0427,
+      "growth_stage_Seedling Stage": 0.0418,
+      "crop_Wheat": 0.0369,
+      "soil_type_Alluvial Soil": 0.0266,
+      "growth_stage_Vegetative Growth / Root or Tuber Development": 0.0234,
+      "soil_type_Chalky Soil": 0.0211,
+      "growth_stage_Flowering": 0.0181
+    }
+  },
+  "multiclass_metrics_stratified": [
+    {
+      "model": "Majority Baseline",
+      "split": "Stratified Random Holdout",
+      "accuracy": 0.5487,
+      "macro_precision": 0.1829,
+      "macro_recall": 0.3333,
+      "macro_f1": 0.2362,
+      "weighted_f1": 0.3888,
+      "class_0_precision": 0.5487,
+      "class_0_recall": 1.0,
+      "class_0_f1": 0.7086,
+      "class_1_precision": 0.0,
+      "class_1_recall": 0.0,
+      "class_1_f1": 0.0,
+      "class_2_precision": 0.0,
+      "class_2_recall": 0.0,
+      "class_2_f1": 0.0,
+      "confusion_matrix": [
+        [
+          1787,
+          0,
+          0
+        ],
+        [
+          1246,
+          0,
+          0
+        ],
+        [
+          224,
+          0,
+          0
+        ]
+      ],
+      "inference_time_ms": 0.0
+    },
+    {
+      "model": "Rule Baseline (Tier 1: MOI)",
+      "split": "Stratified Random Holdout",
+      "accuracy": 0.4378,
+      "macro_precision": 0.3982,
+      "macro_recall": 0.4834,
+      "macro_f1": 0.4071,
+      "weighted_f1": 0.4475,
+      "class_0_precision": 0.4967,
+      "class_0_recall": 0.3839,
+      "class_0_f1": 0.4331,
+      "class_1_precision": 0.5021,
+      "class_1_recall": 0.4904,
+      "class_1_f1": 0.4961,
+      "class_2_precision": 0.1958,
+      "class_2_recall": 0.5759,
+      "class_2_f1": 0.2922,
+      "confusion_matrix": [
+        [
+          686,
+          606,
+          495
+        ],
+        [
+          600,
+          611,
+          35
+        ],
+        [
+          95,
+          0,
+          129
+        ]
+      ],
+      "inference_time_ms": 0.0001
+    },
+    {
+      "model": "Rule Baseline (Tier 2: MOI+Env)",
+      "split": "Stratified Random Holdout",
+      "accuracy": 0.4805,
+      "macro_precision": 0.4343,
+      "macro_recall": 0.5127,
+      "macro_f1": 0.4401,
+      "weighted_f1": 0.4942,
+      "class_0_precision": 0.546,
+      "class_0_recall": 0.4382,
+      "class_0_f1": 0.4862,
+      "class_1_precision": 0.561,
+      "class_1_recall": 0.5241,
+      "class_1_f1": 0.5419,
+      "class_2_precision": 0.1958,
+      "class_2_recall": 0.5759,
+      "class_2_f1": 0.2922,
+      "confusion_matrix": [
+        [
+          783,
+          509,
+          495
+        ],
+        [
+          558,
+          653,
+          35
+        ],
+        [
+          93,
+          2,
+          129
+        ]
+      ],
+      "inference_time_ms": 0.0007
+    },
+    {
+      "model": "Rule Baseline (Tier 3: Crop/Stage)",
+      "split": "Stratified Random Holdout",
+      "accuracy": 0.4249,
+      "macro_precision": 0.3917,
+      "macro_recall": 0.5318,
+      "macro_f1": 0.4043,
+      "weighted_f1": 0.4073,
+      "class_0_precision": 0.4542,
+      "class_0_recall": 0.2334,
+      "class_0_f1": 0.3083,
+      "class_1_precision": 0.4945,
+      "class_1_recall": 0.6477,
+      "class_1_f1": 0.5608,
+      "class_2_precision": 0.2263,
+      "class_2_recall": 0.7143,
+      "class_2_f1": 0.3437,
+      "confusion_matrix": [
+        [
+          417,
+          825,
+          545
+        ],
+        [
+          437,
+          807,
+          2
+        ],
+        [
+          64,
+          0,
+          160
+        ]
+      ],
+      "inference_time_ms": 0.0816
+    },
+    {
+      "model": "Logistic Regression",
+      "split": "Stratified Random Holdout",
+      "accuracy": 0.7338,
+      "macro_precision": 0.6787,
+      "macro_recall": 0.7621,
+      "macro_f1": 0.6555,
+      "weighted_f1": 0.7766,
+      "class_0_precision": 0.9536,
+      "class_0_recall": 0.6782,
+      "class_0_f1": 0.7927,
+      "class_1_precision": 0.8655,
+      "class_1_recall": 0.8002,
+      "class_1_f1": 0.8315,
+      "class_2_precision": 0.217,
+      "class_2_recall": 0.808,
+      "class_2_f1": 0.3422,
+      "confusion_matrix": [
+        [
+          1212,
+          138,
+          437
+        ],
+        [
+          33,
+          997,
+          216
+        ],
+        [
+          26,
+          17,
+          181
+        ]
+      ],
+      "inference_time_ms": 0.002
+    },
+    {
+      "model": "Random Forest",
+      "split": "Stratified Random Holdout",
+      "accuracy": 0.9917,
+      "macro_precision": 0.9845,
+      "macro_recall": 0.9689,
+      "macro_f1": 0.9764,
+      "weighted_f1": 0.9916,
+      "class_0_precision": 0.9939,
+      "class_0_recall": 0.9966,
+      "class_0_f1": 0.9953,
+      "class_1_precision": 0.9928,
+      "class_1_recall": 0.9992,
+      "class_1_f1": 0.996,
+      "class_2_precision": 0.9668,
+      "class_2_recall": 0.9107,
+      "class_2_f1": 0.9379,
+      "confusion_matrix": [
+        [
+          1781,
+          0,
+          6
+        ],
+        [
+          0,
+          1245,
+          1
+        ],
+        [
+          11,
+          9,
+          204
+        ]
+      ],
+      "inference_time_ms": 0.0188
+    },
+    {
+      "model": "HistGradientBoosting",
+      "split": "Stratified Random Holdout",
+      "accuracy": 0.9994,
+      "macro_precision": 0.9995,
+      "macro_recall": 0.997,
+      "macro_f1": 0.9982,
+      "weighted_f1": 0.9994,
+      "class_0_precision": 1.0,
+      "class_0_recall": 1.0,
+      "class_0_f1": 1.0,
+      "class_1_precision": 0.9984,
+      "class_1_recall": 1.0,
+      "class_1_f1": 0.9992,
+      "class_2_precision": 1.0,
+      "class_2_recall": 0.9911,
+      "class_2_f1": 0.9955,
+      "confusion_matrix": [
+        [
+          1787,
+          0,
+          0
+        ],
+        [
+          0,
+          1246,
+          0
+        ],
+        [
+          0,
+          2,
+          222
+        ]
+      ],
+      "inference_time_ms": 0.0187
+    },
+    {
+      "model": "XGBoost",
+      "split": "Stratified Random Holdout",
+      "accuracy": 0.9994,
+      "macro_precision": 0.9995,
+      "macro_recall": 0.997,
+      "macro_f1": 0.9982,
+      "weighted_f1": 0.9994,
+      "class_0_precision": 1.0,
+      "class_0_recall": 1.0,
+      "class_0_f1": 1.0,
+      "class_1_precision": 0.9984,
+      "class_1_recall": 1.0,
+      "class_1_f1": 0.9992,
+      "class_2_precision": 1.0,
+      "class_2_recall": 0.9911,
+      "class_2_f1": 0.9955,
+      "confusion_matrix": [
+        [
+          1787,
+          0,
+          0
+        ],
+        [
+          0,
+          1246,
+          0
+        ],
+        [
+          0,
+          2,
+          222
+        ]
+      ],
+      "inference_time_ms": 0.0084
+    }
+  ],
+  "multiclass_metrics_grouped": [
+    {
+      "model": "Majority Baseline",
+      "split": "Unseen Combination Evaluation",
+      "accuracy": 0.5502,
+      "macro_precision": 0.1834,
+      "macro_recall": 0.3333,
+      "macro_f1": 0.2366,
+      "weighted_f1": 0.3905,
+      "class_0_precision": 0.5502,
+      "class_0_recall": 1.0,
+      "class_0_f1": 0.7098,
+      "class_1_precision": 0.0,
+      "class_1_recall": 0.0,
+      "class_1_f1": 0.0,
+      "class_2_precision": 0.0,
+      "class_2_recall": 0.0,
+      "class_2_f1": 0.0,
+      "confusion_matrix": [
+        [
+          1870,
+          0,
+          0
+        ],
+        [
+          1301,
+          0,
+          0
+        ],
+        [
+          228,
+          0,
+          0
+        ]
+      ],
+      "inference_time_ms": 0.0
+    },
+    {
+      "model": "Rule Baseline (Tier 1: MOI)",
+      "split": "Unseen Combination Evaluation",
+      "accuracy": 0.431,
+      "macro_precision": 0.3888,
+      "macro_recall": 0.4751,
+      "macro_f1": 0.3963,
+      "weighted_f1": 0.4356,
+      "class_0_precision": 0.4872,
+      "class_0_recall": 0.3251,
+      "class_0_f1": 0.39,
+      "class_1_precision": 0.5,
+      "class_1_recall": 0.565,
+      "class_1_f1": 0.5305,
+      "class_2_precision": 0.1791,
+      "class_2_recall": 0.5351,
+      "class_2_f1": 0.2684,
+      "confusion_matrix": [
+        [
+          608,
+          735,
+          527
+        ],
+        [
+          534,
+          735,
+          32
+        ],
+        [
+          106,
+          0,
+          122
+        ]
+      ],
+      "inference_time_ms": 0.0001
+    },
+    {
+      "model": "Rule Baseline (Tier 2: MOI+Env)",
+      "split": "Unseen Combination Evaluation",
+      "accuracy": 0.4763,
+      "macro_precision": 0.4268,
+      "macro_recall": 0.5082,
+      "macro_f1": 0.4313,
+      "weighted_f1": 0.4844,
+      "class_0_precision": 0.549,
+      "class_0_recall": 0.3684,
+      "class_0_f1": 0.441,
+      "class_1_precision": 0.5523,
+      "class_1_recall": 0.6211,
+      "class_1_f1": 0.5847,
+      "class_2_precision": 0.1791,
+      "class_2_recall": 0.5351,
+      "class_2_f1": 0.2684,
+      "confusion_matrix": [
+        [
+          689,
+          654,
+          527
+        ],
+        [
+          461,
+          808,
+          32
+        ],
+        [
+          105,
+          1,
+          122
+        ]
+      ],
+      "inference_time_ms": 0.0007
+    },
+    {
+      "model": "Rule Baseline (Tier 3: Crop/Stage)",
+      "split": "Unseen Combination Evaluation",
+      "accuracy": 0.4184,
+      "macro_precision": 0.3845,
+      "macro_recall": 0.5093,
+      "macro_f1": 0.3899,
+      "weighted_f1": 0.4071,
+      "class_0_precision": 0.4626,
+      "class_0_recall": 0.238,
+      "class_0_f1": 0.3143,
+      "class_1_precision": 0.5,
+      "class_1_recall": 0.6364,
+      "class_1_f1": 0.56,
+      "class_2_precision": 0.1908,
+      "class_2_recall": 0.6535,
+      "class_2_f1": 0.2953,
+      "confusion_matrix": [
+        [
+          445,
+          828,
+          597
+        ],
+        [
+          438,
+          828,
+          35
+        ],
+        [
+          79,
+          0,
+          149
+        ]
+      ],
+      "inference_time_ms": 0.1113
+    },
+    {
+      "model": "Logistic Regression",
+      "split": "Unseen Combination Evaluation",
+      "accuracy": 0.7202,
+      "macro_precision": 0.6707,
+      "macro_recall": 0.7395,
+      "macro_f1": 0.6386,
+      "weighted_f1": 0.7676,
+      "class_0_precision": 0.9713,
+      "class_0_recall": 0.6524,
+      "class_0_f1": 0.7806,
+      "class_1_precision": 0.8496,
+      "class_1_recall": 0.8117,
+      "class_1_f1": 0.8302,
+      "class_2_precision": 0.1911,
+      "class_2_recall": 0.7544,
+      "class_2_f1": 0.305,
+      "confusion_matrix": [
+        [
+          1220,
+          153,
+          497
+        ],
+        [
+          14,
+          1056,
+          231
+        ],
+        [
+          22,
+          34,
+          172
+        ]
+      ],
+      "inference_time_ms": 0.0017
+    },
+    {
+      "model": "Random Forest",
+      "split": "Unseen Combination Evaluation",
+      "accuracy": 0.9467,
+      "macro_precision": 0.8573,
+      "macro_recall": 0.8409,
+      "macro_f1": 0.8486,
+      "weighted_f1": 0.9456,
+      "class_0_precision": 0.9708,
+      "class_0_recall": 0.9791,
+      "class_0_f1": 0.975,
+      "class_1_precision": 0.9602,
+      "class_1_recall": 0.9646,
+      "class_1_f1": 0.9624,
+      "class_2_precision": 0.6408,
+      "class_2_recall": 0.5789,
+      "class_2_f1": 0.6083,
+      "confusion_matrix": [
+        [
+          1831,
+          11,
+          28
+        ],
+        [
+          0,
+          1255,
+          46
+        ],
+        [
+          55,
+          41,
+          132
+        ]
+      ],
+      "inference_time_ms": 0.0164
+    },
+    {
+      "model": "HistGradientBoosting",
+      "split": "Unseen Combination Evaluation",
+      "accuracy": 0.955,
+      "macro_precision": 0.8703,
+      "macro_recall": 0.8796,
+      "macro_f1": 0.8748,
+      "weighted_f1": 0.9556,
+      "class_0_precision": 0.9786,
+      "class_0_recall": 0.9781,
+      "class_0_f1": 0.9783,
+      "class_1_precision": 0.9767,
+      "class_1_recall": 0.9677,
+      "class_1_f1": 0.9722,
+      "class_2_precision": 0.6556,
+      "class_2_recall": 0.693,
+      "class_2_f1": 0.6738,
+      "confusion_matrix": [
+        [
+          1829,
+          0,
+          41
+        ],
+        [
+          0,
+          1259,
+          42
+        ],
+        [
+          40,
+          30,
+          158
+        ]
+      ],
+      "inference_time_ms": 0.0204
+    },
+    {
+      "model": "XGBoost",
+      "split": "Unseen Combination Evaluation",
+      "accuracy": 0.9556,
+      "macro_precision": 0.8721,
+      "macro_recall": 0.88,
+      "macro_f1": 0.876,
+      "weighted_f1": 0.9561,
+      "class_0_precision": 0.9786,
+      "class_0_recall": 0.9786,
+      "class_0_f1": 0.9786,
+      "class_1_precision": 0.9767,
+      "class_1_recall": 0.9685,
+      "class_1_f1": 0.9726,
+      "class_2_precision": 0.6611,
+      "class_2_recall": 0.693,
+      "class_2_f1": 0.6767,
+      "confusion_matrix": [
+        [
+          1830,
+          0,
+          40
+        ],
+        [
+          0,
+          1260,
+          41
+        ],
+        [
+          40,
+          30,
+          158
+        ]
+      ],
+      "inference_time_ms": 0.0078
+    }
+  ],
+  "binary_experiment": [
+    {
+      "model": "Random Forest (Binary)",
+      "split": "Stratified Random Holdout",
+      "accuracy": 0.9985,
+      "precision": 0.9968,
+      "recall": 0.9992,
+      "f1": 0.998,
+      "roc_auc": 1.0,
+      "pr_auc": 1.0,
+      "confusion_matrix": [
+        [
+          2007,
+          4
+        ],
+        [
+          1,
+          1245
+        ]
+      ]
+    },
+    {
+      "model": "Random Forest (Binary)",
+      "split": "Unseen Combination Evaluation",
+      "accuracy": 0.9691,
+      "precision": 0.9679,
+      "recall": 0.9508,
+      "f1": 0.9593,
+      "roc_auc": 0.9954,
+      "pr_auc": 0.9918,
+      "confusion_matrix": [
+        [
+          2057,
+          41
+        ],
+        [
+          64,
+          1237
+        ]
+      ]
+    }
+  ],
+  "investigation_of_high_scores": {
+    "finding": "Random stratified holdout yields near-perfect metrics (up to 99%+) because the synthetic dataset contains highly deterministic formulaic sequences of MOI and temperature/humidity. When sampled randomly, almost identical sequence points from the same crop+soil+stage combinations appear in both train and test sets. When evaluated on truly unseen (crop, soil, stage) combinations via GroupShuffleSplit, the realistic generalization Macro-F1 is revealed. Grouped evaluation is the authoritative benchmark.",
+    "model_gaps": {
+      "Majority Baseline": {
+        "stratified_macro_f1": 0.2362,
+        "grouped_macro_f1": 0.2366,
+        "generalization_gap": -0.0004,
+        "suspiciously_high": false
+      },
+      "Rule Baseline (Tier 1: MOI)": {
+        "stratified_macro_f1": 0.4071,
+        "grouped_macro_f1": 0.3963,
+        "generalization_gap": 0.0108,
+        "suspiciously_high": false
+      },
+      "Rule Baseline (Tier 2: MOI+Env)": {
+        "stratified_macro_f1": 0.4401,
+        "grouped_macro_f1": 0.4313,
+        "generalization_gap": 0.0088,
+        "suspiciously_high": false
+      },
+      "Rule Baseline (Tier 3: Crop/Stage)": {
+        "stratified_macro_f1": 0.4043,
+        "grouped_macro_f1": 0.3899,
+        "generalization_gap": 0.0144,
+        "suspiciously_high": false
+      },
+      "Logistic Regression": {
+        "stratified_macro_f1": 0.6555,
+        "grouped_macro_f1": 0.6386,
+        "generalization_gap": 0.0169,
+        "suspiciously_high": false
+      },
+      "Random Forest": {
+        "stratified_macro_f1": 0.9764,
+        "grouped_macro_f1": 0.8486,
+        "generalization_gap": 0.1278,
+        "suspiciously_high": false
+      },
+      "HistGradientBoosting": {
+        "stratified_macro_f1": 0.9982,
+        "grouped_macro_f1": 0.8748,
+        "generalization_gap": 0.1234,
+        "suspiciously_high": true
+      },
+      "XGBoost": {
+        "stratified_macro_f1": 0.9982,
+        "grouped_macro_f1": 0.876,
+        "generalization_gap": 0.1222,
+        "suspiciously_high": true
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "model_name": "XGBoost",
+  "trained_on_rows": 16283,
+  "categorical_features": [
+    "crop",
+    "soil_type",
+    "growth_stage"
+  ],
+  "numerical_features": [
+    "soil_moisture",
+    "temperature",
+    "humidity"
+  ],
+  "classes": {
+    "0": "no_irrigation",
+    "1": "irrigation_required",
+    "2": "excess_water"
+  },
+  "created_at": "2026-09-12 15:53:25"
+}
