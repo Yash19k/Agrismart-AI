@@ -2,10 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Droplets, Sprout, Thermometer, Wind, AlertTriangle,
-  CheckCircle, CheckCircle2, XCircle, Clock, ChevronDown, RefreshCw,
+  CheckCircle, XCircle, Clock, ChevronDown, RefreshCw,
   Menu, ArrowRight, Zap, CloudRain, Activity, Info,
   TrendingUp, BarChart2, Gauge, Database, History,
-  Compass, Award, CloudSun, ShieldCheck, ExternalLink, Sliders, Layers
+  Compass, Award, CloudSun, ShieldCheck, ExternalLink
 } from 'lucide-react';
 import AppSidebar from '../components/common/AppSidebar';
 import AppHeader from '../components/common/AppHeader';
@@ -18,6 +18,8 @@ import {
   getIrrigationInsights,
   getIrrigationHistory
 } from '../api/irrigation';
+import { getWeather } from '../api/weather';
+import { getFarms } from '../api/farms';
 
 // ─── Supported domain options ────────────────────────────────────────────────
 const CROPS = [
@@ -199,6 +201,55 @@ function ConfidenceBar({ label, value, color }) {
   );
 }
 
+function WeatherForecastCard({ liveWeather }) {
+  const forecast = liveWeather?.forecast || [];
+  return (
+    <div className="bg-white rounded-2xl p-4 border border-purple-100 shadow-sm">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <CloudRain className="w-4 h-4 text-purple-600" />
+          <span className="text-xs font-extrabold text-gray-800 uppercase tracking-wide">Weather Forecast</span>
+        </div>
+        <span className="text-[10px] font-bold text-purple-700 uppercase">
+          {liveWeather?.provider || 'Live weather'}
+        </span>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        {forecast.length > 0 ? forecast.map((day, index) => (
+          <div key={day.date || index} className="rounded-xl bg-purple-50 border border-purple-100 p-3">
+            <p className="text-xs font-black text-purple-900">
+              {index === 0 ? 'Today' : `Day ${index + 1}`}
+              {day.date ? ` · ${day.date}` : ''}
+            </p>
+            <p className="text-sm font-black text-gray-900 mt-2">{day.condition || 'Forecast unavailable'}</p>
+            <p className="text-xs text-gray-600 mt-1">
+              {day.temperature_min != null && day.temperature_max != null
+                ? `${day.temperature_min}°C – ${day.temperature_max}°C`
+                : 'Temperature unavailable'}
+            </p>
+            <div className="flex items-center gap-3 mt-2 text-[11px] font-bold">
+              <span className="text-purple-700">
+                <CloudRain className="w-3 h-3 inline mr-1" />
+                {day.rain_probability != null ? `${day.rain_probability}%` : '—'}
+              </span>
+              <span className="text-blue-700">
+                <Droplets className="w-3 h-3 inline mr-1" />
+                {day.rainfall != null ? `${day.rainfall} mm` : '—'}
+              </span>
+            </div>
+          </div>
+        )) : (
+          <p className="text-xs text-gray-500 sm:col-span-3">Three-day forecast is currently unavailable.</p>
+        )}
+      </div>
+      <p className="text-xs text-gray-500 mt-3">
+        {forecast.length > 0 ? 'Forecast used for irrigation planning.' : 'Forecast data is currently unavailable.'}
+        {liveWeather?.location ? ` · ${liveWeather.location}` : ''}
+      </p>
+    </div>
+  );
+}
+
 function ResultCard({ result }) {
   if (!result) return null;
   const cfg = STATUS_CONFIG[result.status] || STATUS_CONFIG.no_irrigation;
@@ -210,118 +261,76 @@ function ResultCard({ result }) {
   const probColors = ['bg-blue-500', 'bg-emerald-500', 'bg-amber-500'];
   const probKeys = Object.keys(result.probabilities || {});
 
-  const weatherBadge = result.weather_modified
-    ? { label: 'Weather Delay Active', color: 'text-purple-700', bg: 'bg-purple-50', border: 'border-purple-200', icon: CloudRain }
-    : { label: 'Clear Sky / Normal', color: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200', icon: CloudSun };
-  const WeatherIcon = weatherBadge.icon;
-
   return (
     <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
       {/* Hero status banner */}
-      <div className={`rounded-3xl p-5 sm:p-6 border ${cfg.bg} ${cfg.border} flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm`}>
-        <div className="flex items-center gap-4 min-w-0">
-          <div className={`w-14 h-14 rounded-2xl ${cfg.iconBg} flex items-center justify-center flex-shrink-0 shadow-sm`}>
-            <StatusIcon className={`w-7 h-7 ${cfg.iconColor}`} />
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-xl font-black text-gray-900 leading-tight">{cfg.label}</h3>
-              <span className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold ${urgencyCfg.bg} ${urgencyCfg.color} border ${urgencyCfg.border}`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${urgencyCfg.color.replace('text-', 'bg-')}`} />
-                {urgencyCfg.label}
+      <div className={`rounded-2xl p-5 border ${cfg.bg} ${cfg.border} flex items-start gap-4 shadow-sm`}>
+        <div className={`w-12 h-12 rounded-xl ${cfg.iconBg} flex items-center justify-center flex-shrink-0 shadow-sm`}>
+          <StatusIcon className={`w-6 h-6 ${cfg.iconColor}`} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="text-lg font-black text-gray-900">{cfg.label}</h3>
+            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${urgencyCfg.bg} ${urgencyCfg.color} border ${urgencyCfg.border}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${urgencyCfg.color.replace('text-', 'bg-')}`} />
+              {urgencyCfg.label}
+            </span>
+            {result.weather_modified && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-700 border border-purple-200">
+                <CloudRain className="w-3.5 h-3.5" /> Weather Override Active
               </span>
-              {result.weather_modified && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-700 border border-purple-200">
-                  <CloudRain className="w-3.5 h-3.5" /> Rain Delay Override
+            )}
+          </div>
+          <div className="flex items-center gap-2 mt-2">
+            <ActionIcon className={`w-4 h-4 ${actionCfg.color} flex-shrink-0`} />
+            <span className={`text-sm font-black ${actionCfg.color}`}>{actionCfg.label}</span>
+            <span className="text-gray-300">·</span>
+            <span className="text-xs text-gray-500">
+              Confidence: <span className="font-bold text-gray-800">{((result.confidence || 0) * 100).toFixed(1)}%</span>
+            </span>
+            {result.record_id && (
+              <>
+                <span className="text-gray-300">·</span>
+                <span className="text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  Saved #REC-{result.record_id}
                 </span>
-              )}
-            </div>
-            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              <ActionIcon className={`w-4 h-4 ${actionCfg.color} flex-shrink-0`} />
-              <span className={`text-sm font-black ${actionCfg.color}`}>{actionCfg.label}</span>
-              <span className="text-gray-300">·</span>
-              <span className="text-xs text-gray-500 font-medium">
-                XGBoost Confidence: <span className="font-bold text-gray-800">{((result.confidence || 0) * 100).toFixed(1)}%</span>
-              </span>
-              {result.record_id && (
-                <>
-                  <span className="text-gray-300">·</span>
-                  <span className="text-[11px] text-emerald-700 font-bold bg-emerald-50 px-2.5 py-0.5 rounded-lg border border-emerald-200">
-                    Saved #REC-{result.record_id}
-                  </span>
-                </>
-              )}
-            </div>
+              </>
+            )}
           </div>
-        </div>
-
-        {/* Quick status pill on right */}
-        <div className="flex items-center gap-2 flex-shrink-0 self-stretch sm:self-center justify-end">
-          <span className="text-xs font-bold px-3.5 py-1.5 rounded-xl bg-white text-gray-700 border border-gray-200 shadow-2xs">
-            Dynamic Water Model v2.4
-          </span>
         </div>
       </div>
 
-      {/* 4 Strategic Metrics Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-        {[
-          { label: 'Model Confidence', value: `${((result.confidence || 0) * 100).toFixed(0)}%`, icon: Gauge, color: 'text-emerald-600', bg: 'bg-emerald-50', sub: 'XGBoost Classification' },
-          { label: 'Decision Urgency', value: result.urgency?.toUpperCase(), icon: Activity, color: 'text-blue-600', bg: 'bg-blue-50', sub: 'Root Stress Level' },
-          { label: 'Prescribed Action', value: result.action?.replace(/_/g, ' '), icon: Zap, color: 'text-amber-600', bg: 'bg-amber-50', sub: 'Action Plan' },
-          { label: 'Weather Impact', value: weatherBadge.label, icon: WeatherIcon, color: weatherBadge.color, bg: weatherBadge.bg, sub: 'Rainfall Telemetry' },
-        ].map(({ label, value, icon: Icon, color, bg, sub }) => (
-          <div key={label} className={`${bg} rounded-2xl p-4 border border-gray-100 shadow-sm flex flex-col justify-between`}>
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[11px] text-gray-500 font-bold">{label}</span>
-              <Icon className={`w-4 h-4 ${color}`} />
+      {/* Recommendation & Explanation */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-6 h-6 rounded-lg bg-emerald-50 flex items-center justify-center">
+              <Zap className="w-3.5 h-3.5 text-emerald-600" />
             </div>
-            <div>
-              <div className={`text-base font-black ${color} capitalize truncate`}>{value}</div>
-              <div className="text-[10px] text-gray-400 font-medium mt-0.5">{sub}</div>
-            </div>
+            <span className="text-xs font-extrabold text-gray-800 uppercase tracking-wide">Agronomic Recommendation</span>
           </div>
-        ))}
-      </div>
-
-      {/* 2-Column Analytical Dossier (Recommendation & Explanation) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm">
-          <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-50">
-            <div className="w-7 h-7 rounded-xl bg-emerald-50 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-emerald-600" />
-            </div>
-            <div>
-              <h4 className="text-xs font-black text-gray-900 uppercase tracking-wide">Agronomic Recommendation</h4>
-              <p className="text-[10px] text-gray-400">Actionable field instructions</p>
-            </div>
-          </div>
-          <p className="text-xs sm:text-sm text-gray-700 leading-relaxed font-medium">{result.recommendation}</p>
+          <p className="text-sm text-gray-700 leading-relaxed font-medium">{result.recommendation}</p>
         </div>
-
-        <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm">
-          <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-50">
-            <div className="w-7 h-7 rounded-xl bg-blue-50 flex items-center justify-center">
-              <Info className="w-4 h-4 text-blue-600" />
+        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center">
+              <Info className="w-3.5 h-3.5 text-blue-600" />
             </div>
-            <div>
-              <h4 className="text-xs font-black text-gray-900 uppercase tracking-wide">Physiological Rationale</h4>
-              <p className="text-[10px] text-gray-400">Soil moisture tension & root uptake dynamics</p>
-            </div>
+            <span className="text-xs font-extrabold text-gray-800 uppercase tracking-wide">Physiological Rationale</span>
           </div>
-          <p className="text-xs sm:text-sm text-gray-600 leading-relaxed font-normal">{result.explanation}</p>
+          <p className="text-sm text-gray-600 leading-relaxed">{result.explanation}</p>
         </div>
       </div>
 
       {/* Probabilities Breakdown */}
-      <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm">
-        <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-50">
+      <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <BarChart2 className="w-4 h-4 text-emerald-600" />
-            <h4 className="text-xs font-black text-gray-800 uppercase tracking-wide">XGBoost Multi-Class Probabilities</h4>
+            <span className="text-xs font-extrabold text-gray-700 uppercase tracking-wide">XGBoost Class Probabilities</span>
           </div>
-          <span className="text-[11px] text-gray-400 font-medium">Sum = 100% (Softmax Output)</span>
+          <span className="text-[11px] text-gray-400 font-medium">Sum = 100%</span>
         </div>
         <div className="flex flex-col gap-3">
           {probKeys.map((key, i) => (
@@ -335,9 +344,24 @@ function ResultCard({ result }) {
         </div>
       </div>
 
+      {/* 3 Metric Gauges */}
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { label: 'Model Confidence', value: `${((result.confidence || 0) * 100).toFixed(0)}%`, icon: Gauge, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+          { label: 'Decision Urgency', value: result.urgency?.toUpperCase(), icon: Activity, color: 'text-blue-600', bg: 'bg-blue-50' },
+          { label: 'Prescribed Action', value: result.action?.replace(/_/g, ' '), icon: Zap, color: 'text-amber-600', bg: 'bg-amber-50' },
+        ].map(({ label, value, icon: Icon, color, bg }) => (
+          <div key={label} className={`${bg} rounded-2xl p-3.5 text-center border border-gray-100 shadow-sm`}>
+            <Icon className={`w-5 h-5 ${color} mx-auto mb-1`} />
+            <div className={`text-sm font-black ${color} capitalize truncate`}>{value}</div>
+            <div className="text-[10px] text-gray-500 font-bold mt-0.5">{label}</div>
+          </div>
+        ))}
+      </div>
+
       {/* Status description */}
       {result.status_description && (
-        <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100 flex items-start gap-3">
+        <div className="bg-gray-50 rounded-2xl p-3.5 border border-gray-100 flex items-start gap-2.5">
           <Info className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
           <p className="text-xs text-gray-600 leading-relaxed">{result.status_description}</p>
         </div>
@@ -345,10 +369,10 @@ function ResultCard({ result }) {
 
       {/* Warnings if any */}
       {result.warnings?.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex flex-col gap-2">
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 flex flex-col gap-1.5">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-amber-600" />
-            <span className="text-xs font-black text-amber-800">Agronomic Notices</span>
+            <span className="text-xs font-bold text-amber-800">Agronomic Notices</span>
           </div>
           {result.warnings.map((w, i) => (
             <p key={i} className="text-xs text-amber-700 pl-6">{w}</p>
@@ -365,22 +389,24 @@ export default function IrrigationPage() {
   const { user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('advisory'); // 'advisory' | 'benchmarks' | 'history'
+  const [farms, setFarms] = useState([]);
+  const [selectedFarmId, setSelectedFarmId] = useState('');
 
   // Form state
   const [form, setForm] = useState({
     crop: 'Tomato',
     soil_type: 'Loam Soil',
     growth_stage: 'Flowering',
-    soil_moisture: 35,
-    temperature: 28,
-    humidity: 60,
+    soil_moisture: null,
+    temperature: null,
+    humidity: null,
   });
 
   // Weather Intelligence state
   const [weatherCtx, setWeatherCtx] = useState({
-    enabled: true,
-    rain_probability: 20,
-    forecast_rainfall_mm: 0,
+    enabled: false,
+    rain_probability: null,
+    forecast_rainfall_mm: null,
   });
 
   // Live WeatherAPI fetch status
@@ -401,20 +427,34 @@ export default function IrrigationPage() {
   const fetchLiveWeather = useCallback(async () => {
     setWeatherLoading(true);
     try {
-      const data = await getIrrigationLiveWeather();
+      const data = await getIrrigationLiveWeather(selectedFarmId ? { farm_id: selectedFarmId } : {});
       setLiveWeather(data);
-      // Auto-populate form readings from live WeatherAPI
+      // Reuse the same daily payload as Weather & Advisory when the
+      // irrigation summary endpoint has no forecast entries.
+      if (!data?.forecast?.length) {
+        try {
+          const advisoryWeather = await getWeather(selectedFarmId || null);
+          if (advisoryWeather?.forecast?.length) {
+            setLiveWeather(prev => ({ ...prev, forecast: advisoryWeather.forecast }));
+          }
+        } catch (forecastError) {
+          console.warn('Three-day forecast fetch notice:', forecastError);
+        }
+      }
+      // Auto-populate environmental readings from the backend weather gateway.
       if (data) {
+        const fallbackMoisture = data.humidity != null ? Math.round(Math.min(52, Math.max(18, data.humidity * 0.35))) : 32;
         setForm(prev => ({
           ...prev,
-          temperature: Math.round(data.temperature || prev.temperature),
-          humidity: Math.round(data.humidity || prev.humidity),
+          temperature: data.temperature != null ? Math.round(data.temperature) : null,
+          humidity: data.humidity != null ? Math.round(data.humidity) : null,
+          soil_moisture: data.soil_moisture != null ? Math.round(data.soil_moisture) : fallbackMoisture,
         }));
         setWeatherCtx(prev => ({
           ...prev,
-          enabled: true,
-          rain_probability: Math.round(data.rain_probability_pct ?? (data.rain_probability * 100)),
-          forecast_rainfall_mm: Number(data.forecast_rainfall_mm || 0),
+          enabled: data.rain_probability_pct != null || data.forecast_rainfall_mm != null,
+          rain_probability: data.rain_probability_pct,
+          forecast_rainfall_mm: data.forecast_rainfall_mm,
         }));
       }
     } catch (err) {
@@ -422,15 +462,23 @@ export default function IrrigationPage() {
     } finally {
       setWeatherLoading(false);
     }
-  }, []);
+  }, [selectedFarmId]);
 
   // Fetch insights and metadata on mount
   useEffect(() => {
-    fetchLiveWeather();
+    getFarms().then((farmList) => {
+      const nextFarms = Array.isArray(farmList) ? farmList : farmList?.results || [];
+      setFarms(nextFarms);
+      if (nextFarms.length) setSelectedFarmId(String(nextFarms[0].id));
+    }).catch(err => setError(err.friendlyMessage || 'Could not load your farms.'));
     getIrrigationInsights().then(res => {
       if (res && res.available) setInsights(res);
     }).catch(err => console.warn('Insights error:', err));
-  }, [fetchLiveWeather]);
+  }, []);
+
+  useEffect(() => {
+    if (selectedFarmId) fetchLiveWeather();
+  }, [selectedFarmId, fetchLiveWeather]);
 
   // Load history when tab is clicked
   const loadHistory = useCallback(async () => {
@@ -451,7 +499,21 @@ export default function IrrigationPage() {
     }
   }, [activeTab, loadHistory]);
 
-  const isFormValid = form.crop && form.soil_type && form.growth_stage;
+  const isFormValid = form.crop && form.soil_type && form.growth_stage
+    && form.soil_moisture != null && form.temperature != null && form.humidity != null;
+
+  const selectedFarm = farms.find((farm) => String(farm.id) === String(selectedFarmId));
+
+  const handleFarmChange = (event) => {
+    setSelectedFarmId(event.target.value);
+    setLiveWeather(null);
+    setResult(null);
+    setWeatherCtx({
+      enabled: false,
+      rain_probability: null,
+      forecast_rainfall_mm: null,
+    });
+  };
 
   const handlePredict = useCallback(async () => {
     if (!isFormValid) return;
@@ -460,7 +522,8 @@ export default function IrrigationPage() {
 
     const weatherContext = weatherCtx.enabled
       ? {
-          rain_probability: (weatherCtx.rain_probability || 0) / 100,
+          rain_probability: weatherCtx.rain_probability != null
+            ? weatherCtx.rain_probability / 100 : 0,
           forecast_rainfall_mm: Number(weatherCtx.forecast_rainfall_mm || 0),
           forecast_temp: form.temperature,
           forecast_humidity: form.humidity,
@@ -477,7 +540,8 @@ export default function IrrigationPage() {
           temperature: form.temperature,
           humidity: form.humidity,
         },
-        weatherContext
+        weatherContext,
+        selectedFarmId || null
       );
       setResult(data);
     } catch (err) {
@@ -485,10 +549,11 @@ export default function IrrigationPage() {
     } finally {
       setLoading(false);
     }
-  }, [form, weatherCtx, isFormValid]);
+  }, [form, weatherCtx, isFormValid, selectedFarmId]);
 
   // Moisture state helper
   const getMoistureStatus = (val) => {
+    if (val == null) return { label: 'Unavailable', color: 'text-gray-500', bg: 'bg-gray-100' };
     if (val < 20) return { label: 'Depleted (Deficit)', color: 'text-red-700', bg: 'bg-red-100' };
     if (val < 40) return { label: 'Stress Threshold', color: 'text-amber-700', bg: 'bg-amber-100' };
     if (val < 65) return { label: 'Optimal Buffer', color: 'text-emerald-700', bg: 'bg-emerald-100' };
@@ -496,19 +561,6 @@ export default function IrrigationPage() {
     return { label: 'Saturated (Risk of Rot)', color: 'text-purple-700', bg: 'bg-purple-100' };
   };
   const moistureStatus = getMoistureStatus(form.soil_moisture);
-
-  const applyPreset = (presetType) => {
-    if (presetType === 'dry') {
-      setForm(prev => ({ ...prev, soil_moisture: 16, temperature: 33, humidity: 40 }));
-      setWeatherCtx({ enabled: true, rain_probability: 5, forecast_rainfall_mm: 0 });
-    } else if (presetType === 'rain') {
-      setForm(prev => ({ ...prev, soil_moisture: 38, temperature: 25, humidity: 78 }));
-      setWeatherCtx({ enabled: true, rain_probability: 85, forecast_rainfall_mm: 22 });
-    } else if (presetType === 'optimal') {
-      setForm(prev => ({ ...prev, soil_moisture: 54, temperature: 27, humidity: 60 }));
-      setWeatherCtx({ enabled: true, rain_probability: 10, forecast_rainfall_mm: 0 });
-    }
-  };
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden font-sans text-gray-900">
@@ -540,6 +592,22 @@ export default function IrrigationPage() {
 
         {/* Navigation Tabs */}
         <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-2 flex items-center gap-2 overflow-x-auto flex-shrink-0">
+          {farms.length > 0 && (
+            <label className="ml-auto flex items-center gap-2 text-xs font-bold text-gray-600 whitespace-nowrap">
+              Select farm
+              <select
+                value={selectedFarmId}
+                onChange={handleFarmChange}
+                className="max-w-[280px] rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700"
+              >
+                {farms.map((farm) => (
+                  <option key={farm.id} value={farm.id}>
+                    {farm.farm_name || farm.name} — {farm.location_name || farm.location_display || 'saved coordinates'}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <button
             onClick={() => setActiveTab('advisory')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition flex items-center gap-1.5 ${
@@ -599,6 +667,11 @@ export default function IrrigationPage() {
                       <p className="text-xs sm:text-sm text-blue-100 mt-1 font-medium leading-relaxed">
                         Evaluates soil moisture saturation, crop growth phase, and real-time precipitation forecast to prevent over-watering and root rot.
                       </p>
+                      {selectedFarm && (
+                        <p className="text-[11px] text-blue-100 mt-2 font-semibold">
+                          Live location: {selectedFarm.location_name || selectedFarm.location_display || 'saved farm coordinates'}
+                        </p>
+                      )}
                     </div>
 
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-white/20">
@@ -629,64 +702,17 @@ export default function IrrigationPage() {
                   </div>
                 </div>
 
-                {/* ═════════════════════════════════════════════════════════════
-                    FIELD PARAMETER CONTROL CONSOLE (3-CARD STUDIO + PRESETS)
-                ═════════════════════════════════════════════════════════════ */}
-                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 sm:p-6 flex flex-col gap-6">
-                  {/* Console Header with Scenario Presets */}
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-gray-100">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center flex-shrink-0 shadow-2xs">
-                        <Sliders className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h3 className="text-base font-black text-gray-900">
-                          Field Parameters & Sensor Readings
-                        </h3>
-                        <p className="text-xs text-gray-500 mt-0.5 font-normal">
-                          Fine-tune soil moisture, crop stage, and weather forecast or simulate field conditions with quick presets.
-                        </p>
-                      </div>
-                    </div>
+                {/* Main 2-Column Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-                    {/* Quick Simulation Presets */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider hidden sm:inline">Presets:</span>
-                      <button
-                        type="button"
-                        onClick={() => applyPreset('dry')}
-                        className="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition active:scale-95 flex items-center gap-1.5"
-                      >
-                        <span>🏜️</span>
-                        <span>Dry Soil (16%)</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => applyPreset('optimal')}
-                        className="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition active:scale-95 flex items-center gap-1.5"
-                      >
-                        <span>🌿</span>
-                        <span>Optimal (54%)</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => applyPreset('rain')}
-                        className="px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 transition active:scale-95 flex items-center gap-1.5"
-                      >
-                        <span>🌧️</span>
-                        <span>Rain Inbound (85%)</span>
-                      </button>
-                    </div>
-                  </div>
+                  {/* LEFT: Input Form (5 cols) */}
+                  <div className="lg:col-span-5 flex flex-col gap-4">
 
-                  {/* 3 Parameter Columns */}
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-                    {/* Card 1: Crop Profile */}
-                    <div className="bg-gray-50/70 rounded-2xl p-4 sm:p-5 border border-gray-100 flex flex-col justify-between">
-                      <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-200/60">
+                    {/* Crop Profile Card */}
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                      <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-50">
                         <Sprout className="w-4 h-4 text-emerald-600" />
-                        <h4 className="text-xs font-black text-gray-800 uppercase tracking-wide">1. Crop & Growth Profile</h4>
+                        <h3 className="text-sm font-black text-gray-800">Crop & Soil Features</h3>
                       </div>
                       <div className="flex flex-col gap-4">
                         <SelectField
@@ -716,124 +742,101 @@ export default function IrrigationPage() {
                       </div>
                     </div>
 
-                    {/* Card 2: Soil Moisture & Sensor Telemetry */}
-                    <div className="bg-gray-50/70 rounded-2xl p-4 sm:p-5 border border-gray-100 flex flex-col justify-between">
-                      <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-200/60">
+                    {/* Sensor Telemetry Card */}
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                      <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-50">
                         <div className="flex items-center gap-2">
                           <Gauge className="w-4 h-4 text-blue-600" />
-                          <h4 className="text-xs font-black text-gray-800 uppercase tracking-wide">2. Sensor Readings</h4>
+                          <h3 className="text-sm font-black text-gray-800">Field Environmental Readings</h3>
                         </div>
-                        <span className="text-[10px] font-extrabold text-blue-700 bg-blue-100/70 px-2 py-0.5 rounded-full">
-                          Capacitance MOI
-                        </span>
+                        <span className="text-[10px] font-bold text-gray-400 uppercase">Input Telemetry</span>
                       </div>
-                      <div className="flex flex-col gap-4">
-                        <SliderField
-                          label="Soil Moisture (MOI)"
-                          id="soil_moisture"
-                          value={form.soil_moisture}
-                          onChange={(v) => setForm(f => ({ ...f, soil_moisture: v }))}
-                          min={0}
-                          max={100}
-                          unit="%"
-                          icon={Droplets}
-                          color="blue"
-                          statusBadge={moistureStatus}
-                        />
-                        <SliderField
-                          label="Ambient Temperature"
-                          id="temperature"
-                          value={form.temperature}
-                          onChange={(v) => setForm(f => ({ ...f, temperature: v }))}
-                          min={0}
-                          max={55}
-                          unit="°C"
-                          icon={Thermometer}
-                          color="orange"
-                        />
-                        <SliderField
-                          label="Relative Humidity"
-                          id="humidity"
-                          value={form.humidity}
-                          onChange={(v) => setForm(f => ({ ...f, humidity: v }))}
-                          min={0}
-                          max={100}
-                          unit="%"
-                          icon={Wind}
-                          color="emerald"
-                        />
-                      </div>
-                    </div>
 
-                    {/* Card 3: Weather Intelligence Layer */}
-                    <div className="bg-gray-50/70 rounded-2xl p-4 sm:p-5 border border-gray-100 flex flex-col justify-between">
-                      <div>
-                        <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200/60">
-                          <div className="flex items-center gap-2">
-                            <CloudRain className="w-4 h-4 text-purple-600" />
-                            <h4 className="text-xs font-black text-gray-800 uppercase tracking-wide">3. Rain Intelligence</h4>
+                      <div className="flex flex-col gap-5">
+                        <div className="rounded-xl bg-blue-50 border border-blue-100 p-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                              <Droplets className="w-3.5 h-3.5 text-blue-600" />
+                              Live Soil Moisture
+                            </span>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${moistureStatus.bg} ${moistureStatus.color}`}>
+                              {moistureStatus.label}
+                            </span>
                           </div>
-                          <label className="relative inline-flex items-center cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={weatherCtx.enabled}
-                              onChange={(e) => setWeatherCtx(w => ({ ...w, enabled: e.target.checked }))}
-                              className="sr-only peer"
-                            />
-                            <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
-                          </label>
+                          <div className="flex items-baseline justify-between mt-2">
+                            <p className="text-xl font-extrabold text-blue-900">
+                              {form.soil_moisture != null ? `${form.soil_moisture}%` : 'Unavailable'}
+                            </p>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] font-bold text-blue-600">Adjust:</span>
+                              <input
+                                type="range"
+                                min="10"
+                                max="60"
+                                step="1"
+                                value={form.soil_moisture ?? 30}
+                                onChange={(e) => setForm(prev => ({ ...prev, soil_moisture: Number(e.target.value) }))}
+                                className="w-24 h-1.5 accent-blue-600 cursor-pointer"
+                                title="Adjust soil moisture value"
+                              />
+                            </div>
+                          </div>
+                          <p className="text-[10px] text-blue-700 mt-1">
+                            Estimated from weather gateway; slide to fine-tune or match your in-ground soil sensor.
+                          </p>
                         </div>
-                        <p className="text-[11px] text-gray-500 mb-4 leading-relaxed font-normal">
-                          Decoupled layer: if heavy rain is forecast within 24–48 hours, irrigation is delayed to conserve water and prevent waterlogging.
-                        </p>
+                        <div className="grid grid-cols-2 gap-3 text-xs">
+                          <div className="rounded-xl bg-orange-50 border border-orange-100 p-3">
+                            <span className="font-semibold text-gray-500">Live Temperature</span>
+                            <p className="text-base font-extrabold text-orange-900 mt-1">
+                              {form.temperature != null ? `${form.temperature}°C` : 'Unavailable'}
+                            </p>
+                          </div>
+                          <div className="rounded-xl bg-emerald-50 border border-emerald-100 p-3">
+                            <span className="font-semibold text-gray-500">Live Humidity</span>
+                            <p className="text-base font-extrabold text-emerald-900 mt-1">
+                              {form.humidity != null ? `${form.humidity}%` : 'Unavailable'}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-
-                      {weatherCtx.enabled ? (
-                        <div className="flex flex-col gap-4">
-                          <SliderField
-                            label="24h Rain Probability"
-                            id="rain_probability"
-                            value={weatherCtx.rain_probability}
-                            onChange={(v) => setWeatherCtx(w => ({ ...w, rain_probability: v }))}
-                            min={0}
-                            max={100}
-                            unit="%"
-                            icon={CloudRain}
-                            color="purple"
-                          />
-                          <SliderField
-                            label="Forecast Precipitation"
-                            id="forecast_rainfall_mm"
-                            value={weatherCtx.forecast_rainfall_mm}
-                            onChange={(v) => setWeatherCtx(w => ({ ...w, forecast_rainfall_mm: v }))}
-                            min={0}
-                            max={50}
-                            unit=" mm"
-                            icon={Droplets}
-                            color="blue"
-                          />
-                        </div>
-                      ) : (
-                        <div className="p-4 rounded-xl bg-gray-100/80 text-center text-xs text-gray-500 font-medium">
-                          Weather override layer is paused. Inference will rely purely on field sensors.
-                        </div>
-                      )}
                     </div>
 
-                  </div>
+                    {/* Weather Intelligence Layer Toggle Card */}
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <CloudRain className="w-4 h-4 text-purple-600" />
+                          <h3 className="text-sm font-black text-gray-800">Weather Intelligence Layer</h3>
+                        </div>
+                        <span className="text-[10px] font-bold text-purple-700 uppercase">Automatic</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mb-4 leading-relaxed">
+                        Decoupled decision layer: if heavy precipitation is forecast within 24–48 hours, irrigation is intelligently delayed to conserve water and prevent waterlogging.
+                      </p>
 
-                  {/* Command & Execution Ribbon */}
-                  <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-100">
-                    <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                      <span>Calibrated on 16,283 empirical Indian agricultural records · XGBoost ML</span>
+                      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-50 text-xs">
+                        <div className="rounded-xl bg-purple-50 border border-purple-100 p-3">
+                          <span className="font-semibold text-gray-500">Rain Probability</span>
+                          <p className="text-base font-extrabold text-purple-900 mt-1">
+                            {weatherCtx.rain_probability != null ? `${weatherCtx.rain_probability}%` : 'Unavailable'}
+                          </p>
+                        </div>
+                        <div className="rounded-xl bg-blue-50 border border-blue-100 p-3">
+                          <span className="font-semibold text-gray-500">Forecast Rainfall</span>
+                          <p className="text-base font-extrabold text-blue-900 mt-1">
+                            {weatherCtx.forecast_rainfall_mm != null ? `${weatherCtx.forecast_rainfall_mm} mm` : 'Unavailable'}
+                          </p>
+                        </div>
+                      </div>
                     </div>
 
+                    {/* Run Decision Button */}
                     <button
                       type="button"
                       onClick={handlePredict}
                       disabled={loading || !isFormValid}
-                      className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 disabled:opacity-50 text-white font-black text-sm shadow-md transition flex items-center justify-center gap-2"
+                      className="w-full py-3.5 px-5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-50 text-white font-black text-sm shadow-md transition flex items-center justify-center gap-2"
                     >
                       {loading ? (
                         <>
@@ -848,64 +851,48 @@ export default function IrrigationPage() {
                         </>
                       )}
                     </button>
+
+                    {error && (
+                      <div className="bg-red-50 border border-red-200 rounded-2xl p-3.5 flex items-start gap-2.5 text-red-700 text-xs font-semibold">
+                        <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5 text-red-600" />
+                        <span>{error}</span>
+                      </div>
+                    )}
+
                   </div>
 
-                  {error && (
-                    <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3 text-red-700 text-xs font-semibold">
-                      <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5 text-red-600" />
-                      <span>{error}</span>
-                    </div>
-                  )}
+                  {/* RIGHT: Visual Results Panel (7 cols) */}
+                  <div className="lg:col-span-7">
+                    {result ? (
+                      <div className="flex flex-col gap-4">
+                        <ResultCard result={result} />
+                        <WeatherForecastCard liveWeather={liveWeather} />
+                      </div>
+                    ) : (
+                      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 flex flex-col items-center justify-center text-center h-full min-h-[460px]">
+                        <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center mb-4">
+                          <Droplets className="w-8 h-8 text-emerald-600" />
+                        </div>
+                        <h3 className="text-base font-black text-gray-800">Ready for Irrigation Inference</h3>
+                        <p className="text-xs text-gray-500 max-w-sm mt-1.5 leading-relaxed font-medium">
+                          Select your crop and soil parameters on the left, or sync live WeatherAPI readings, then click <strong className="text-emerald-700">Run Irrigation Analysis</strong>.
+                        </p>
+                        <div className="mt-6 flex items-center gap-3 flex-wrap justify-center">
+                          <span className="text-[11px] font-bold text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200">
+                            XGBoost Champion Model
+                          </span>
+                          <span className="text-[11px] font-bold text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200">
+                            3-Class Physiological Target
+                          </span>
+                          <span className="text-[11px] font-bold text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200">
+                            WeatherAPI Live Forecast
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                 </div>
-
-                {/* ═════════════════════════════════════════════════════════════
-                    DECISION & ANALYTICAL RESULTS HUB (FULL WIDTH)
-                ═════════════════════════════════════════════════════════════ */}
-                {result ? (
-                  <ResultCard result={result} />
-                ) : (
-                  <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 sm:p-10 flex flex-col items-center justify-center text-center">
-                    <div className="w-16 h-16 rounded-3xl bg-emerald-50 border border-emerald-100 flex items-center justify-center mb-4 shadow-sm">
-                      <Droplets className="w-8 h-8 text-emerald-600" />
-                    </div>
-                    <h3 className="text-lg font-black text-gray-900">Ready for Precision Irrigation Analysis</h3>
-                    <p className="text-xs sm:text-sm text-gray-500 max-w-lg mt-1.5 leading-relaxed font-medium">
-                      Configure your crop, soil moisture, and weather forecast above, or click one of the presets to test live ML inference.
-                    </p>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 w-full max-w-3xl text-left">
-                      <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100">
-                        <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-2 font-bold text-xs">
-                          01
-                        </div>
-                        <h5 className="text-xs font-black text-gray-900">Soil Moisture Thresholds</h5>
-                        <p className="text-[11px] text-gray-500 mt-1 leading-relaxed">
-                          Detects water stress before visible wilting occurs, preserving crop vigor.
-                        </p>
-                      </div>
-
-                      <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100">
-                        <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-2 font-bold text-xs">
-                          02
-                        </div>
-                        <h5 className="text-xs font-black text-gray-900">Weather Decoupling</h5>
-                        <p className="text-[11px] text-gray-500 mt-1 leading-relaxed">
-                          Postpones irrigation if precipitation is incoming within 24–48 hours.
-                        </p>
-                      </div>
-
-                      <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100">
-                        <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-2 font-bold text-xs">
-                          03
-                        </div>
-                        <h5 className="text-xs font-black text-gray-900">Water Conservation</h5>
-                        <p className="text-[11px] text-gray-500 mt-1 leading-relaxed">
-                          Reduces excess pumping by up to 34% while preventing root waterlogging.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </>
             )}
 

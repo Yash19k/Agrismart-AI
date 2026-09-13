@@ -39,7 +39,8 @@ venv.bak/
 *.swo
 
 # Datasets and Large Files
-data/
+/data/
+!src/src/data/
 *.zip
 *.tar.gz
 *.pth
