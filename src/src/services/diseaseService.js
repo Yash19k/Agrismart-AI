@@ -10,6 +10,7 @@
  */
 
 import { diseaseDemoResult } from '../data/diseaseDemoData';
+import { SAMPLE_LEAVES } from '../data/sampleLeaves';
 
 /**
  * Format file size into human-readable string (KB/MB)
@@ -25,6 +26,7 @@ function formatFileSize(bytes) {
 /**
  * Analyze crop leaf image.
  * Simulated frontend-only implementation with realistic latency.
+ * If the image is one of our provided sample leaves, returns its tailored diagnostic profile.
  *
  * @param {File} imageFile - The leaf image selected by the user.
  * @returns {Promise<object>} - Fully resolved analysis result.
@@ -35,8 +37,8 @@ export async function analyzeDisease(imageFile) {
     throw new Error('Please select a crop leaf image before starting analysis.');
   }
 
-  // Simulate network latency & model inference (1500ms)
-  await new Promise((resolve) => setTimeout(resolve, 1500));
+  // Simulate network latency & model inference (1400ms)
+  await new Promise((resolve) => setTimeout(resolve, 1400));
 
   // Generate a live preview URL from the actual user-selected file
   const previewUrl = URL.createObjectURL(imageFile);
@@ -44,9 +46,22 @@ export async function analyzeDisease(imageFile) {
   const now = new Date();
   const timeString = `Today, ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 
-  // Return a cloned copy of normalized demo data with the actual file bound
+  // Check if this is one of our provided sample leaves
+  let diagnosticProfile = diseaseDemoResult;
+  if (imageFile.sampleMeta?.details) {
+    diagnosticProfile = imageFile.sampleMeta.details;
+  } else {
+    const matchedSample = SAMPLE_LEAVES.find(
+      (s) => s.fileName === imageFile.name || s.id === imageFile.sampleId
+    );
+    if (matchedSample?.details) {
+      diagnosticProfile = matchedSample.details;
+    }
+  }
+
+  // Return resolved profile with user's file and timestamp bound
   return {
-    ...diseaseDemoResult,
+    ...diagnosticProfile,
     uploadedImage: previewUrl,
     fileName: imageFile.name || 'leaf_sample.jpg',
     fileSize: formatFileSize(imageFile.size),

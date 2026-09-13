@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/useTranslation';
 import { Globe, Volume2, Check, Sparkles } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 

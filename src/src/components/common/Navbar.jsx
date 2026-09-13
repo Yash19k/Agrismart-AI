@@ -1,20 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Sprout, Globe, Menu, X, User, LogOut, ChevronRight } from 'lucide-react';
-import { useLanguage } from '../../context/LanguageContext';
+import { Sprout, Menu, X, User, LogOut, ChevronRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import LanguageModal from './LanguageModal';
+import { GoogleTranslateDropdown } from './GoogleTranslate';
 import Button from './Button';
 
 export const Navbar = () => {
-  const { t } = useTranslation();
-  const { activeLanguageObj } = useLanguage();
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [langModalOpen, setLangModalOpen] = useState(false);
 
   const handleNavClick = (anchor) => {
     setMobileMenuOpen(false);
@@ -59,45 +54,34 @@ export const Navbar = () => {
             <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
               <button
                 onClick={() => handleNavClick('#home')}
-                className="px-3.5 py-2 rounded-xl text-base font-bold text-stone-700 hover:text-agri-800 hover:bg-agri-50 transition-colors"
+                className="px-3.5 py-2 rounded-xl text-base font-bold text-stone-700 hover:text-agri-800 hover:bg-agri-50 transition-colors cursor-pointer"
               >
-                {t('nav.home', 'Home')}
+                Home
               </button>
               <button
                 onClick={() => handleNavClick('#how-it-works')}
-                className="px-3.5 py-2 rounded-xl text-base font-bold text-stone-700 hover:text-agri-800 hover:bg-agri-50 transition-colors"
+                className="px-3.5 py-2 rounded-xl text-base font-bold text-stone-700 hover:text-agri-800 hover:bg-agri-50 transition-colors cursor-pointer"
               >
-                {t('nav.howItWorks', 'How It Works')}
+                How It Works
               </button>
               <button
                 onClick={() => handleNavClick('#features')}
-                className="px-3.5 py-2 rounded-xl text-base font-bold text-stone-700 hover:text-agri-800 hover:bg-agri-50 transition-colors"
+                className="px-3.5 py-2 rounded-xl text-base font-bold text-stone-700 hover:text-agri-800 hover:bg-agri-50 transition-colors cursor-pointer"
               >
-                {t('nav.features', 'Features')}
+                Features
               </button>
               <button
                 onClick={() => handleNavClick('#about')}
-                className="px-3.5 py-2 rounded-xl text-base font-bold text-stone-700 hover:text-agri-800 hover:bg-agri-50 transition-colors"
+                className="px-3.5 py-2 rounded-xl text-base font-bold text-stone-700 hover:text-agri-800 hover:bg-agri-50 transition-colors cursor-pointer"
               >
-                {t('nav.about', 'About')}
+                About
               </button>
             </nav>
 
             {/* Right Actions (Desktop) */}
             <div className="hidden md:flex items-center gap-3">
-              {/* Language Selector Trigger */}
-              <button
-                onClick={() => setLangModalOpen(true)}
-                className="flex items-center gap-2 px-3.5 py-2 rounded-xl border-2 border-agri-200 bg-agri-50/80 hover:bg-agri-100 text-agri-900 font-bold text-sm transition-all shadow-xs farmer-touch-target"
-                title="Change Regional Language"
-                aria-label="Change Language"
-              >
-                <Globe className="w-5 h-5 text-agri-700" />
-                <span>{activeLanguageObj.nativeName}</span>
-                <span className="text-xs px-1.5 py-0.2 bg-agri-200/80 rounded text-agri-800 font-semibold uppercase">
-                  {activeLanguageObj.code}
-                </span>
-              </button>
+              {/* Google Translate Website Translator Selector */}
+              <GoogleTranslateDropdown variant="navbar" />
 
               {isAuthenticated ? (
                 <div className="flex items-center gap-2">
@@ -107,8 +91,8 @@ export const Navbar = () => {
                   </div>
                   <button
                     onClick={logout}
-                    className="p-2.5 rounded-xl border border-stone-300 text-stone-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
-                    title={t('nav.logout', 'Logout')}
+                    className="p-2.5 rounded-xl border border-stone-300 text-stone-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors cursor-pointer"
+                    title="Logout"
                     aria-label="Logout"
                   >
                     <LogOut className="w-5 h-5" />
@@ -120,31 +104,24 @@ export const Navbar = () => {
                     to="/login"
                     className="px-4 py-2.5 rounded-xl text-base font-bold text-agri-900 hover:bg-agri-50 transition-colors farmer-touch-target flex items-center justify-center"
                   >
-                    {t('nav.login', 'Login')}
+                    Login
                   </Link>
                   <Link to="/signup">
                     <Button variant="primary" size="md">
-                      {t('nav.getStarted', 'Get Started')}
+                      Get Started
                     </Button>
                   </Link>
                 </div>
               )}
             </div>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu & Language Button */}
             <div className="flex items-center gap-2 md:hidden">
-              <button
-                onClick={() => setLangModalOpen(true)}
-                className="flex items-center gap-1 px-2.5 py-2 rounded-xl bg-agri-50 border border-agri-200 text-agri-900 font-bold text-xs farmer-touch-target"
-                aria-label="Select Language"
-              >
-                <Globe className="w-4 h-4 text-agri-700" />
-                <span>{activeLanguageObj.nativeName}</span>
-              </button>
+              <GoogleTranslateDropdown variant="appHeader" />
 
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2.5 rounded-xl bg-agri-50 text-agri-900 hover:bg-agri-100 border border-agri-200 transition-colors farmer-touch-target flex items-center justify-center"
+                className="p-2.5 rounded-xl bg-agri-50 text-agri-900 hover:bg-agri-100 border border-agri-200 transition-colors farmer-touch-target flex items-center justify-center cursor-pointer"
                 aria-label="Toggle navigation menu"
               >
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -159,51 +136,37 @@ export const Navbar = () => {
             <div className="space-y-1">
               <button
                 onClick={() => handleNavClick('#home')}
-                className="w-full flex items-center justify-between p-3.5 rounded-xl text-lg font-bold text-stone-800 hover:bg-agri-50 hover:text-agri-900 farmer-touch-target"
+                className="w-full flex items-center justify-between p-3.5 rounded-xl text-lg font-bold text-stone-800 hover:bg-agri-50 hover:text-agri-900 farmer-touch-target cursor-pointer"
               >
-                <span>{t('nav.home', 'Home')}</span>
+                <span>Home</span>
                 <ChevronRight className="w-5 h-5 text-stone-400" />
               </button>
               <button
                 onClick={() => handleNavClick('#how-it-works')}
-                className="w-full flex items-center justify-between p-3.5 rounded-xl text-lg font-bold text-stone-800 hover:bg-agri-50 hover:text-agri-900 farmer-touch-target"
+                className="w-full flex items-center justify-between p-3.5 rounded-xl text-lg font-bold text-stone-800 hover:bg-agri-50 hover:text-agri-900 farmer-touch-target cursor-pointer"
               >
-                <span>{t('nav.howItWorks', 'How It Works')}</span>
+                <span>How It Works</span>
                 <ChevronRight className="w-5 h-5 text-stone-400" />
               </button>
               <button
                 onClick={() => handleNavClick('#features')}
-                className="w-full flex items-center justify-between p-3.5 rounded-xl text-lg font-bold text-stone-800 hover:bg-agri-50 hover:text-agri-900 farmer-touch-target"
+                className="w-full flex items-center justify-between p-3.5 rounded-xl text-lg font-bold text-stone-800 hover:bg-agri-50 hover:text-agri-900 farmer-touch-target cursor-pointer"
               >
-                <span>{t('nav.features', 'Features')}</span>
+                <span>Features</span>
                 <ChevronRight className="w-5 h-5 text-stone-400" />
               </button>
               <button
                 onClick={() => handleNavClick('#about')}
-                className="w-full flex items-center justify-between p-3.5 rounded-xl text-lg font-bold text-stone-800 hover:bg-agri-50 hover:text-agri-900 farmer-touch-target"
+                className="w-full flex items-center justify-between p-3.5 rounded-xl text-lg font-bold text-stone-800 hover:bg-agri-50 hover:text-agri-900 farmer-touch-target cursor-pointer"
               >
-                <span>{t('nav.about', 'About')}</span>
+                <span>About</span>
                 <ChevronRight className="w-5 h-5 text-stone-400" />
               </button>
             </div>
 
             <div className="pt-2 border-t border-stone-200 space-y-3">
-              {/* Language Picker in Mobile Drawer */}
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  setLangModalOpen(true);
-                }}
-                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-agri-50 border border-agri-200 text-agri-950 font-bold farmer-touch-target"
-              >
-                <div className="flex items-center gap-2">
-                  <Globe className="w-5 h-5 text-agri-700" />
-                  <span>Language / भाषा: {activeLanguageObj.nativeName}</span>
-                </div>
-                <span className="text-xs bg-agri-200 px-2 py-1 rounded text-agri-800 font-bold">
-                  Change
-                </span>
-              </button>
+              {/* Google Translate Picker in Mobile Drawer */}
+              <GoogleTranslateDropdown variant="mobile" />
 
               {isAuthenticated ? (
                 <div className="space-y-2">
@@ -232,7 +195,7 @@ export const Navbar = () => {
                     className="w-full"
                   >
                     <Button variant="outline" size="lg" fullWidth>
-                      {t('nav.login', 'Login')}
+                      Login
                     </Button>
                   </Link>
                   <Link
@@ -241,7 +204,7 @@ export const Navbar = () => {
                     className="w-full"
                   >
                     <Button variant="primary" size="lg" fullWidth>
-                      {t('nav.getStarted', 'Get Started')}
+                      Get Started
                     </Button>
                   </Link>
                 </div>
@@ -250,12 +213,6 @@ export const Navbar = () => {
           </div>
         )}
       </header>
-
-      {/* Language Selection Modal */}
-      <LanguageModal
-        isOpen={langModalOpen}
-        onClose={() => setLangModalOpen(false)}
-      />
     </>
   );
 };

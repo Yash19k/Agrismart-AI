@@ -92,3 +92,50 @@
 .animate-scan-line {
   animation: scan-line 2s ease-in-out infinite;
 }
+
+/* ── Google Translate Overrides & UI Polish ── */
+/* Keep banner frame off-screen and invisible without display:none so translation worker continues running */
+.goog-te-banner-frame,
+iframe.goog-te-banner-frame,
+.goog-te-banner-frame.skiptranslate {
+  visibility: hidden !important;
+  position: fixed !important;
+  top: -9999px !important;
+  left: -9999px !important;
+  width: 1px !important;
+  height: 1px !important;
+  border: none !important;
+  opacity: 0 !important;
+  z-index: -9999 !important;
+}
+
+body {
+  top: 0px !important;
+  position: static !important;
+}
+
+#google_translate_element {
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+}
+
+.goog-tooltip,
+.goog-tooltip:hover,
+#goog-gt-tt,
+.goog-te-balloon-frame {
+  display: none !important;
+}
+
+.goog-text-highlight {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.notranslate {
+  translate: no !important;
+}

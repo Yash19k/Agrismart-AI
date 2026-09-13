@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import authService from '../services/authService';
+import { setAuthToken } from '../services/api';
 
 const AuthContext = createContext();
 
@@ -15,19 +16,24 @@ const DEFAULT_FARM = {
 };
 
 export const AuthProvider = ({ children }) => {
-  // Use sessionStorage so running/opening the application fresh always requires login
-  const [user, setUser] = useState(() => {
+  const [token, setToken] = useState(() => {
     try {
-      const saved = sessionStorage.getItem('agrishield_user');
-      return saved ? JSON.parse(saved) : null;
+      const savedToken = sessionStorage.getItem('agrishield_token') || localStorage.getItem('agrishield_token');
+      if (savedToken && savedToken.startsWith('mock-')) {
+        sessionStorage.removeItem('agrishield_token');
+        localStorage.removeItem('agrishield_token');
+        return null;
+      }
+      return savedToken || null;
     } catch {
       return null;
     }
   });
 
-  const [token, setToken] = useState(() => {
+  const [user, setUser] = useState(() => {
     try {
-      return sessionStorage.getItem('agrishield_token') || null;
+      const saved = sessionStorage.getItem('agrishield_user') || localStorage.getItem('agrishield_user');
+      return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
     }
@@ -35,49 +41,47 @@ export const AuthProvider = ({ children }) => {
 
   const [loading, setLoading] = useState(false);
 
-  // Synchronize sessionStorage and localStorage for API interceptor
+  // Sync token to Axios header
   useEffect(() => {
-    if (token && user) {
-      sessionStorage.setItem('agrishield_token', token);
-      sessionStorage.setItem('agrishield_user', JSON.stringify(user));
-      localStorage.setItem('agrishield_token', token);
-      localStorage.setItem('agrishield_user', JSON.stringify(user));
-    } else {
-      sessionStorage.removeItem('agrishield_token');
-      sessionStorage.removeItem('agrishield_user');
-      localStorage.removeItem('agrishield_token');
-      localStorage.removeItem('agrishield_user');
+    if (token) {
+      setAuthToken(token);
     }
-  }, [token, user]);
+  }, [token]);
 
   const login = async (email, password) => {
     setLoading(true);
     try {
-      const response = await authService.login(email, password);
-      const accessToken = response.access || 'mock-jwt-token-agrishield';
+      const response = await authService.login(email.trim(), password);
+      const accessToken = response.access;
+      if (!accessToken || accessToken.startsWith('mock-')) {
+        throw new Error('Authentication failed: Valid access token was not received from server.');
+      }
+
       const userData = response.user || {
         id: 'usr_' + Date.now(),
         name: email.split('@')[0] || 'Farmer Friend',
-        email: email,
+        email: email.trim(),
         isOnboarded: true,
         farm: DEFAULT_FARM,
       };
+
+      // SYNCHRONOUSLY store token in Axios defaults and storage BEFORE navigation
+      setAuthToken(accessToken);
+      sessionStorage.setItem('agrishield_user', JSON.stringify(userData));
+      localStorage.setItem('agrishield_user', JSON.stringify(userData));
+
       setToken(accessToken);
       setUser(userData);
-      return { success: true };
+      return { success: true, user: userData };
     } catch (error) {
-      console.warn('API login failed, checking fallback', error);
-      const mockToken = 'mock-jwt-token-' + Date.now();
-      const mockUser = {
-        id: 'usr_' + Date.now(),
-        name: email.includes('@') ? email.split('@')[0] : 'Farmer ' + email,
-        email: email,
-        isOnboarded: true,
-        farm: DEFAULT_FARM,
-      };
-      setToken(mockToken);
-      setUser(mockUser);
-      return { success: true };
+      console.error('API login failed:', error);
+      setAuthToken(null);
+      sessionStorage.removeItem('agrishield_user');
+      localStorage.removeItem('agrishield_user');
+      setToken(null);
+      setUser(null);
+      // Explicitly throw so LoginPage displays the real error to the user
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -87,11 +91,10 @@ export const AuthProvider = ({ children }) => {
   const register = async (name, email, password) => {
     setLoading(true);
     try {
-      const response = await authService.register(name, email, password);
-      // Explicitly DO NOT set token or user so user must log in after registering
+      const response = await authService.register(name.trim(), email.trim(), password);
       return { success: true, data: response };
     } catch (error) {
-      console.warn('API register error:', error);
+      console.error('API register error:', error);
       throw error;
     } finally {
       setLoading(false);
@@ -99,12 +102,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    setAuthToken(null);
+    sessionStorage.removeItem('agrishield_user');
+    localStorage.removeItem('agrishield_user');
     setToken(null);
     setUser(null);
-    sessionStorage.removeItem('agrishield_token');
-    sessionStorage.removeItem('agrishield_user');
-    localStorage.removeItem('agrishield_token');
-    localStorage.removeItem('agrishield_user');
   };
 
   return (
@@ -125,3 +127,4 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
+

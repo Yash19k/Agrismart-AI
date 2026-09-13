@@ -10,11 +10,37 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// Request interceptor to attach JWT token
+/**
+ * Helper to update Axios authorization header and sync storage synchronously.
+ */
+export const setAuthToken = (token) => {
+  if (token && typeof token === 'string' && !token.startsWith('mock-')) {
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    sessionStorage.setItem('agrishield_token', token);
+    localStorage.setItem('agrishield_token', token);
+  } else {
+    delete api.defaults.headers.common['Authorization'];
+    sessionStorage.removeItem('agrishield_token');
+    localStorage.removeItem('agrishield_token');
+  }
+};
+
+// Initialize with any saved real token (and purge any old mock tokens)
+const initialToken = sessionStorage.getItem('agrishield_token') || localStorage.getItem('agrishield_token');
+if (initialToken && !initialToken.startsWith('mock-')) {
+  api.defaults.headers.common['Authorization'] = `Bearer ${initialToken}`;
+} else if (initialToken && initialToken.startsWith('mock-')) {
+  sessionStorage.removeItem('agrishield_token');
+  sessionStorage.removeItem('agrishield_user');
+  localStorage.removeItem('agrishield_token');
+  localStorage.removeItem('agrishield_user');
+}
+
+// Request interceptor to ensure current token is always attached
 api.interceptors.request.use(
   (config) => {
     const token = sessionStorage.getItem('agrishield_token') || localStorage.getItem('agrishield_token');
-    if (token) {
+    if (token && !token.startsWith('mock-')) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -31,15 +57,37 @@ api.interceptors.response.use(
     if (error.response) {
       if (error.response.status === 401) {
         friendlyMessage = 'Your session has expired. Please log in again.';
+        delete api.defaults.headers.common['Authorization'];
         sessionStorage.removeItem('agrishield_token');
         sessionStorage.removeItem('agrishield_user');
         localStorage.removeItem('agrishield_token');
         localStorage.removeItem('agrishield_user');
-        if (window.location.pathname !== '/login' && window.location.pathname !== '/signup') {
+        
+        const path = window.location.pathname;
+        if (path !== '/login' && path !== '/signup' && path !== '/') {
           window.location.href = '/login';
         }
       } else if (error.response.status === 400 || error.response.status === 422) {
-        friendlyMessage = error.response.data?.detail || error.response.data?.message || 'Please check the information entered and try again.';
+        const d = error.response.data;
+        if (d?.detail) {
+          friendlyMessage = d.detail;
+        } else if (d?.message) {
+          friendlyMessage = d.message;
+        } else if (Array.isArray(d?.non_field_errors) && d.non_field_errors.length > 0) {
+          friendlyMessage = d.non_field_errors[0];
+        } else if (typeof d === 'object' && d !== null) {
+          const firstKey = Object.keys(d)[0];
+          const val = d[firstKey];
+          if (Array.isArray(val) && val.length > 0) {
+            friendlyMessage = val[0];
+          } else if (typeof val === 'string') {
+            friendlyMessage = val;
+          } else {
+            friendlyMessage = 'Please check the information entered and try again.';
+          }
+        } else {
+          friendlyMessage = 'Please check the information entered and try again.';
+        }
       } else if (error.response.status >= 500) {
         friendlyMessage = 'Our farm advisory servers are temporarily busy. Please try again in a few moments.';
       }
@@ -51,3 +99,4 @@ api.interceptors.response.use(
 );
 
 export default api;
+

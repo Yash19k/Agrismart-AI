@@ -26,7 +26,56 @@ export async function searchLocation(query, count = 5) {
   return res.data?.results || [];
 }
 
+/**
+ * Check Weather Intelligence health & active provider.
+ */
+export async function getWeatherHealth() {
+  const res = await client.get('/weather/health/');
+  return res.data;
+}
+
+/**
+ * Get unified normalized weather context.
+ */
+export async function getWeatherContext({ lat, lon, farmId } = {}) {
+  const params = {};
+  if (lat != null) params.lat = lat;
+  if (lon != null) params.lon = lon;
+  if (farmId != null) params.farm_id = farmId;
+  const res = await client.get('/weather/context/', { params });
+  return res.data;
+}
+
+/**
+ * Run full weather intelligence analysis.
+ */
+export async function analyzeWeather(payload) {
+  const res = await client.post('/weather/analyze/', payload);
+  return res.data;
+}
+
+/**
+ * Get crop-specific environmental weather context.
+ */
+export async function getCropWeatherContext(lat, lon) {
+  const res = await client.get('/weather/crop-context/', { params: { lat, lon } });
+  return res.data;
+}
+
+/**
+ * Get irrigation-specific weather context for Module B.
+ */
+export async function getIrrigationWeatherContext(lat, lon) {
+  const res = await client.get('/weather/irrigation-context/', { params: { lat, lon } });
+  return res.data;
+}
+
 export default {
   getWeather,
   searchLocation,
+  getWeatherHealth,
+  getWeatherContext,
+  analyzeWeather,
+  getCropWeatherContext,
+  getIrrigationWeatherContext,
 };

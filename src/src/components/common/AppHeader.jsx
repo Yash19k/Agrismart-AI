@@ -12,6 +12,7 @@ import {
   CloudSun
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { GoogleTranslateDropdown } from './GoogleTranslate';
 
 const MODULE_ICONS = {
   dashboard: { icon: LayoutDashboard, color: 'text-emerald-600', bg: 'bg-emerald-50' },
@@ -87,7 +88,9 @@ export default function AppHeader({
       )}
 
       {/* Right: Actions, Badges & Logged-in Farmer Profile */}
-      <div className="flex items-center gap-3 flex-shrink-0 ml-auto">
+      <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 ml-auto">
+        <GoogleTranslateDropdown variant="appHeader" />
+
         {rightActions}
 
         {badgeText && (

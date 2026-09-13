@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/useTranslation';
 import { Sprout, Globe, ShieldCheck, Heart, PhoneCall, Mail } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import LanguageModal from './LanguageModal';

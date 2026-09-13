@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../i18n/useTranslation';
 import { Sprout, Mail, Lock, LogIn, X, CheckCircle, AlertTriangle, KeyRound } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import authService from '../services/authService';
@@ -201,6 +201,29 @@ export const LoginPage = () => {
               {t('auth.loginBtn', 'Login')}
             </Button>
           </form>
+
+          {/* Quick Demo Credentials */}
+          <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 text-xs text-stone-600 space-y-2">
+            <div className="font-bold text-stone-700 flex items-center justify-between">
+              <span>🌾 Quick Test Accounts:</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setFormData({ email: 'daksh@gmail.com', password: 'daksh123' })}
+                className="px-2.5 py-1.5 rounded-xl bg-white border border-stone-300 font-semibold text-stone-800 hover:border-agri-600 hover:text-agri-700 transition-colors shadow-xs"
+              >
+                daksh@gmail.com (Active Farm)
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ email: 'farmer@test.com', password: 'password123' })}
+                className="px-2.5 py-1.5 rounded-xl bg-white border border-stone-300 font-semibold text-stone-800 hover:border-agri-600 hover:text-agri-700 transition-colors shadow-xs"
+              >
+                farmer@test.com
+              </button>
+            </div>
+          </div>
 
           {/* Switch to Signup */}
           <div className="text-center pt-2 border-t border-stone-200 text-sm font-semibold text-stone-600">
