@@ -1,0 +1,152 @@
+[
+  {
+    "id": "kb-tom-eb-01",
+    "crop": "Tomato",
+    "disease": "Early Blight",
+    "topic": "disease_management",
+    "title": "Integrated Management of Tomato Early Blight (Alternaria solani)",
+    "source": "ICAR — Indian Institute of Horticultural Research (IIHR)",
+    "url": "https://agritech.tnau.ac.in/crop_protection/crop_prot_crop_diseases_veg_tomato_1.html",
+    "content": "Early blight caused by Alternaria solani produces characteristic dark brown circular spots with concentric target-board rings on older foliage. Disease intensifies under warm temperatures (24–30°C) and prolonged relative humidity exceeding 80%. Field management requires sanitizing tools, removing lower infected leaves to reduce ground-level fungal inoculum, and maintaining open row spacing for canopy ventilation. Avoid overhead sprinkling as leaf wetness for more than 2 hours facilitates spore germination."
+  },
+  {
+    "id": "kb-tom-eb-02",
+    "crop": "Tomato",
+    "disease": "Early Blight",
+    "topic": "irrigation",
+    "title": "Irrigation and Microclimate Control for Tomato Blight Prevention",
+    "source": "Tamil Nadu Agricultural University (TNAU) Agritech Portal",
+    "url": "https://agritech.tnau.ac.in/agriculture/agri_irrigation_tomato.html",
+    "content": "Irrigation scheduling directly controls leaf wetness duration. Drip irrigation placed under mulching is strongly recommended over overhead sprinkler systems to prevent splashing Alternaria conidia. When rain probability exceeds 60% or morning relative humidity is above 80%, scheduled irrigation must be delayed by 24 to 48 hours to avert soil waterlogging and excessive root-zone saturation."
+  },
+  {
+    "id": "kb-tom-eb-03",
+    "crop": "Tomato",
+    "disease": "Early Blight",
+    "topic": "chemical_control",
+    "title": "Fungicide Spray Guidelines for Alternaria in Solanaceous Vegetables",
+    "source": "Anand Agricultural University (AAU) Crop Protection Advisory",
+    "url": "https://www.aau.in/extension-education/crop-protection-guidelines",
+    "content": "For moderate to severe Early Blight outbreaks, spray protective contact fungicides such as Mancozeb 75% WP @ 2 g/L or Chlorothalonil @ 2 g/L at the first appearance of leaf lesions. Under high disease pressure or continuous wet spells, systemic fungicides such as Azoxystrobin 23% SC @ 1 mL/L or Difenoconazole 25% EC @ 0.5 mL/L should be applied. Observe a 7–10 day pre-harvest interval (PHI) and follow label safety directions."
+  },
+  {
+    "id": "kb-tom-eb-04",
+    "crop": "Tomato",
+    "disease": "Early Blight",
+    "topic": "organic_control",
+    "title": "Organic and Biological Management of Alternaria Leaf Spot",
+    "source": "National Centre for Organic Farming (NCOF, India)",
+    "url": "https://ncof.dacnet.nic.in/organic-management-guidelines",
+    "content": "For organic tomato production, apply Pseudomonas fluorescens or Trichoderma viride @ 5 g/L as a foliar spray every 10–14 days. Copper oxychloride or Bordeaux mixture (1%) provides broad-spectrum prophylactic protection against fungal sporulation without synthetic residues. Mulching with paddy straw suppresses soil splash conidia."
+  },
+  {
+    "id": "kb-pot-lb-01",
+    "crop": "Potato",
+    "disease": "Late Blight",
+    "topic": "disease_management",
+    "title": "Late Blight (Phytophthora infestans) Epidemic Management in Potatoes",
+    "source": "ICAR — Central Potato Research Institute (CPRI)",
+    "url": "https://cpri.icar.gov.in/late-blight-management",
+    "content": "Late blight is a destructive oomycete disease thriving in cool (12–22°C), highly humid (>85%) weather accompanied by fog, cloudiness, or intermittent showers. Symptoms present as water-soaked irregular dark green to black lesions rapidly expanding from leaf tips and margins with a delicate white mold on leaf undersides. Prompt destruction of infected haulms and prophylactic fungicide sprays are critical to prevent tuber infection."
+  },
+  {
+    "id": "kb-pot-lb-02",
+    "crop": "Potato",
+    "disease": "Late Blight",
+    "topic": "irrigation",
+    "title": "Moisture Management and Late Blight Risk Regulation in Potato",
+    "source": "Food and Agriculture Organization (FAO) — Potato Production Manual",
+    "url": "https://www.fao.org/land-water/water/water-management/irrigation/en/",
+    "content": "Furrow or drip irrigation must be calibrated to prevent standing moisture along ridge crests. Do not irrigate before forecasted rain or during heavy cloud cover. Leaf wetness duration exceeding 6 continuous hours during cool mornings triggers severe Phytophthora sporulation."
+  },
+  {
+    "id": "kb-corn-nlb-01",
+    "crop": "Corn",
+    "disease": "Northern Corn Leaf Blight",
+    "topic": "disease_management",
+    "title": "Northern Corn Leaf Blight (Exserohilum turcicum) Control Strategies",
+    "source": "ICAR — Indian Institute of Maize Research (IIMR)",
+    "url": "https://iimr.icar.gov.in/maize-diseases",
+    "content": "Northern corn leaf blight causes elliptical or cigar-shaped grayish-green lesions (2.5 to 15 cm long) on leaves. Infection starts on lower leaves and progresses upward. If lesions reach the ear leaf or higher before silking, grain fill is severely curtailed. Ensure balanced potassium fertilization to fortify cell walls against fungal penetration."
+  },
+  {
+    "id": "kb-grape-br-01",
+    "crop": "Grape",
+    "disease": "Black Rot",
+    "topic": "disease_management",
+    "title": "Black Rot (Guignardia bidwellii) Canopy Management in Vineyards",
+    "source": "ICAR — National Research Centre for Grapes (NRCG)",
+    "url": "https://nrcgrapes.icar.gov.in/crop-protection-black-rot",
+    "content": "Grape black rot attacks leaves, canes, and fruit clusters. Foliar symptoms emerge as small, circular, reddish-brown spots with dark margins containing minute black pycnidia fruiting bodies. Prune dense interior vine canopies to maximize sun exposure and air movement, which speeds up leaf drying after rainfall."
+  },
+  {
+    "id": "kb-cot-hl-01",
+    "crop": "Cotton",
+    "disease": "Healthy Cotton Leaf",
+    "topic": "crop_care",
+    "title": "Best Agronomic Practices for Sustaining Foliar Health in Cotton",
+    "source": "ICAR — Central Institute for Cotton Research (CICR)",
+    "url": "https://cicr.icar.gov.in/cotton-crop-health",
+    "content": "A healthy cotton leaf exhibits uniform green chlorophyll lamina with crisp, unblemished venation. To maintain optimal foliar health during vegetative and squaring phases, apply balanced NPK fertigation (recommended 120:60:60 kg/ha split doses), monitor weekly for sucking pests (jassids and thrips), and maintain calibrated root-zone drip moisture."
+  },
+  {
+    "id": "kb-gen-irr-01",
+    "crop": "General",
+    "disease": "All",
+    "topic": "irrigation",
+    "title": "Scientific Principles of Smart Agricultural Irrigation and Weather Response",
+    "source": "FAO & Ministry of Agriculture & Farmers Welfare, India",
+    "url": "https://www.fao.org/land-water/water/water-management/irrigation/en/",
+    "content": "Irrigation must be synchronized with atmospheric evapotranspiration (ET₀) and forecasted precipitation. When forecast rain probability is above 60% or soil moisture is above 65%, irrigation should be postponed. Over-irrigation creates anaerobic root stress, leaches mobile soil nitrates, and raises field humidity to levels that promote fungal spore release."
+  },
+  {
+    "id": "kb-gen-wx-01",
+    "crop": "General",
+    "disease": "All",
+    "topic": "weather_impact",
+    "title": "Weather Factors Driving Plant Disease Sporulation and Vector Dynamics",
+    "source": "Indian Meteorological Department (IMD) Agromet Advisory Services",
+    "url": "https://mausam.imd.gov.in/responsive/agromet.php",
+    "content": "Relative humidity above 75% coupled with temperatures between 20°C and 32°C represents the critical epidemiologic window for solanaceous and cucurbit fungal diseases. High wind speeds (>25 km/h) make foliar pesticide spraying hazardous due to droplet drift, whereas stagnant air in dense canopies promotes localized microclimate humidity pockets."
+  },
+  {
+    "id": "kb-gen-tom-irr-01",
+    "crop": "Tomato",
+    "disease": "None",
+    "topic": "irrigation",
+    "title": "Tomato Irrigation Scheduling and Water Requirements Across Growth Stages",
+    "source": "ICAR — Indian Institute of Horticultural Research (IIHR)",
+    "url": "https://www.iihr.res.in/package-practices-tomato",
+    "content": "Tomatoes generally require 25 to 35 mm of water weekly, depending on temperature and soil type. In loamy and black soils, watering every 3 to 5 days using drip systems at the root zone is optimal. During peak flowering and fruit development, consistent soil moisture is crucial to avoid blossom end rot and fruit cracking. Always check the top 5–7 cm of soil; water only if the soil feels dry and crumbly."
+  },
+  {
+    "id": "kb-gen-fungal-prev-01",
+    "crop": "General",
+    "disease": "General Fungal",
+    "topic": "disease_prevention",
+    "title": "Comprehensive Guidelines for Preventing Fungal Leaf Diseases in Field Crops",
+    "source": "Tamil Nadu Agricultural University (TNAU) Plant Pathology Department",
+    "url": "https://agritech.tnau.ac.in/crop_protection/crop_prot_crop_diseases.html",
+    "content": "Fungal disease prevention relies on cultural and biological sanitation: (1) Ensure proper row spacing and canopy pruning to allow airflow and rapid foliage drying. (2) Avoid overhead sprinkling—irrigate at the base of plants in the morning so surface moisture evaporates quickly. (3) Practice crop rotation with non-host crops. (4) Apply prophylactic bio-agents like Trichoderma viride or Pseudomonas fluorescens to soil and foliage before onset of monsoon humidity."
+  },
+  {
+    "id": "kb-gen-soil-check-01",
+    "crop": "General",
+    "disease": "None",
+    "topic": "soil_management",
+    "title": "Practical Field Methods for Testing Soil Moisture Before Watering",
+    "source": "Food and Agriculture Organization (FAO) Land & Water Division",
+    "url": "https://www.fao.org/land-water/water/water-management/irrigation/en/",
+    "content": "Before switching on irrigation pumps, conduct the hand-feel test: probe 10 cm into the root zone and squeeze a ball of soil. If it forms a stable ball and leaves moisture on hands, available water is above 60% and irrigation should be delayed. If it crumbles loosely, root moisture is depleted. Cross-reference with 24-hour weather forecasts to avoid irrigating immediately before rain."
+  },
+  {
+    "id": "kb-gen-whatif-01",
+    "crop": "General",
+    "disease": "All",
+    "topic": "climate_adaptation",
+    "title": "Farm Decision Matrix for Rainfall and Temperature Spikes",
+    "source": "Indian Council of Agricultural Research (ICAR) Agro-Advisory Cell",
+    "url": "https://icar.org.in/content/agro-advisory-services",
+    "content": "If sudden rainfall occurs after a dry spell, ensure active drainage furrows to prevent root hypoxia and waterlogging. If temperatures suddenly spike above 35°C, apply light evening cooling irrigations to dampen heat stress, but do not spray systemic fungicides during peak midday sun as leaf cuticle burn may result."
+  }
+]

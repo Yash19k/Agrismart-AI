@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { getDashboard } from '../api/dashboard';
 import { createFarm, searchLocation } from '../api/farms';
+import { sendChatMessage } from '../api/assistant';
 import AppSidebar from '../components/common/AppSidebar';
 import AppHeader from '../components/common/AppHeader';
 
@@ -89,6 +90,9 @@ const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [chatMsg, setChatMsg] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
+  const [chatLoading, setChatLoading] = useState(false);
+  const [agronomistDrawerOpen, setAgronomistDrawerOpen] = useState(false);
+  const [agronomistQuery, setAgronomistQuery] = useState(null);
 
   // Live real data states from API
   const [dashboardData, setDashboardData] = useState(null);
@@ -221,12 +225,40 @@ const Dashboard = () => {
     }
   };
 
-  const sendChat = () => {
-    if (!chatMsg.trim()) return;
-    setChatHistory(h => [...h, { role: 'user', text: chatMsg }]);
-    const currentMsg = chatMsg;
-    setChatMsg('');
-    setTimeout(() => {
+  const sendChat = async (presetText = null) => {
+    const textToSend = presetText || chatMsg;
+    if (!textToSend.trim() || chatLoading) return;
+
+    const userMessage = textToSend.trim();
+    setChatHistory(h => [...h, { role: 'user', text: userMessage }]);
+    if (!presetText) setChatMsg('');
+    setChatLoading(true);
+
+    try {
+      const response = await sendChatMessage({
+        message: userMessage,
+        context: {
+          crop: dashboardData?.farm?.crop || 'Tomato',
+          farm_id: dashboardData?.farm?.id,
+          weather: {
+            temperature: dashboardData?.current_weather?.temperature,
+            humidity: dashboardData?.current_weather?.humidity,
+            rain_probability: dashboardData?.forecast?.[0]?.rain_probability || 0,
+            condition: dashboardData?.current_weather?.condition,
+          }
+        },
+        language: 'en'
+      });
+
+      setChatHistory(h => [
+        ...h,
+        {
+          role: 'ai',
+          text: response.answer || 'No recommendation received.',
+        }
+      ]);
+    } catch (err) {
+      console.error('Assistant chat failed:', err);
       const crop = dashboardData?.farm?.crop || 'crops';
       const temp = dashboardData?.current_weather?.temperature ? `${dashboardData.current_weather.temperature}°C` : 'current weather';
       setChatHistory(h => [
@@ -236,7 +268,9 @@ const Dashboard = () => {
           text: `Based on your live farm data (${crop} under ${temp}): ${dashboardData?.irrigation?.recommendation || 'Regular monitoring recommended.'}`
         }
       ]);
-    }, 600);
+    } finally {
+      setChatLoading(false);
+    }
   };
 
   // Soil moisture label helper
@@ -677,15 +711,20 @@ const Dashboard = () => {
 
                 {/* 3. AI Farm Assistant */}
                 <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex flex-col">
-                  <SectionHeader title="🤖 AI Farm Assistant" subtitle="Ask questions regarding your crops, weather conditions, or irrigation schedule." />
+                  <SectionHeader
+                    title="🤖 AI Farm Assistant"
+                    subtitle="Ask questions regarding your crops, weather conditions, or irrigation schedule."
+                    action="Open AI Agronomist →"
+                    onAction={() => navigate('/assistant')}
+                  />
 
                   {/* Chat messages */}
                   {chatHistory.length > 0 && (
-                    <div className="mb-3 space-y-2 max-h-36 overflow-y-auto pr-1">
+                    <div className="mb-3 space-y-2 max-h-48 overflow-y-auto pr-1">
                       {chatHistory.map((m, i) => (
                         <div
                           key={i}
-                          className={`text-xs rounded-xl px-3 py-2 max-w-[90%] font-semibold ${m.role === 'user' ? 'bg-emerald-100 text-emerald-900 ml-auto' : 'bg-gray-100 text-gray-800'
+                          className={`text-xs rounded-xl px-3.5 py-2.5 max-w-[90%] font-semibold leading-relaxed ${m.role === 'user' ? 'bg-emerald-100 text-emerald-900 ml-auto' : 'bg-gray-100 text-gray-800'
                             }`}
                         >
                           {m.text}
@@ -703,10 +742,12 @@ const Dashboard = () => {
                       onKeyDown={(e) => e.key === 'Enter' && sendChat()}
                       placeholder="E.g. What is the best watering time today or how to protect crops?"
                       className="flex-1 text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 focus:border-emerald-400 focus:outline-none bg-gray-50"
+                      disabled={chatLoading}
                     />
                     <button
-                      onClick={sendChat}
-                      className="w-10 h-10 rounded-xl bg-emerald-700 flex items-center justify-center hover:bg-emerald-800 transition-colors flex-shrink-0"
+                      onClick={() => sendChat()}
+                      disabled={chatLoading}
+                      className="w-10 h-10 rounded-xl bg-emerald-700 flex items-center justify-center hover:bg-emerald-800 transition-colors flex-shrink-0 disabled:opacity-50 cursor-pointer"
                     >
                       <Send className="w-4 h-4 text-white" />
                     </button>
@@ -717,8 +758,8 @@ const Dashboard = () => {
                     {['Best time to irrigate', 'Suggest crops for my soil', 'Explain rainfall outlook', 'Check temperature risk'].map(p => (
                       <button
                         key={p}
-                        onClick={() => { setChatMsg(p); }}
-                        className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 hover:bg-emerald-100 hover:text-emerald-800 transition-colors"
+                        onClick={() => navigate('/assistant', { state: { initialQuery: p } })}
+                        className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 hover:bg-emerald-100 hover:text-emerald-800 transition-colors cursor-pointer"
                       >
                         {p}
                       </button>

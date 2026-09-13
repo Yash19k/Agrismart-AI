@@ -46,6 +46,7 @@ import IrrigationAdvice from '../components/disease/IrrigationAdvice';
 import ActionTimeline from '../components/disease/ActionTimeline';
 import AgronomistSummary from '../components/disease/AgronomistSummary';
 import ConfidenceBreakdown from '../components/disease/ConfidenceBreakdown';
+import AgriSmartAgronomistCard from '../components/assistant/AgriSmartAgronomistCard';
 
 export default function DiseaseDetectionPage() {
   const navigate = useNavigate();
@@ -58,6 +59,14 @@ export default function DiseaseDetectionPage() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [analysisResult, setAnalysisResult] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const handleOpenAssistant = (query = null) => {
+    navigate('/assistant', {
+      state: {
+        assessmentContext: analysisResult,
+        initialQuery: query,
+      },
+    });
+  };
 
   const [downloading, setDownloading] = useState(false);
 
@@ -312,6 +321,17 @@ export default function DiseaseDetectionPage() {
                   <span>Analyzed on {analysisResult.analyzedAt}</span>
                 </div>
               </div>
+
+              {/* Grounded AI Agronomist Feature Card */}
+              <AgriSmartAgronomistCard
+                prediction={analysisResult.prediction}
+                cropHealth={analysisResult.cropHealth}
+                severity={analysisResult.severity}
+                spreadRisk={analysisResult.spreadRisk}
+                weather={analysisResult.weather}
+                onOpenAssistant={() => handleOpenAssistant()}
+                onQuickQuery={(query) => handleOpenAssistant(query)}
+              />
 
               {/* Row 1: Top Specimen Diagnosis (8 cols) & Threat Assessment Stack (Severity + Spread Risk, 4 cols) */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
