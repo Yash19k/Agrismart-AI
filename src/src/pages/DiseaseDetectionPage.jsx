@@ -35,7 +35,6 @@ import ImageUpload from '../components/disease/ImageUpload';
 import ImagePreview from '../components/disease/ImagePreview';
 import AnalysisLoader from '../components/disease/AnalysisLoader';
 import PredictionCard from '../components/disease/PredictionCard';
-import CropHealthCard from '../components/disease/CropHealthCard';
 import SeverityIndicator from '../components/disease/SeverityIndicator';
 import SpreadRiskCard from '../components/disease/SpreadRiskCard';
 import WeatherIntelligence from '../components/disease/WeatherIntelligence';
@@ -269,7 +268,7 @@ export default function DiseaseDetectionPage() {
 
           {/* ── FLOW CONTROLLER ── */}
           {stage === 'upload' && (
-            <div className="max-w-2xl mx-auto py-6">
+            <div className="max-w-6xl mx-auto py-4 sm:py-6">
               <ImageUpload onImageSelected={handleImageSelected} />
             </div>
           )}
@@ -314,8 +313,8 @@ export default function DiseaseDetectionPage() {
                 </div>
               </div>
 
-              {/* Row 1: Top Specimen Prediction Card (approx 7 cols) & Crop Health Score (approx 5 cols) */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+              {/* Row 1: Top Specimen Diagnosis (8 cols) & Threat Assessment Stack (Severity + Spread Risk, 4 cols) */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
                 <div className="lg:col-span-8">
                   <PredictionCard
                     prediction={analysisResult.prediction}
@@ -324,26 +323,21 @@ export default function DiseaseDetectionPage() {
                     fileSize={analysisResult.fileSize}
                   />
                 </div>
-                <div className="lg:col-span-4">
-                  <CropHealthCard health={analysisResult.cropHealth} />
+                <div className="lg:col-span-4 flex flex-col gap-3.5">
+                  <SeverityIndicator severity={analysisResult.severity} />
+                  <SpreadRiskCard spreadRisk={analysisResult.spreadRisk} />
                 </div>
               </div>
 
-              {/* Row 2: 3 Cards (Severity, Spread Risk, Weather Intelligence) */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <SeverityIndicator severity={analysisResult.severity} />
-                <SpreadRiskCard spreadRisk={analysisResult.spreadRisk} />
+              {/* Row 2: 4 In-Depth Clinical & Environmental Cards (Weather, Disease Biology, Symptoms, Causes) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <WeatherIntelligence weather={analysisResult.weather} />
-              </div>
-
-              {/* Row 3: 3 Cards (About Disease, Common Symptoms, Possible Causes) */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <DiseaseInformation diseaseInfo={analysisResult.diseaseInformation} />
                 <SymptomsList symptoms={analysisResult.symptoms} />
                 <CausesList causes={analysisResult.possibleCauses} />
               </div>
 
-              {/* Row 4: 2 Cards (7-Day Disease Progression Forecast & Smart Irrigation Advice) */}
+              {/* Row 3: 2 Cards (7-Day Disease Progression Forecast & Smart Irrigation Advice) */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                 <div className="lg:col-span-8">
                   <DiseaseForecast />
@@ -353,7 +347,7 @@ export default function DiseaseDetectionPage() {
                 </div>
               </div>
 
-              {/* Row 5: 2 Cards (Recommended Action Plan & AI Agronomist Summary) */}
+              {/* Row 4: 2 Cards (Recommended Action Plan & AI Agronomist Summary) */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                 <div className="lg:col-span-8">
                   <ActionTimeline timeline={analysisResult.actionTimeline} />

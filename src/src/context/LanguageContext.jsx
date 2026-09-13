@@ -1,35 +1,28 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { SUPPORTED_LANGUAGES } from '../i18n/config';
+import React, { createContext, useContext } from 'react';
+import { useGoogleTranslate, GOOGLE_LANGUAGES } from '../components/common/GoogleTranslate';
 
-const LanguageContext = createContext();
+const LanguageContext = createContext({
+  currentLang: 'en',
+  changeLanguage: () => {},
+  languages: GOOGLE_LANGUAGES,
+  activeLanguageObj: GOOGLE_LANGUAGES[0],
+});
 
+/**
+ * LanguageProvider
+ * Bridges to the Google Translate Website Translator widget context.
+ * Eliminates react-i18next and uses dynamic Google Translate DOM translation.
+ */
 export const LanguageProvider = ({ children }) => {
-  const { i18n } = useTranslation();
-  const [currentLang, setCurrentLang] = useState(() => {
-    return localStorage.getItem('agrishield_language') || 'en';
-  });
-
-  const changeLanguage = (code) => {
-    i18n.changeLanguage(code);
-    setCurrentLang(code);
-    localStorage.setItem('agrishield_language', code);
-    document.documentElement.lang = code;
-  };
-
-  useEffect(() => {
-    document.documentElement.lang = currentLang;
-  }, [currentLang]);
-
-  const activeLanguageObj = SUPPORTED_LANGUAGES.find((l) => l.code === currentLang) || SUPPORTED_LANGUAGES[0];
+  const { activeLang, activeLangObj, changeLanguage, languages } = useGoogleTranslate();
 
   return (
     <LanguageContext.Provider
       value={{
-        currentLang,
+        currentLang: activeLang || 'en',
         changeLanguage,
-        languages: SUPPORTED_LANGUAGES,
-        activeLanguageObj,
+        languages: languages || GOOGLE_LANGUAGES,
+        activeLanguageObj: activeLangObj || GOOGLE_LANGUAGES[0],
       }}
     >
       {children}
@@ -38,3 +31,4 @@ export const LanguageProvider = ({ children }) => {
 };
 
 export const useLanguage = () => useContext(LanguageContext);
+export default LanguageContext;

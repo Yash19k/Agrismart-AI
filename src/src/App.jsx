@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { GoogleTranslateProvider } from './components/common/GoogleTranslate';
 import { LanguageProvider } from './context/LanguageContext';
 
 import LandingPage from './pages/LandingPage';
@@ -9,8 +10,6 @@ import SignupPage from './pages/SignupPage';
 import Dashboard from './pages/Dashboard';
 import DiseaseDetectionPage from './pages/DiseaseDetectionPage';
 import IrrigationPage from './pages/IrrigationPage';
-
-import './i18n/config';
 
 // Protected route: redirect to login if not authenticated
 const ProtectedRoute = ({ children }) => {
@@ -27,8 +26,9 @@ const PublicOnlyRoute = ({ children }) => {
 export function App() {
   return (
     <BrowserRouter>
-      <LanguageProvider>
-        <AuthProvider>
+      <GoogleTranslateProvider>
+        <LanguageProvider>
+          <AuthProvider>
           <Routes>
             {/* Public routes (redirect to dashboard if logged in) */}
             <Route path="/" element={<PublicOnlyRoute><LandingPage /></PublicOnlyRoute>} />
@@ -45,7 +45,8 @@ export function App() {
           </Routes>
         </AuthProvider>
       </LanguageProvider>
-    </BrowserRouter>
+    </GoogleTranslateProvider>
+  </BrowserRouter>
   );
 }
 

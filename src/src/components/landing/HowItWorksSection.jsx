@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/useTranslation';
 import { Camera, Bot, Sparkles, CheckCircle2, ArrowRight } from 'lucide-react';
 
 export const HowItWorksSection = () => {

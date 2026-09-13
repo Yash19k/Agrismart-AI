@@ -56,12 +56,12 @@ export const LanguageModal = ({ isOpen, onClose }) => {
                     : 'border-stone-200 hover:border-agri-400 hover:bg-agri-50/50 text-stone-800'
                 }`}
               >
-                <div>
+                <div className="notranslate" translate="no">
                   <div className="text-lg font-bold text-agri-900">
                     {lang.nativeName}
                   </div>
                   <div className="text-xs font-semibold text-stone-500">
-                    {lang.name} • <span className="text-stone-400">{lang.region}</span>
+                    {lang.name}
                   </div>
                 </div>
                 {isSelected && (

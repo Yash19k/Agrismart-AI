@@ -12,6 +12,28 @@
   </head>
   <body class="bg-[#faf8f5] text-[#17392b] antialiased selection:bg-agri-200 selection:text-agri-900">
     <div id="root"></div>
+
+    <!-- Official Google Translate Website Translator Widget Anchor -->
+    <div id="google_translate_element" style="position: absolute; left: -9999px; top: -9999px; width: 1px; height: 1px; overflow: hidden;"></div>
+    <script type="text/javascript">
+      window.googleTranslateElementInit = function() {
+        if (window.__googleTranslateInitialized) return;
+        try {
+          if (window.google && window.google.translate && window.google.translate.TranslateElement) {
+            new window.google.translate.TranslateElement({
+              pageLanguage: 'en',
+              includedLanguages: 'hi,gu,mr,bn,ta,te,kn,ml,pa,fr,es,de,ar,zh-CN',
+              autoDisplay: false
+            }, 'google_translate_element');
+            window.__googleTranslateInitialized = true;
+          }
+        } catch (e) {
+          console.warn('Google Translate init warning:', e);
+        }
+      };
+    </script>
+    <script type="text/javascript" id="google-translate-element-script" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

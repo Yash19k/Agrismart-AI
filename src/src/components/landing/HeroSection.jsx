@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/useTranslation';
 import { 
   ArrowRight, 
   CheckCircle2, 
