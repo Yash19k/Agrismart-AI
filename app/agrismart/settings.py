@@ -5,7 +5,7 @@ from datetime import timedelta
 
 try:
     from dotenv import load_dotenv
-    load_dotenv(Path(__file__).resolve().parent.parent / '.env')
+    load_dotenv(Path(__file__).resolve().parent.parent / '.env', override=True)
 except ImportError:
     pass
 
@@ -141,6 +141,10 @@ CACHES = {
 WEATHER_CACHE_TIMEOUT = int(os.environ.get('WEATHER_CACHE_TIMEOUT', 60 * 30))
 WEATHER_API_KEY = os.environ.get('WEATHER_API_KEY', '093b53ee057a4907ab9104918261209')
 WEATHER_PROVIDER = os.environ.get('WEATHER_PROVIDER', 'weatherapi')
+
+# ── Groq LLM Configuration ──────────────────────────────────────────────────
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
+GROQ_MODEL = os.environ.get('GROQ_MODEL', 'openai/gpt-oss-120b')
 
 
 # ── Logging ───────────────────────────────────────────────────────────────────

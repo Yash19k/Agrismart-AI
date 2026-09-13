@@ -91,8 +91,6 @@ const Dashboard = () => {
   const [chatMsg, setChatMsg] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
   const [chatLoading, setChatLoading] = useState(false);
-  const [agronomistDrawerOpen, setAgronomistDrawerOpen] = useState(false);
-  const [agronomistQuery, setAgronomistQuery] = useState(null);
 
   // Live real data states from API
   const [dashboardData, setDashboardData] = useState(null);
@@ -290,7 +288,9 @@ const Dashboard = () => {
           setActiveNav(id);
           if (id === 'dashboard') navigate('/dashboard');
           if (id === 'disease') navigate('/disease');
+          if (id === 'assistant') navigate('/assistant');
           if (id === 'irrigation') navigate('/irrigation');
+          if (id === 'sustainability') navigate('/sustainability');
           if (id === 'myfarm') setShowAddFarmModal(true);
           if (id === 'weather') setShowForecastModal(true);
         }}
@@ -533,7 +533,9 @@ const Dashboard = () => {
                 color="bg-blue-600"
                 value={dashboardData?.current_weather?.precipitation != null ? `${dashboardData.current_weather.precipitation} mm` : (dashboardData?.forecast?.[0]?.precipitation != null ? `${dashboardData.forecast[0].precipitation} mm` : '0 mm')}
                 label="Precipitation / Rain"
-                sub={dashboardData?.forecast?.[0]?.rain_probability != null ? `${dashboardData.forecast[0].rain_probability}% rain probability` : 'Live Open-Meteo'}
+                sub={dashboardData?.forecast?.[0]?.rain_probability != null
+                  ? `${dashboardData.forecast[0].rain_probability}% rain probability`
+                  : `Live ${dashboardData?.meta?.provider || 'weather'} data`}
                 trendUp={true}
               />
               {/* 4. Water Usage / Farm Size */}
@@ -684,7 +686,9 @@ const Dashboard = () => {
                           ? `${dashboardData.irrigation.rain_probability}%`
                           : (dashboardData?.forecast?.[0]?.rain_probability != null ? `${dashboardData.forecast[0].rain_probability}%` : '—')}
                       </p>
-                      <span className="text-[10px] text-cyan-700 font-medium">Open-Meteo forecast</span>
+                      <span className="text-[10px] text-cyan-700 font-medium">
+                        {dashboardData?.meta?.provider || 'Weather'} forecast
+                      </span>
                     </div>
 
                     <div className="p-3 rounded-xl bg-amber-50/60 border border-amber-100">

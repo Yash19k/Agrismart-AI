@@ -24,7 +24,7 @@ class LLMService:
     def __init__(self):
         # Refresh env if needed
         if _env_path.exists():
-            load_dotenv(_env_path, override=False)
+            load_dotenv(_env_path, override=True)
         self.api_key = os.environ.get("GROQ_API_KEY", "").strip()
         self.model_name = os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b").strip()
         self._client = None
