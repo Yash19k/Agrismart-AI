@@ -7,6 +7,7 @@ import {
   CloudSun,
   Droplets,
   Sprout,
+  Leaf,
   MapPin,
   LogOut,
   X
@@ -17,6 +18,7 @@ export const NAV_ITEMS = [
   { id: 'disease', label: 'Disease Detection', icon: ShieldAlert },
   { id: 'weather', label: 'Weather & Advisory', icon: CloudSun },
   { id: 'irrigation', label: 'Irrigation', icon: Droplets },
+  { id: 'sustainability', label: 'Sustainability Score', icon: Leaf },
   { id: 'crop', label: 'Crop Recommendation', icon: Sprout },
   { id: 'myfarm', label: 'My Farm', icon: MapPin },
 ];
@@ -52,6 +54,7 @@ export default function AppSidebar({
       if (id === 'dashboard') navigate('/dashboard');
       if (id === 'disease') navigate('/disease');
       if (id === 'irrigation') navigate('/irrigation');
+      if (id === 'sustainability') navigate('/sustainability');
       if (id === 'myfarm') navigate('/dashboard?modal=farm');
       if (id === 'weather') navigate('/dashboard?modal=weather');
       if (id === 'crop') navigate('/dashboard');

@@ -18,6 +18,8 @@ import {
   getIrrigationInsights,
   getIrrigationHistory
 } from '../api/irrigation';
+import { getWeather } from '../api/weather';
+import { getFarms } from '../api/farms';
 
 // ─── Supported domain options ────────────────────────────────────────────────
 const CROPS = [
@@ -199,6 +201,55 @@ function ConfidenceBar({ label, value, color }) {
   );
 }
 
+function WeatherForecastCard({ liveWeather }) {
+  const forecast = liveWeather?.forecast || [];
+  return (
+    <div className="bg-white rounded-2xl p-4 border border-purple-100 shadow-sm">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <CloudRain className="w-4 h-4 text-purple-600" />
+          <span className="text-xs font-extrabold text-gray-800 uppercase tracking-wide">Weather Forecast</span>
+        </div>
+        <span className="text-[10px] font-bold text-purple-700 uppercase">
+          {liveWeather?.provider || 'Live weather'}
+        </span>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        {forecast.length > 0 ? forecast.map((day, index) => (
+          <div key={day.date || index} className="rounded-xl bg-purple-50 border border-purple-100 p-3">
+            <p className="text-xs font-black text-purple-900">
+              {index === 0 ? 'Today' : `Day ${index + 1}`}
+              {day.date ? ` · ${day.date}` : ''}
+            </p>
+            <p className="text-sm font-black text-gray-900 mt-2">{day.condition || 'Forecast unavailable'}</p>
+            <p className="text-xs text-gray-600 mt-1">
+              {day.temperature_min != null && day.temperature_max != null
+                ? `${day.temperature_min}°C – ${day.temperature_max}°C`
+                : 'Temperature unavailable'}
+            </p>
+            <div className="flex items-center gap-3 mt-2 text-[11px] font-bold">
+              <span className="text-purple-700">
+                <CloudRain className="w-3 h-3 inline mr-1" />
+                {day.rain_probability != null ? `${day.rain_probability}%` : '—'}
+              </span>
+              <span className="text-blue-700">
+                <Droplets className="w-3 h-3 inline mr-1" />
+                {day.rainfall != null ? `${day.rainfall} mm` : '—'}
+              </span>
+            </div>
+          </div>
+        )) : (
+          <p className="text-xs text-gray-500 sm:col-span-3">Three-day forecast is currently unavailable.</p>
+        )}
+      </div>
+      <p className="text-xs text-gray-500 mt-3">
+        {forecast.length > 0 ? 'Forecast used for irrigation planning.' : 'Forecast data is currently unavailable.'}
+        {liveWeather?.location ? ` · ${liveWeather.location}` : ''}
+      </p>
+    </div>
+  );
+}
+
 function ResultCard({ result }) {
   if (!result) return null;
   const cfg = STATUS_CONFIG[result.status] || STATUS_CONFIG.no_irrigation;
@@ -338,22 +389,24 @@ export default function IrrigationPage() {
   const { user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('advisory'); // 'advisory' | 'benchmarks' | 'history'
+  const [farms, setFarms] = useState([]);
+  const [selectedFarmId, setSelectedFarmId] = useState('');
 
   // Form state
   const [form, setForm] = useState({
     crop: 'Tomato',
     soil_type: 'Loam Soil',
     growth_stage: 'Flowering',
-    soil_moisture: 35,
-    temperature: 28,
-    humidity: 60,
+    soil_moisture: null,
+    temperature: null,
+    humidity: null,
   });
 
   // Weather Intelligence state
   const [weatherCtx, setWeatherCtx] = useState({
-    enabled: true,
-    rain_probability: 20,
-    forecast_rainfall_mm: 0,
+    enabled: false,
+    rain_probability: null,
+    forecast_rainfall_mm: null,
   });
 
   // Live WeatherAPI fetch status
@@ -374,20 +427,33 @@ export default function IrrigationPage() {
   const fetchLiveWeather = useCallback(async () => {
     setWeatherLoading(true);
     try {
-      const data = await getIrrigationLiveWeather();
+      const data = await getIrrigationLiveWeather(selectedFarmId ? { farm_id: selectedFarmId } : {});
       setLiveWeather(data);
-      // Auto-populate form readings from live WeatherAPI
+      // Reuse the same daily payload as Weather & Advisory when the
+      // irrigation summary endpoint has no forecast entries.
+      if (!data?.forecast?.length) {
+        try {
+          const advisoryWeather = await getWeather(selectedFarmId || null);
+          if (advisoryWeather?.forecast?.length) {
+            setLiveWeather(prev => ({ ...prev, forecast: advisoryWeather.forecast }));
+          }
+        } catch (forecastError) {
+          console.warn('Three-day forecast fetch notice:', forecastError);
+        }
+      }
+      // Auto-populate environmental readings from the backend weather gateway.
       if (data) {
         setForm(prev => ({
           ...prev,
-          temperature: Math.round(data.temperature || prev.temperature),
-          humidity: Math.round(data.humidity || prev.humidity),
+          temperature: data.temperature != null ? Math.round(data.temperature) : null,
+          humidity: data.humidity != null ? Math.round(data.humidity) : null,
+          soil_moisture: data.soil_moisture != null ? Math.round(data.soil_moisture) : null,
         }));
         setWeatherCtx(prev => ({
           ...prev,
-          enabled: true,
-          rain_probability: Math.round(data.rain_probability_pct ?? (data.rain_probability * 100)),
-          forecast_rainfall_mm: Number(data.forecast_rainfall_mm || 0),
+          enabled: data.rain_probability_pct != null || data.forecast_rainfall_mm != null,
+          rain_probability: data.rain_probability_pct,
+          forecast_rainfall_mm: data.forecast_rainfall_mm,
         }));
       }
     } catch (err) {
@@ -395,15 +461,23 @@ export default function IrrigationPage() {
     } finally {
       setWeatherLoading(false);
     }
-  }, []);
+  }, [selectedFarmId]);
 
   // Fetch insights and metadata on mount
   useEffect(() => {
-    fetchLiveWeather();
+    getFarms().then((farmList) => {
+      const nextFarms = Array.isArray(farmList) ? farmList : farmList?.results || [];
+      setFarms(nextFarms);
+      if (nextFarms.length) setSelectedFarmId(String(nextFarms[0].id));
+    }).catch(err => setError(err.friendlyMessage || 'Could not load your farms.'));
     getIrrigationInsights().then(res => {
       if (res && res.available) setInsights(res);
     }).catch(err => console.warn('Insights error:', err));
-  }, [fetchLiveWeather]);
+  }, []);
+
+  useEffect(() => {
+    if (selectedFarmId) fetchLiveWeather();
+  }, [selectedFarmId, fetchLiveWeather]);
 
   // Load history when tab is clicked
   const loadHistory = useCallback(async () => {
@@ -424,7 +498,21 @@ export default function IrrigationPage() {
     }
   }, [activeTab, loadHistory]);
 
-  const isFormValid = form.crop && form.soil_type && form.growth_stage;
+  const isFormValid = form.crop && form.soil_type && form.growth_stage
+    && form.soil_moisture != null && form.temperature != null && form.humidity != null;
+
+  const selectedFarm = farms.find((farm) => String(farm.id) === String(selectedFarmId));
+
+  const handleFarmChange = (event) => {
+    setSelectedFarmId(event.target.value);
+    setLiveWeather(null);
+    setResult(null);
+    setWeatherCtx({
+      enabled: false,
+      rain_probability: null,
+      forecast_rainfall_mm: null,
+    });
+  };
 
   const handlePredict = useCallback(async () => {
     if (!isFormValid) return;
@@ -433,7 +521,8 @@ export default function IrrigationPage() {
 
     const weatherContext = weatherCtx.enabled
       ? {
-          rain_probability: (weatherCtx.rain_probability || 0) / 100,
+          rain_probability: weatherCtx.rain_probability != null
+            ? weatherCtx.rain_probability / 100 : 0,
           forecast_rainfall_mm: Number(weatherCtx.forecast_rainfall_mm || 0),
           forecast_temp: form.temperature,
           forecast_humidity: form.humidity,
@@ -450,7 +539,8 @@ export default function IrrigationPage() {
           temperature: form.temperature,
           humidity: form.humidity,
         },
-        weatherContext
+        weatherContext,
+        selectedFarmId || null
       );
       setResult(data);
     } catch (err) {
@@ -458,10 +548,11 @@ export default function IrrigationPage() {
     } finally {
       setLoading(false);
     }
-  }, [form, weatherCtx, isFormValid]);
+  }, [form, weatherCtx, isFormValid, selectedFarmId]);
 
   // Moisture state helper
   const getMoistureStatus = (val) => {
+    if (val == null) return { label: 'Unavailable', color: 'text-gray-500', bg: 'bg-gray-100' };
     if (val < 20) return { label: 'Depleted (Deficit)', color: 'text-red-700', bg: 'bg-red-100' };
     if (val < 40) return { label: 'Stress Threshold', color: 'text-amber-700', bg: 'bg-amber-100' };
     if (val < 65) return { label: 'Optimal Buffer', color: 'text-emerald-700', bg: 'bg-emerald-100' };
@@ -500,6 +591,22 @@ export default function IrrigationPage() {
 
         {/* Navigation Tabs */}
         <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-2 flex items-center gap-2 overflow-x-auto flex-shrink-0">
+          {farms.length > 0 && (
+            <label className="ml-auto flex items-center gap-2 text-xs font-bold text-gray-600 whitespace-nowrap">
+              Select farm
+              <select
+                value={selectedFarmId}
+                onChange={handleFarmChange}
+                className="max-w-[280px] rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700"
+              >
+                {farms.map((farm) => (
+                  <option key={farm.id} value={farm.id}>
+                    {farm.farm_name || farm.name} — {farm.location_name || farm.location_display || 'saved coordinates'}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <button
             onClick={() => setActiveTab('advisory')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition flex items-center gap-1.5 ${
@@ -559,6 +666,11 @@ export default function IrrigationPage() {
                       <p className="text-xs sm:text-sm text-blue-100 mt-1 font-medium leading-relaxed">
                         Evaluates soil moisture saturation, crop growth phase, and real-time precipitation forecast to prevent over-watering and root rot.
                       </p>
+                      {selectedFarm && (
+                        <p className="text-[11px] text-blue-100 mt-2 font-semibold">
+                          Live location: {selectedFarm.location_name || selectedFarm.location_display || 'saved farm coordinates'}
+                        </p>
+                      )}
                     </div>
 
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-white/20">
@@ -640,45 +752,37 @@ export default function IrrigationPage() {
                       </div>
 
                       <div className="flex flex-col gap-5">
-                        {/* Soil Moisture Slider */}
-                        <SliderField
-                          label="Soil Moisture (MOI)"
-                          id="soil_moisture"
-                          value={form.soil_moisture}
-                          onChange={(v) => setForm(f => ({ ...f, soil_moisture: v }))}
-                          min={0}
-                          max={100}
-                          unit="%"
-                          icon={Droplets}
-                          color="blue"
-                          statusBadge={moistureStatus}
-                        />
-
-                        {/* Temperature Slider */}
-                        <SliderField
-                          label="Ambient Temperature"
-                          id="temperature"
-                          value={form.temperature}
-                          onChange={(v) => setForm(f => ({ ...f, temperature: v }))}
-                          min={0}
-                          max={55}
-                          unit="°C"
-                          icon={Thermometer}
-                          color="orange"
-                        />
-
-                        {/* Humidity Slider */}
-                        <SliderField
-                          label="Relative Humidity"
-                          id="humidity"
-                          value={form.humidity}
-                          onChange={(v) => setForm(f => ({ ...f, humidity: v }))}
-                          min={0}
-                          max={100}
-                          unit="%"
-                          icon={Wind}
-                          color="emerald"
-                        />
+                        <div className="rounded-xl bg-blue-50 border border-blue-100 p-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                              <Droplets className="w-3.5 h-3.5 text-blue-600" />
+                              Live Soil Moisture
+                            </span>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${moistureStatus.bg} ${moistureStatus.color}`}>
+                              {moistureStatus.label}
+                            </span>
+                          </div>
+                          <p className="text-xl font-extrabold text-blue-900 mt-2">
+                            {form.soil_moisture != null ? `${form.soil_moisture}%` : 'Unavailable'}
+                          </p>
+                          <p className="text-[10px] text-blue-700 mt-1">
+                            Estimated from the weather gateway; connect a soil sensor for measured values.
+                          </p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 text-xs">
+                          <div className="rounded-xl bg-orange-50 border border-orange-100 p-3">
+                            <span className="font-semibold text-gray-500">Live Temperature</span>
+                            <p className="text-base font-extrabold text-orange-900 mt-1">
+                              {form.temperature != null ? `${form.temperature}°C` : 'Unavailable'}
+                            </p>
+                          </div>
+                          <div className="rounded-xl bg-emerald-50 border border-emerald-100 p-3">
+                            <span className="font-semibold text-gray-500">Live Humidity</span>
+                            <p className="text-base font-extrabold text-emerald-900 mt-1">
+                              {form.humidity != null ? `${form.humidity}%` : 'Unavailable'}
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -689,46 +793,26 @@ export default function IrrigationPage() {
                           <CloudRain className="w-4 h-4 text-purple-600" />
                           <h3 className="text-sm font-black text-gray-800">Weather Intelligence Layer</h3>
                         </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={weatherCtx.enabled}
-                            onChange={(e) => setWeatherCtx(w => ({ ...w, enabled: e.target.checked }))}
-                            className="sr-only peer"
-                          />
-                          <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
-                        </label>
+                        <span className="text-[10px] font-bold text-purple-700 uppercase">Automatic</span>
                       </div>
                       <p className="text-xs text-gray-500 mb-4 leading-relaxed">
                         Decoupled decision layer: if heavy precipitation is forecast within 24–48 hours, irrigation is intelligently delayed to conserve water and prevent waterlogging.
                       </p>
 
-                      {weatherCtx.enabled && (
-                        <div className="flex flex-col gap-4 pt-2 border-t border-gray-50">
-                          <SliderField
-                            label="24h Rain Probability"
-                            id="rain_probability"
-                            value={weatherCtx.rain_probability}
-                            onChange={(v) => setWeatherCtx(w => ({ ...w, rain_probability: v }))}
-                            min={0}
-                            max={100}
-                            unit="%"
-                            icon={CloudRain}
-                            color="purple"
-                          />
-                          <SliderField
-                            label="Forecast Precipitation"
-                            id="forecast_rainfall_mm"
-                            value={weatherCtx.forecast_rainfall_mm}
-                            onChange={(v) => setWeatherCtx(w => ({ ...w, forecast_rainfall_mm: v }))}
-                            min={0}
-                            max={50}
-                            unit=" mm"
-                            icon={Droplets}
-                            color="blue"
-                          />
+                      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-50 text-xs">
+                        <div className="rounded-xl bg-purple-50 border border-purple-100 p-3">
+                          <span className="font-semibold text-gray-500">Rain Probability</span>
+                          <p className="text-base font-extrabold text-purple-900 mt-1">
+                            {weatherCtx.rain_probability != null ? `${weatherCtx.rain_probability}%` : 'Unavailable'}
+                          </p>
                         </div>
-                      )}
+                        <div className="rounded-xl bg-blue-50 border border-blue-100 p-3">
+                          <span className="font-semibold text-gray-500">Forecast Rainfall</span>
+                          <p className="text-base font-extrabold text-blue-900 mt-1">
+                            {weatherCtx.forecast_rainfall_mm != null ? `${weatherCtx.forecast_rainfall_mm} mm` : 'Unavailable'}
+                          </p>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Run Decision Button */}
@@ -764,7 +848,10 @@ export default function IrrigationPage() {
                   {/* RIGHT: Visual Results Panel (7 cols) */}
                   <div className="lg:col-span-7">
                     {result ? (
-                      <ResultCard result={result} />
+                      <div className="flex flex-col gap-4">
+                        <ResultCard result={result} />
+                        <WeatherForecastCard liveWeather={liveWeather} />
+                      </div>
                     ) : (
                       <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 flex flex-col items-center justify-center text-center h-full min-h-[460px]">
                         <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center mb-4">

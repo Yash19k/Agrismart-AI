@@ -9,6 +9,7 @@ import SignupPage from './pages/SignupPage';
 import Dashboard from './pages/Dashboard';
 import DiseaseDetectionPage from './pages/DiseaseDetectionPage';
 import IrrigationPage from './pages/IrrigationPage';
+import SustainabilityPage from './pages/SustainabilityPage';
 
 import './i18n/config';
 
@@ -39,6 +40,7 @@ export function App() {
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/disease" element={<ProtectedRoute><DiseaseDetectionPage /></ProtectedRoute>} />
             <Route path="/irrigation" element={<ProtectedRoute><IrrigationPage /></ProtectedRoute>} />
+            <Route path="/sustainability" element={<ProtectedRoute><SustainabilityPage /></ProtectedRoute>} />
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />

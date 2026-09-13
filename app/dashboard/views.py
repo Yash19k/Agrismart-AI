@@ -266,7 +266,7 @@ def dashboard_view(request):
     weather_data = None
     weather_error = None
     try:
-        weather_data = WeatherService.fetch_farm_weather(farm, provider='open-meteo')
+        weather_data = WeatherService.fetch_farm_weather(farm)
         # Record weather snapshot
         cur = weather_data.get('current', {})
         today = weather_data.get('today', {})

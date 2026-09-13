@@ -257,6 +257,7 @@ const Dashboard = () => {
           if (id === 'dashboard') navigate('/dashboard');
           if (id === 'disease') navigate('/disease');
           if (id === 'irrigation') navigate('/irrigation');
+          if (id === 'sustainability') navigate('/sustainability');
           if (id === 'myfarm') setShowAddFarmModal(true);
           if (id === 'weather') setShowForecastModal(true);
         }}
@@ -348,7 +349,9 @@ const Dashboard = () => {
                 >
                   <Sun className="w-3.5 h-3.5 text-amber-500" />
                   <span className="font-bold text-amber-700">{Math.round(dashboardData.current_weather.temperature)}°C</span>
-                  <span className="text-amber-600 truncate max-w-[80px]">{dashboardData.current_weather.condition || 'Clear'}</span>
+                  <span className="text-amber-600 truncate max-w-[80px]">
+                    {dashboardData.current_weather.condition || 'Condition unavailable'}
+                  </span>
                 </button>
               )}
 
@@ -436,7 +439,7 @@ const Dashboard = () => {
                   <div>
                     <h3 className="text-base font-extrabold text-emerald-950">Add Your Farm to Start</h3>
                     <p className="text-xs text-emerald-800 mt-0.5">
-                      Configure your farm location, crops, and soil to see real-time Open-Meteo weather and agricultural recommendations.
+                      Configure your farm location, crops, and soil to see real-time weather and agricultural recommendations.
                     </p>
                   </div>
                 </div>
@@ -499,7 +502,9 @@ const Dashboard = () => {
                 color="bg-blue-600"
                 value={dashboardData?.current_weather?.precipitation != null ? `${dashboardData.current_weather.precipitation} mm` : (dashboardData?.forecast?.[0]?.precipitation != null ? `${dashboardData.forecast[0].precipitation} mm` : '0 mm')}
                 label="Precipitation / Rain"
-                sub={dashboardData?.forecast?.[0]?.rain_probability != null ? `${dashboardData.forecast[0].rain_probability}% rain probability` : 'Live Open-Meteo'}
+                sub={dashboardData?.forecast?.[0]?.rain_probability != null
+                  ? `${dashboardData.forecast[0].rain_probability}% rain probability`
+                  : `Live ${dashboardData?.meta?.provider || 'weather'} data`}
                 trendUp={true}
               />
               {/* 4. Water Usage / Farm Size */}
@@ -650,7 +655,9 @@ const Dashboard = () => {
                           ? `${dashboardData.irrigation.rain_probability}%`
                           : (dashboardData?.forecast?.[0]?.rain_probability != null ? `${dashboardData.forecast[0].rain_probability}%` : '—')}
                       </p>
-                      <span className="text-[10px] text-cyan-700 font-medium">Open-Meteo forecast</span>
+                      <span className="text-[10px] text-cyan-700 font-medium">
+                        {dashboardData?.meta?.provider || 'Weather'} forecast
+                      </span>
                     </div>
 
                     <div className="p-3 rounded-xl bg-amber-50/60 border border-amber-100">
@@ -746,7 +753,7 @@ const Dashboard = () => {
                           : '—'}
                       </div>
                       <div className="text-sm text-gray-600 font-semibold">
-                        {dashboardData?.current_weather?.condition || 'Live Open-Meteo'}
+                        {dashboardData?.current_weather?.condition || 'Weather unavailable'}
                       </div>
                     </div>
                   </div>
@@ -759,7 +766,7 @@ const Dashboard = () => {
                       },
                       {
                         label: 'Rainfall',
-                        val: dashboardData?.current_weather?.precipitation != null ? `${dashboardData.current_weather.precipitation} mm` : '0 mm'
+                        val: dashboardData?.current_weather?.precipitation != null ? `${dashboardData.current_weather.precipitation} mm` : '—'
                       },
                       {
                         label: 'Rain Probability',
@@ -870,7 +877,9 @@ const Dashboard = () => {
                 <Sun className="w-6 h-6 text-amber-500" />
                 <div>
                   <h3 className="text-lg font-extrabold text-gray-900">7-Day Agricultural Forecast</h3>
-                  <p className="text-xs text-gray-500">Live data powered by Open-Meteo gateway</p>
+                  <p className="text-xs text-gray-500">
+                    Live data powered by {dashboardData?.meta?.provider || 'weather'} gateway
+                  </p>
                 </div>
               </div>
               <button onClick={() => setShowForecastModal(false)} className="p-1 rounded-lg text-gray-400 hover:text-gray-700">

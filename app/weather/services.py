@@ -70,7 +70,8 @@ class WeatherServiceError(Exception):
 
 class WeatherService:
     """
-    Fetches and parses weather data from WeatherAPI (primary) or Open-Meteo (fallback).
+    Fetches and parses weather data from the configured provider, with Open-Meteo
+    as the fallback when WeatherAPI is selected but unavailable.
 
     Public API:
         WeatherService.fetch_farm_weather(farm)  → dict
@@ -79,12 +80,13 @@ class WeatherService:
     """
 
     @staticmethod
-    def cache_key(farm_id: int, provider: str = 'open-meteo') -> str:
+    def cache_key(farm_id: int, provider: str) -> str:
         return f'agrismart_weather_farm_{farm_id}_{provider}'
 
     @classmethod
-    def fetch_farm_weather(cls, farm, provider: str = 'open-meteo') -> dict:
+    def fetch_farm_weather(cls, farm, provider: str = None) -> dict:
         """Return weather data for a farm, served from cache when available."""
+        provider = provider or getattr(settings, 'WEATHER_PROVIDER', 'open-meteo')
         key = cls.cache_key(farm.id, provider)
         cached = cache.get(key)
         if cached:
@@ -106,8 +108,9 @@ class WeatherService:
         return data
 
     @classmethod
-    def fetch_coordinates(cls, lat: float, lon: float, provider: str = 'open-meteo') -> dict:
+    def fetch_coordinates(cls, lat: float, lon: float, provider: str = None) -> dict:
         """Fetch live weather for arbitrary coordinates."""
+        provider = provider or getattr(settings, 'WEATHER_PROVIDER', 'open-meteo')
         key = f'agrismart_weather_coord_{provider}_{round(lat, 3)}_{round(lon, 3)}'
         cached = cache.get(key)
         if cached:
@@ -117,7 +120,8 @@ class WeatherService:
         return data
 
     @classmethod
-    def _fetch(cls, lat: float, lon: float, provider: str = 'open-meteo') -> dict:
+    def _fetch(cls, lat: float, lon: float, provider: str = None) -> dict:
+        provider = provider or getattr(settings, 'WEATHER_PROVIDER', 'open-meteo')
         api_key = getattr(settings, 'WEATHER_API_KEY', '093b53ee057a4907ab9104918261209')
 
         if provider == 'weatherapi' and api_key:
@@ -353,6 +357,7 @@ class WeatherService:
                 'rainfall':        today.get('rainfall', 0),
             },
             'meta': {
+                'provider':     'Open-Meteo',
                 'season':       get_season_india(now.month),
                 'date_display': now.strftime('%a, %d %b %Y'),
                 'fetched_at':   now.isoformat(),
@@ -421,4 +426,3 @@ class WeatherService:
             }
             for item in data.get('results', [])
         ]
-

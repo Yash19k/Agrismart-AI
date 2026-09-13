@@ -21,7 +21,9 @@ def weather_view(request):
             {'detail': 'No farm found. Please add your farm first.'}, status=404
         )
     try:
-        data = WeatherService.fetch_farm_weather(farm)
+        requested_provider = request.query_params.get('provider')
+        provider = requested_provider if requested_provider in {'open-meteo', 'weatherapi'} else None
+        data = WeatherService.fetch_farm_weather(farm, provider=provider)
         return Response(data)
     except WeatherServiceError as e:
         return Response({'error': str(e), 'detail': 'Weather data temporarily unavailable.'}, status=503)

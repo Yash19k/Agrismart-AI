@@ -92,43 +92,75 @@ def get_live_weather(request):
             farm = Farm.objects.filter(id=farm_id, user=user).first()
             if not farm:
                 return Response({"error": "Farm not found"}, status=status.HTTP_404_NOT_FOUND)
-            wdata = WeatherService.fetch_farm_weather(farm, provider='weatherapi')
+            wdata = WeatherService.fetch_farm_weather(farm)
             location_label = farm.farm_name
         elif lat and lon:
-            wdata = WeatherService.fetch_coordinates(float(lat), float(lon), provider='weatherapi')
+            wdata = WeatherService.fetch_coordinates(float(lat), float(lon))
             location_label = f"{round(float(lat), 2)}, {round(float(lon), 2)}"
         elif user:
             farm = Farm.objects.filter(user=user).first()
             if farm:
-                wdata = WeatherService.fetch_farm_weather(farm, provider='weatherapi')
+                wdata = WeatherService.fetch_farm_weather(farm)
                 location_label = farm.farm_name
             else:
-                wdata = WeatherService.fetch_coordinates(20.5937, 78.9629, provider='weatherapi')
+                wdata = WeatherService.fetch_coordinates(20.5937, 78.9629)
                 location_label = "Field Station (India)"
         else:
-            wdata = WeatherService.fetch_coordinates(20.5937, 78.9629, provider='weatherapi')
+            wdata = WeatherService.fetch_coordinates(20.5937, 78.9629)
             location_label = "Field Station (India)"
 
         cur = wdata.get("current", {})
+        soil = wdata.get("soil", {})
         today = wdata.get("today", {})
         meta = wdata.get("meta", {})
 
-        rain_prob = today.get("rain_probability", 0) or 0
+        # WeatherAPI does not expose the soil-moisture field used by the
+        # irrigation model, so supplement it from Open-Meteo when necessary.
+        soil_moisture = soil.get("moisture_percent")
+        if soil_moisture is None:
+            if farm_id and user:
+                soil_lat, soil_lon = farm.latitude, farm.longitude
+            elif lat and lon:
+                soil_lat, soil_lon = float(lat), float(lon)
+            elif user:
+                farm = Farm.objects.filter(user=user).first()
+                soil_lat, soil_lon = (
+                    (farm.latitude, farm.longitude)
+                    if farm else (20.5937, 78.9629)
+                )
+            else:
+                soil_lat, soil_lon = 20.5937, 78.9629
+            try:
+                soil_data = WeatherService.fetch_coordinates(
+                    soil_lat, soil_lon, provider="open-meteo"
+                )
+                soil_moisture = (soil_data.get("soil") or {}).get("moisture_percent")
+            except WeatherServiceError:
+                logger.warning("Soil moisture supplement unavailable", exc_info=True)
+
+        rain_prob = today.get("rain_probability")
         if isinstance(rain_prob, (int, float)) and rain_prob > 1:
             rain_prob_normalized = round(rain_prob / 100.0, 2)
+        elif isinstance(rain_prob, (int, float)):
+            rain_prob_normalized = float(rain_prob)
         else:
-            rain_prob_normalized = float(rain_prob or 0)
+            rain_prob_normalized = None
 
         return Response({
-            "temperature": cur.get("temperature", 25.0),
-            "humidity": cur.get("humidity", 50.0),
-            "precipitation": cur.get("precipitation", 0.0),
-            "condition": cur.get("condition", "Clear"),
+            "temperature": cur.get("temperature"),
+            "humidity": cur.get("humidity"),
+            "precipitation": cur.get("precipitation"),
+            "condition": cur.get("condition"),
             "rain_probability": rain_prob_normalized,
-            "rain_probability_pct": int(rain_prob_normalized * 100),
-            "forecast_rainfall_mm": today.get("rainfall", 0.0) or 0.0,
+            "rain_probability_pct": (
+                int(rain_prob_normalized * 100)
+                if rain_prob_normalized is not None else None
+            ),
+            "forecast_rainfall_mm": today.get("rainfall"),
+            "forecast": (wdata.get("daily") or [])[:3],
+            "soil_moisture": soil_moisture,
             "location": location_label,
-            "provider": meta.get("provider", "WeatherAPI"),
+            "provider": meta.get("provider"),
         }, status=status.HTTP_200_OK)
 
     except WeatherServiceError as exc:

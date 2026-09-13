@@ -3,16 +3,12 @@ import authService from '../services/authService';
 
 const AuthContext = createContext();
 
-const DEFAULT_FARM = {
-  state: 'Gujarat',
-  district: 'Anand',
-  village: 'Mogri',
-  farmSize: '4.5',
-  sizeUnit: 'Acres',
-  mainCrop: 'Tomato & Cotton',
-  prefLang: 'en',
-  smsAlerts: true,
-};
+function persistSession(accessToken, userData) {
+  sessionStorage.setItem('agrishield_token', accessToken);
+  sessionStorage.setItem('agrishield_user', JSON.stringify(userData));
+  localStorage.setItem('agrishield_token', accessToken);
+  localStorage.setItem('agrishield_user', JSON.stringify(userData));
+}
 
 export const AuthProvider = ({ children }) => {
   // Use sessionStorage so running/opening the application fresh always requires login
@@ -38,10 +34,7 @@ export const AuthProvider = ({ children }) => {
   // Synchronize sessionStorage and localStorage for API interceptor
   useEffect(() => {
     if (token && user) {
-      sessionStorage.setItem('agrishield_token', token);
-      sessionStorage.setItem('agrishield_user', JSON.stringify(user));
-      localStorage.setItem('agrishield_token', token);
-      localStorage.setItem('agrishield_user', JSON.stringify(user));
+      persistSession(token, user);
     } else {
       sessionStorage.removeItem('agrishield_token');
       sessionStorage.removeItem('agrishield_user');
@@ -54,30 +47,18 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     try {
       const response = await authService.login(email, password);
-      const accessToken = response.access || 'mock-jwt-token-agrishield';
-      const userData = response.user || {
-        id: 'usr_' + Date.now(),
-        name: email.split('@')[0] || 'Farmer Friend',
-        email: email,
-        isOnboarded: true,
-        farm: DEFAULT_FARM,
-      };
+      if (!response.access || !response.user) {
+        throw new Error('The login response did not contain a valid session.');
+      }
+      const accessToken = response.access;
+      const userData = response.user;
+      // Persist before navigation so the first protected request has the JWT.
+      persistSession(accessToken, userData);
       setToken(accessToken);
       setUser(userData);
       return { success: true };
     } catch (error) {
-      console.warn('API login failed, checking fallback', error);
-      const mockToken = 'mock-jwt-token-' + Date.now();
-      const mockUser = {
-        id: 'usr_' + Date.now(),
-        name: email.includes('@') ? email.split('@')[0] : 'Farmer ' + email,
-        email: email,
-        isOnboarded: true,
-        farm: DEFAULT_FARM,
-      };
-      setToken(mockToken);
-      setUser(mockUser);
-      return { success: true };
+      throw error;
     } finally {
       setLoading(false);
     }

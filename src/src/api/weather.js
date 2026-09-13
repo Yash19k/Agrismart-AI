@@ -6,8 +6,9 @@ import client from './client';
  *
  * @param {number|null} farmId
  */
-export async function getWeather(farmId = null) {
+export async function getWeather(farmId = null, provider = null) {
   const params = farmId ? { farm_id: farmId } : {};
+  if (provider) params.provider = provider;
   const res = await client.get('/weather/', { params });
   return res.data;
 }

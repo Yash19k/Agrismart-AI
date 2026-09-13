@@ -9,7 +9,8 @@ import {
   ShieldAlert,
   Droplets,
   LayoutDashboard,
-  CloudSun
+  CloudSun,
+  Leaf
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -17,6 +18,7 @@ const MODULE_ICONS = {
   dashboard: { icon: LayoutDashboard, color: 'text-emerald-600', bg: 'bg-emerald-50' },
   disease: { icon: ShieldAlert, color: 'text-emerald-700', bg: 'bg-emerald-50' },
   irrigation: { icon: Droplets, color: 'text-blue-600', bg: 'bg-blue-50' },
+  sustainability: { icon: Leaf, color: 'text-emerald-700', bg: 'bg-emerald-50' },
 };
 
 /**
