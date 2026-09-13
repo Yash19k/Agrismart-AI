@@ -10,6 +10,7 @@ import SignupPage from './pages/SignupPage';
 import Dashboard from './pages/Dashboard';
 import DiseaseDetectionPage from './pages/DiseaseDetectionPage';
 import IrrigationPage from './pages/IrrigationPage';
+import AssistantPage from './pages/AssistantPage';
 
 // Protected route: redirect to login if not authenticated
 const ProtectedRoute = ({ children }) => {
@@ -39,6 +40,7 @@ export function App() {
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/disease" element={<ProtectedRoute><DiseaseDetectionPage /></ProtectedRoute>} />
             <Route path="/irrigation" element={<ProtectedRoute><IrrigationPage /></ProtectedRoute>} />
+            <Route path="/assistant" element={<ProtectedRoute><AssistantPage /></ProtectedRoute>} />
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />

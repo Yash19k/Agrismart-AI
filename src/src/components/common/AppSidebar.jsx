@@ -9,12 +9,14 @@ import {
   Sprout,
   MapPin,
   LogOut,
+  Bot,
   X
 } from 'lucide-react';
 
 export const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'disease', label: 'Disease Detection', icon: ShieldAlert },
+  { id: 'assistant', label: 'AI Agronomist', icon: Bot, badge: 'Groq' },
   { id: 'weather', label: 'Weather & Advisory', icon: CloudSun },
   { id: 'irrigation', label: 'Irrigation', icon: Droplets },
   { id: 'crop', label: 'Crop Recommendation', icon: Sprout },
@@ -51,6 +53,7 @@ export default function AppSidebar({
     } else {
       if (id === 'dashboard') navigate('/dashboard');
       if (id === 'disease') navigate('/disease');
+      if (id === 'assistant') navigate('/assistant');
       if (id === 'irrigation') navigate('/irrigation');
       if (id === 'myfarm') navigate('/dashboard?modal=farm');
       if (id === 'weather') navigate('/dashboard?modal=weather');
@@ -104,6 +107,11 @@ export default function AppSidebar({
                   }`}
                 />
                 <span className="truncate">{label}</span>
+                {id === 'assistant' && (
+                  <span className="ml-auto text-[9px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-md border border-emerald-200/80">
+                    Groq
+                  </span>
+                )}
               </button>
             );
           })}
