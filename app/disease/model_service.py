@@ -370,7 +370,7 @@ class DiseaseModelService:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         logger.info("Initializing DiseaseModelService on device: %s", self.device)
 
-        # Resolve paths
+        # Resolve paths relative to project root
         script_dir = Path(__file__).resolve().parent
         base_dir = script_dir.parent  # app
         project_root = base_dir.parent  # Agrismart-AI
@@ -378,9 +378,23 @@ class DiseaseModelService:
         if model_path:
             self.model_path = Path(model_path)
         else:
-            self.model_path = project_root / "model" / "agrismart_convnext_tiny_final.pth"
+            candidate_paths = [
+                project_root / "model" / "crop_disease_detection" / "agrismart_convnext_tiny_final.pth",
+                project_root / "model" / "crop_desaise_detection" / "agrismart_convnext_tiny_final.pth",
+                project_root / "crop_disease_detection" / "agrismart_convnext_tiny_final.pth",
+                project_root / "crop_desaise_detection" / "agrismart_convnext_tiny_final.pth",
+                project_root / "model" / "agrismart_convnext_tiny_final.pth",
+            ]
+            self.model_path = next((p for p in candidate_paths if p.is_file()), candidate_paths[0])
 
-        self.class_names_path = project_root / "model" / "class_names.json"
+        candidate_class_paths = [
+            project_root / "model" / "crop_disease_detection" / "class_names.json",
+            project_root / "model" / "crop_desaise_detection" / "class_names.json",
+            project_root / "crop_disease_detection" / "class_names.json",
+            project_root / "crop_desaise_detection" / "class_names.json",
+            project_root / "model" / "class_names.json",
+        ]
+        self.class_names_path = next((p for p in candidate_class_paths if p.is_file()), candidate_class_paths[0])
 
         # Preprocessing matching predict.py and training notebook
         self.transform = transforms.Compose([
@@ -393,7 +407,7 @@ class DiseaseModelService:
         self.model = None
         self.class_names: List[str] = []
         self.class_to_idx: Dict[str, int] = {}
-        self.test_accuracy: float = 0.9889
+        self.test_accuracy: float = 0.9856
         self.plantdoc_accuracy: float = 0.5551
 
         self._load_model()
@@ -402,18 +416,31 @@ class DiseaseModelService:
     def _load_model(self):
         """Loads model weights and class definitions."""
         if not self.model_path.is_file():
-            raise FileNotFoundError(f"Model checkpoint not found at: {self.model_path}")
+            raise FileNotFoundError(
+                f"Model checkpoint not found at: {self.model_path}. "
+                "Ensure agrismart_convnext_tiny_final.pth is located inside "
+                "model/crop_disease_detection/ or model/crop_desaise_detection/."
+            )
 
-        logger.info("Loading ConvNeXt-Tiny checkpoint: %s", self.model_path)
+        logger.info("Loading ConvNeXt-Tiny checkpoint from: %s", self.model_path)
         checkpoint = torch.load(self.model_path, map_location=self.device, weights_only=False)
 
         if "class_names" not in checkpoint:
-            raise KeyError("Checkpoint is missing 'class_names' key.")
+            raise KeyError(
+                "Checkpoint is missing 'class_names' key. "
+                "Ensure you are loading a complete production packaged checkpoint."
+            )
 
         self.class_names = checkpoint["class_names"]
         self.class_to_idx = checkpoint.get("class_to_idx", {name: idx for idx, name in enumerate(self.class_names)})
-        self.test_accuracy = float(checkpoint.get("test_accuracy", 0.9889))
+        self.test_accuracy = float(checkpoint.get("test_accuracy", 0.9856))
         self.num_classes = len(self.class_names)
+
+        if self.num_classes != 38:
+            logger.warning(
+                "Checkpoint class count (%d) differs from standard 38 classes.",
+                self.num_classes
+            )
 
         # Instantiate architecture
         model = convnext_tiny(weights=None)
@@ -425,10 +452,11 @@ class DiseaseModelService:
 
         self.model = model
         logger.info(
-            "ConvNeXt-Tiny loaded successfully | Classes: %d | Device: %s | Lab Test Acc: %.2f%%",
+            "ConvNeXt-Tiny loaded successfully | Classes: %d | Device: %s | Lab Test Acc: %.2f%% | Source: %s",
             self.num_classes,
             self.device,
             self.test_accuracy * 100,
+            self.model_path.parent.name,
         )
 
     def parse_class_label(self, raw_class: str) -> Tuple[str, str, bool]:

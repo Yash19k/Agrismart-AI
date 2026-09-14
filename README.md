@@ -24,8 +24,8 @@ The disease detection pipeline uses a fine-tuned **ConvNeXt-Tiny** architecture 
       )
   ])
   ```
-- **Inference Checkpoint**: `model/agrismart_convnext_tiny_final.pth` (111 MB, containing `model_state_dict`, class names, class-to-index mapping, and training metadata)
-- **Class Mapping**: `model/class_names.json` (38 authoritative classes)
+- **Inference Checkpoint**: `model/crop_disease_detection/agrismart_convnext_tiny_final.pth` (111 MB, containing `model_state_dict`, class names, class-to-index mapping, and training metadata)
+- **Class Mapping**: `model/crop_disease_detection/class_names.json` (38 authoritative classes)
 - **Device Support**: Automatic CUDA GPU acceleration with robust CPU fallback
 - **Inference Latency**: ~50–90 ms (CPU inference)
 
@@ -51,7 +51,7 @@ The disease detection pipeline uses a fine-tuned **ConvNeXt-Tiny** architecture 
 
 In accordance with strict agronomic safety and transparency principles:
 
-- **Lab Test Accuracy**: **98.89%** (PlantVillage controlled benchmark)
+- **Lab Test Accuracy**: **98.56%** (PlantVillage controlled benchmark)
 - **Out-of-Distribution Real-World Field Accuracy**: **~55.5%** (PlantDoc in-the-wild benchmark)
 
 > [!WARNING]

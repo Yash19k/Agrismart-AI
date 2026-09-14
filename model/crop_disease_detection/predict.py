@@ -1,8 +1,16 @@
 """
-AgriSmart AI — Crop Disease Prediction (SIH 2026, Core Task)
-Usage:
+AgriSmart AI -- Crop Disease Prediction (SIH 2026, Core Task)
+
+Required core-task interface (PS Section 4.1):
+    predict(image_path) -> class_label
+
+CLI usage:
     python predict.py --image path/to/leaf.jpg
     python predict.py --image path/to/leaf.jpg --model path/to/model.pth
+
+Library usage:
+    from predict import predict
+    label = predict("path/to/leaf.jpg")
 """
 
 import argparse
@@ -22,8 +30,15 @@ IMAGE_SIZE = 224
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
 
+# Keyed by model_path so repeated predict() calls in the same process
+# (e.g. a web app handling many requests) don't reload weights every time.
+_MODEL_CACHE = {}
 
-def load_model(model_path, device):
+
+def _load_model(model_path, device):
+    if model_path in _MODEL_CACHE:
+        return _MODEL_CACHE[model_path]
+
     if not os.path.isfile(model_path):
         raise FileNotFoundError(f"Model checkpoint not found at: {model_path}")
 
@@ -45,10 +60,11 @@ def load_model(model_path, device):
     model.to(device)
     model.eval()
 
+    _MODEL_CACHE[model_path] = (model, class_names)
     return model, class_names
 
 
-def preprocess_image(image_path):
+def _preprocess_image(image_path):
     if not os.path.isfile(image_path):
         raise FileNotFoundError(f"Image not found at: {image_path}")
 
@@ -64,10 +80,18 @@ def preprocess_image(image_path):
 
 
 def predict(image_path, model_path=DEFAULT_MODEL_PATH):
+    """Core-task interface required by the PS: predict(image_path) -> class_label (str)."""
+    label, _confidence = predict_with_confidence(image_path, model_path=model_path)
+    return label
+
+
+def predict_with_confidence(image_path, model_path=DEFAULT_MODEL_PATH):
+    """Same as predict(), but also returns the softmax confidence. Used by the
+    CLI below and by app/farmer_app.py to show a confidence score to the farmer."""
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model, class_names = load_model(model_path, device)
-    image_tensor = preprocess_image(image_path).to(device)
+    model, class_names = _load_model(model_path, device)
+    image_tensor = _preprocess_image(image_path).to(device)
 
     with torch.no_grad():
         outputs = model(image_tensor)
@@ -85,7 +109,7 @@ def main():
     args = parser.parse_args()
 
     try:
-        predicted_class, confidence = predict(args.image, args.model)
+        predicted_class, confidence = predict_with_confidence(args.image, args.model)
     except (FileNotFoundError, KeyError) as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
