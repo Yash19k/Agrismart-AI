@@ -1,6 +1,24 @@
 import React from 'react';
 import { Bot, Sparkles, MessageSquare, ArrowRight, ShieldAlert, Droplets, Sun, HelpCircle } from 'lucide-react';
 
+const getCropEmoji = (crop) => {
+  const c = (crop || '').toLowerCase();
+  if (c.includes('tomato')) return '🍅';
+  if (c.includes('corn') || c.includes('maize')) return '🌽';
+  if (c.includes('potato')) return '🥔';
+  if (c.includes('grape')) return '🍇';
+  if (c.includes('apple')) return '🍎';
+  if (c.includes('pepper') || c.includes('bell')) return '🫑';
+  if (c.includes('cherry')) return '🍒';
+  if (c.includes('peach')) return '🍑';
+  if (c.includes('strawberry')) return '🍓';
+  if (c.includes('orange') || c.includes('citrus')) return '🍊';
+  if (c.includes('soybean')) return '🌱';
+  if (c.includes('squash')) return '🎃';
+  if (c.includes('blueberry') || c.includes('raspberry')) return '🫐';
+  return '🌿';
+};
+
 /**
  * AgriSmartAgronomistCard
  *
@@ -18,7 +36,13 @@ export default function AgriSmartAgronomistCard({
 }) {
   const crop = prediction?.cropName || 'Tomato';
   const disease = prediction?.diseaseName || 'Early Blight';
-  const confidence = prediction?.confidence != null ? `${prediction.confidence}%` : '91.4%';
+  const confidence = prediction?.confidencePercent
+    ? prediction.confidencePercent
+    : (prediction?.confidence != null
+        ? (typeof prediction.confidence === 'number' && prediction.confidence <= 1
+            ? `${(prediction.confidence * 100).toFixed(1)}%`
+            : `${prediction.confidence}%`)
+        : '87.3%');
   const isHealthy = Boolean(prediction?.isHealthy);
   const riskLevel = spreadRisk?.level || 'High';
 
@@ -46,7 +70,7 @@ export default function AgriSmartAgronomistCard({
           </span>
 
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-white/10 text-emerald-100 backdrop-blur-xs">
-            🍅 {crop} • {disease} ({confidence})
+            {getCropEmoji(crop)} {crop} • {disease} ({confidence})
           </span>
 
           <span

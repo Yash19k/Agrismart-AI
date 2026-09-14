@@ -12,13 +12,37 @@ import { Maximize2, X, Leaf, BarChart2, AlertCircle } from 'lucide-react';
  *   - Model Confidence: 91.4% (with signal/chart icon)
  *   - Disease Detected callout: soft pink/red box with alert icon and diagnostic note
  */
+const getCropEmoji = (crop) => {
+  const c = (crop || '').toLowerCase();
+  if (c.includes('tomato')) return '🍅';
+  if (c.includes('corn') || c.includes('maize')) return '🌽';
+  if (c.includes('potato')) return '🥔';
+  if (c.includes('grape')) return '🍇';
+  if (c.includes('apple')) return '🍎';
+  if (c.includes('pepper') || c.includes('bell')) return '🫑';
+  if (c.includes('cherry')) return '🍒';
+  if (c.includes('peach')) return '🍑';
+  if (c.includes('strawberry')) return '🍓';
+  if (c.includes('orange') || c.includes('citrus')) return '🍊';
+  if (c.includes('soybean')) return '🌱';
+  if (c.includes('squash')) return '🎃';
+  if (c.includes('blueberry') || c.includes('raspberry')) return '🫐';
+  return '🌿';
+};
+
 export default function PredictionCard({ prediction, uploadedImage, fileName = "tomato_leaf.jpg", fileSize = "2.4 MB" }) {
   const [showLightbox, setShowLightbox] = useState(false);
 
   const cropName = prediction?.cropName || 'Tomato';
   const diseaseName = prediction?.diseaseName || 'Early Blight';
   const pathogen = prediction?.pathogen || 'Alternaria solani';
-  const confidence = prediction?.confidence != null ? `${prediction.confidence}%` : '91.4%';
+  const confidence = prediction?.confidencePercent
+    ? prediction.confidencePercent
+    : (prediction?.confidence != null
+        ? (typeof prediction.confidence === 'number' && prediction.confidence <= 1
+            ? `${(prediction.confidence * 100).toFixed(1)}%`
+            : `${prediction.confidence}%`)
+        : '87.3%');
   const message = prediction?.message || 'The uploaded leaf shows clear symptoms of Early Blight.';
 
   // Default fallback leaf image if none provided yet
@@ -68,8 +92,8 @@ export default function PredictionCard({ prediction, uploadedImage, fileName = "
           <div className="md:col-span-6 flex flex-col justify-between space-y-3.5">
             {/* Crop */}
             <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-full bg-red-50 text-red-500 flex items-center justify-center text-lg flex-shrink-0">
-                🍅
+              <div className="w-9 h-9 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center text-lg flex-shrink-0">
+                {getCropEmoji(cropName)}
               </div>
               <div>
                 <p className="text-[11px] text-gray-400 font-medium leading-none">Crop</p>
