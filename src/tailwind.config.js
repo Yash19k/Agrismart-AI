@@ -44,7 +44,8 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        sans: ['"Plus Jakarta Sans"', '"DM Sans"', 'Inter', 'system-ui', 'sans-serif'],
+        serif: ['"EB Garamond"', 'serif'],
       },
       boxShadow: {
         'farmer': '0 4px 20px -2px rgba(27, 67, 50, 0.12), 0 2px 6px -1px rgba(27, 67, 50, 0.08)',

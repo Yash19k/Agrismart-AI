@@ -284,6 +284,7 @@ export function GoogleTranslateDropdown({
   // Styling variants
   const isAppHeader = variant === 'appHeader';
   const isMobile = variant === 'mobile';
+  const isAuth = variant === 'auth';
 
   if (isMobile) {
     return (
@@ -331,23 +332,31 @@ export function GoogleTranslateDropdown({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-label="Select Language"
-        className={`flex items-center gap-2 rounded-xl font-bold transition-all cursor-pointer select-none ${
-          isAppHeader
-            ? 'px-2.5 sm:px-3 py-1.5 text-xs bg-gray-50 hover:bg-gray-100 text-gray-800 border border-gray-200 hover:border-gray-300'
-            : 'px-3.5 py-2 text-sm bg-agri-50/90 hover:bg-agri-100 text-agri-950 border-2 border-agri-200 hover:border-agri-300 shadow-2xs'
+        className={`flex items-center gap-2 transition-all cursor-pointer select-none ${
+          isAuth
+            ? 'px-3.5 py-2 text-xs font-semibold text-[#0c2720] bg-white/90 hover:bg-white backdrop-blur-md border border-white/80 rounded-full shadow-sm'
+            : isAppHeader
+            ? 'px-2.5 sm:px-3 py-1.5 text-xs font-bold bg-gray-50 hover:bg-gray-100 text-gray-800 border border-gray-200 hover:border-gray-300 rounded-xl'
+            : 'px-3.5 py-2 text-sm font-bold bg-agri-50/90 hover:bg-agri-100 text-agri-950 border-2 border-agri-200 hover:border-agri-300 shadow-2xs rounded-xl'
         }`}
       >
         <Globe
           className={`flex-shrink-0 ${
-            isAppHeader ? 'w-3.5 h-3.5 text-emerald-600' : 'w-4 h-4 sm:w-5 sm:h-5 text-agri-700'
+            isAuth
+              ? 'w-4 h-4 text-emerald-700'
+              : isAppHeader
+              ? 'w-3.5 h-3.5 text-emerald-600'
+              : 'w-4 h-4 sm:w-5 sm:h-5 text-agri-700'
           }`}
         />
-        <span className="font-extrabold tracking-tight">
+        <span className={isAuth ? 'font-semibold text-slate-800' : 'font-extrabold tracking-tight'}>
           {activeLangObj.nativeName}
         </span>
         <span
           className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${
-            isAppHeader
+            isAuth
+              ? 'bg-emerald-100 text-emerald-800'
+              : isAppHeader
               ? 'bg-emerald-100/80 text-emerald-900 hidden md:inline-block'
               : 'bg-agri-200/80 text-agri-900'
           }`}

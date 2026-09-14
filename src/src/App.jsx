@@ -33,8 +33,8 @@ export function App() {
         <LanguageProvider>
           <AuthProvider>
           <Routes>
-            {/* Public routes (redirect to dashboard if logged in) */}
-            <Route path="/" element={<PublicOnlyRoute><LandingPage /></PublicOnlyRoute>} />
+            {/* Public routes */}
+            <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
             <Route path="/signup" element={<PublicOnlyRoute><SignupPage /></PublicOnlyRoute>} />
 
