@@ -1,16 +1,4 @@
-/**
- * FRONTEND DEMO MODE — BACKEND NOT CONNECTED
- *
- * This service acts as an adapter layer for crop disease detection.
- * In demo mode, it simulates an asynchronous analysis pipeline using centralized demo data.
- * When backend integration is ready, replace `analyzeDisease` with the real Django endpoint call:
- *   POST /api/disease/predict/
- *
- * All UI components receive clean, normalized props shaped by this service.
- */
-
-import { diseaseDemoResult } from '../data/diseaseDemoData';
-import { SAMPLE_LEAVES } from '../data/sampleLeaves';
+import { predictDisease } from '../api/disease';
 
 /**
  * Format file size into human-readable string (KB/MB)
@@ -24,60 +12,51 @@ function formatFileSize(bytes) {
 }
 
 /**
- * Analyze crop leaf image.
- * Simulated frontend-only implementation with realistic latency.
- * If the image is one of our provided sample leaves, returns its tailored diagnostic profile.
+ * Analyze crop leaf image using the real ConvNeXt-Tiny deep learning backend.
  *
  * @param {File} imageFile - The leaf image selected by the user.
  * @returns {Promise<object>} - Fully resolved analysis result.
  */
 export async function analyzeDisease(imageFile) {
-  // Validate file presence
   if (!imageFile) {
     throw new Error('Please select a crop leaf image before starting analysis.');
   }
 
-  // Simulate network latency & model inference (1400ms)
-  await new Promise((resolve) => setTimeout(resolve, 1400));
-
   // Generate a live preview URL from the actual user-selected file
   const previewUrl = URL.createObjectURL(imageFile);
 
-  const now = new Date();
-  const timeString = `Today, ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-
-  // Check if this is one of our provided sample leaves
-  let diagnosticProfile = diseaseDemoResult;
-  if (imageFile.sampleMeta?.details) {
-    diagnosticProfile = imageFile.sampleMeta.details;
-  } else {
-    const matchedSample = SAMPLE_LEAVES.find(
-      (s) => s.fileName === imageFile.name || s.id === imageFile.sampleId
+  try {
+    const apiResponse = await predictDisease(imageFile);
+    const mapped = mapDiseaseApiResponse(apiResponse);
+    return {
+      ...mapped,
+      uploadedImage: previewUrl,
+      fileName: imageFile.name || 'leaf_sample.jpg',
+      fileSize: formatFileSize(imageFile.size),
+    };
+  } catch (err) {
+    console.error('Plant disease inference API error:', err);
+    throw new Error(
+      err?.response?.data?.message ||
+      "We couldn't analyze this image. Please try another clear leaf image."
     );
-    if (matchedSample?.details) {
-      diagnosticProfile = matchedSample.details;
-    }
   }
-
-  // Return resolved profile with user's file and timestamp bound
-  return {
-    ...diagnosticProfile,
-    uploadedImage: previewUrl,
-    fileName: imageFile.name || 'leaf_sample.jpg',
-    fileSize: formatFileSize(imageFile.size),
-    analyzedAt: timeString,
-  };
 }
 
 /**
- * Future backend response mapper.
- * Use this when connecting Django API endpoint: POST /api/disease/predict/
+ * Backend response mapper.
+ * Normalizes the Django API response payload into the structure expected by all UI components.
  *
- * @param {object} apiResponse - Raw backend response payload
- * @returns {object} - Normalized structure matching diseaseDemoResult
+ * @param {object} apiResponse - Raw backend response payload from POST /api/disease/predict/
+ * @returns {object} - Normalized structure matching UI contract
  */
 export function mapDiseaseApiResponse(apiResponse) {
   if (!apiResponse) return null;
+
+  const rawConf = apiResponse.confidence ?? apiResponse.confidence_percentage;
+  const confPercent = typeof rawConf === 'number'
+    ? (rawConf <= 1 ? Math.round(rawConf * 1000) / 10 : rawConf)
+    : parseFloat(rawConf) || 0;
 
   return {
     uploadedImage: apiResponse.image_url || null,
@@ -88,9 +67,10 @@ export function mapDiseaseApiResponse(apiResponse) {
     prediction: {
       cropName: apiResponse.crop_name || apiResponse.crop_type || 'Unknown Crop',
       scientificCrop: apiResponse.scientific_crop || '',
-      diseaseName: apiResponse.predicted_class || apiResponse.disease_name || 'No Disease Detected',
+      diseaseName: apiResponse.disease_name || apiResponse.predicted_class || 'No Disease Detected',
       pathogen: apiResponse.pathogen || '',
-      confidence: typeof apiResponse.confidence === 'number' ? apiResponse.confidence : 0,
+      confidence: confPercent,
+      confidencePercent: apiResponse.confidence_percent || `${confPercent}%`,
       status: apiResponse.status || (apiResponse.is_healthy ? 'Healthy Foliage' : 'Disease Detected'),
       isHealthy: Boolean(apiResponse.is_healthy),
       message: apiResponse.message || apiResponse.recommendations || 'Analysis completed.',
@@ -110,9 +90,9 @@ export function mapDiseaseApiResponse(apiResponse) {
     },
 
     diseaseInformation: {
-      diseaseName: apiResponse.predicted_class || 'Crop Condition',
-      category: apiResponse.category || 'Fungal',
-      scientificName: apiResponse.scientific_name || '',
+      diseaseName: apiResponse.disease_name || apiResponse.predicted_class || 'Crop Condition',
+      category: apiResponse.category || 'Fungal Infection',
+      scientificName: apiResponse.scientific_name || apiResponse.pathogen || '',
       affectedCrop: apiResponse.crop_name || 'Crop',
       description: apiResponse.description || 'Consult agricultural extension for localized disease patterns.',
     },
@@ -170,6 +150,16 @@ export function mapDiseaseApiResponse(apiResponse) {
         'Follow local agricultural extension guidance and consult a certified agronomist.',
     },
 
-    confidenceBreakdown: apiResponse.confidence_breakdown || [],
+    confidenceBreakdown: Array.isArray(apiResponse.confidence_breakdown)
+      ? apiResponse.confidence_breakdown.map((item, idx) => ({
+          disease: item.disease ? `${item.crop ? item.crop + ' — ' : ''}${item.disease}` : (item.raw_class || 'Alternative'),
+          probability: typeof item.probability === 'number'
+            ? item.probability
+            : Math.round((item.confidence || 0) * 1000) / 10,
+          isTarget: idx === 0 || item.isTarget,
+        }))
+      : (apiResponse.confidenceBreakdown || []),
+
+    modelMetrics: apiResponse.model_metrics || null,
   };
 }

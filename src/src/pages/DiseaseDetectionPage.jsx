@@ -58,6 +58,7 @@ export default function DiseaseDetectionPage() {
   const [stage, setStage] = useState('upload');
   const [selectedFile, setSelectedFile] = useState(null);
   const [analysisResult, setAnalysisResult] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const handleOpenAssistant = (query = null) => {
     navigate('/assistant', {
@@ -87,23 +88,26 @@ export default function DiseaseDetectionPage() {
   // Upload handler
   const handleImageSelected = (file) => {
     setSelectedFile(file);
+    setErrorMessage('');
     setStage('preview');
   };
 
-  // Run analysis simulation
+  // Run deep learning analysis via backend
   const handleStartAnalysis = async () => {
     if (!selectedFile) return;
     setStage('loading');
+    setErrorMessage('');
     try {
       const result = await analyzeDisease(selectedFile);
-      setAnalysisResult(result || diseaseDemoResult);
+      setAnalysisResult(result);
       setStage('result');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
-      console.error(err);
-      // Fallback to sample analysis so the farmer always sees actionable results
-      setAnalysisResult(diseaseDemoResult);
-      setStage('result');
+      console.error('Disease detection error:', err);
+      setErrorMessage(
+        err.message || "We couldn't analyze this image. Please try another clear leaf image."
+      );
+      setStage('error');
     }
   };
 
@@ -111,6 +115,7 @@ export default function DiseaseDetectionPage() {
   const handleAnalyzeAnother = () => {
     setSelectedFile(null);
     setAnalysisResult(null);
+    setErrorMessage('');
     setStage('upload');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -228,7 +233,7 @@ export default function DiseaseDetectionPage() {
             <div className="flex items-center gap-2">
               <div
                 className={`w-6 h-6 rounded-full text-[11px] font-bold flex items-center justify-center shadow-xs transition-colors ${
-                  stage === 'preview' || stage === 'loading'
+                  stage === 'preview' || stage === 'loading' || stage === 'error'
                     ? 'bg-emerald-800 text-white ring-2 ring-emerald-300'
                     : stage === 'result'
                     ? 'bg-emerald-600 text-white'
@@ -239,7 +244,7 @@ export default function DiseaseDetectionPage() {
               </div>
               <span
                 className={`text-xs font-bold ${
-                  stage === 'preview' || stage === 'loading'
+                  stage === 'preview' || stage === 'loading' || stage === 'error'
                     ? 'text-emerald-900 font-extrabold'
                     : 'text-gray-600'
                 }`}
@@ -296,6 +301,38 @@ export default function DiseaseDetectionPage() {
           {stage === 'loading' && (
             <div className="max-w-2xl mx-auto py-10">
               <AnalysisLoader onCancel={() => setStage('upload')} />
+            </div>
+          )}
+
+          {stage === 'error' && (
+            <div className="max-w-2xl mx-auto py-10">
+              <div className="bg-white rounded-3xl p-8 sm:p-10 border border-red-100 shadow-sm text-center">
+                <div className="w-16 h-16 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-4 border border-red-100">
+                  <ShieldAlert className="w-8 h-8 stroke-[2]" />
+                </div>
+                <h3 className="text-lg font-black text-gray-900 mb-2">Analysis Could Not Complete</h3>
+                <p className="text-sm text-gray-600 mb-6 max-w-md mx-auto">
+                  {errorMessage || "We couldn't analyze this image. Please try another clear leaf image."}
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleStartAnalysis}
+                    className="px-5 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer active:scale-95"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Retry Analysis</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setSelectedFile(null); setErrorMessage(''); setStage('upload'); }}
+                    className="px-5 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-100 text-gray-700 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer active:scale-95"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>Choose Another Image</span>
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
