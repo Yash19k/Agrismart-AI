@@ -24,8 +24,35 @@
   --color-earth-800: #654637;
   --color-earth-900: #533b30;
 
+  --font-serif: "EB Garamond", serif;
+
+  --color-forest-50: #ecfef3;
+  --color-forest-100: #baeed9;
+  --color-forest-200: #9ed1bd;
+  --color-forest-600: #2e6a47;
+  --color-forest-700: #1b4d3e;
+  --color-forest-800: #144c32;
+  --color-forest-900: #003629;
+  --color-forest-950: #002117;
+
+  --color-mint-50: #f2fcf6;
+  --color-mint-100: #ecfef3;
+  --color-mint-200: #afeec2;
+  --color-mint-300: #8abda9;
+  --color-mint-500: #2e6a47;
+
   --shadow-farmer: 0 4px 20px -2px rgba(27, 67, 50, 0.12), 0 2px 6px -1px rgba(27, 67, 50, 0.08);
   --shadow-farmer-lg: 0 10px 30px -4px rgba(27, 67, 50, 0.16), 0 4px 10px -2px rgba(27, 67, 50, 0.08);
+}
+
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 9999px;
 }
 
 @layer base {
