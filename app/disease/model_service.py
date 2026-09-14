@@ -364,10 +364,9 @@ class DiseaseModelService:
         return cls._instance
 
     def __init__(self, model_path: Union[str, Path, None] = None):
-        if self._initialized:
+        if getattr(self, "_initialized", False) and getattr(self, "model", None) is not None:
             return
 
-        self._initialized = True
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         logger.info("Initializing DiseaseModelService on device: %s", self.device)
 
@@ -398,6 +397,7 @@ class DiseaseModelService:
         self.plantdoc_accuracy: float = 0.5551
 
         self._load_model()
+        self._initialized = True
 
     def _load_model(self):
         """Loads model weights and class definitions."""
@@ -508,6 +508,10 @@ class DiseaseModelService:
             # File-like object (e.g. Django UploadedFile)
             image = Image.open(image_input).convert("RGB")
 
+        # Ensure model is loaded
+        if self.model is None:
+            self._load_model()
+
         # Preprocess
         tensor = self.transform(image).unsqueeze(0).to(self.device)
 
@@ -583,6 +587,8 @@ _service_instance = None
 
 def get_disease_model_service() -> DiseaseModelService:
     global _service_instance
-    if _service_instance is None:
+    if _service_instance is None or getattr(_service_instance, "model", None) is None:
         _service_instance = DiseaseModelService()
+        if getattr(_service_instance, "model", None) is None:
+            _service_instance._load_model()
     return _service_instance

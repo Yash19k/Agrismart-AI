@@ -20,7 +20,11 @@ from .ml.constants import (
 )
 from .ml.recommendations import generate_recommendation
 
-MODEL_PATH: Path = Path(__file__).resolve().parent / "ml" / "irrigation_pipeline.joblib"
+PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
+MODEL_PATH: Path = PROJECT_ROOT / "model" / "irrigation" / "irrigation_pipeline.joblib"
+if not MODEL_PATH.exists():
+    # Fallback to internal app path if present
+    MODEL_PATH = Path(__file__).resolve().parent / "ml" / "irrigation_pipeline.joblib"
 
 # Module-level pipeline cache (loaded once per process)
 _PIPELINE = None
@@ -37,7 +41,7 @@ def _get_pipeline():
         if not MODEL_PATH.exists():
             raise FileNotFoundError(
                 f"Trained irrigation model not found at {MODEL_PATH}. "
-                "Ensure the app/irrigation/ml/ directory is present."
+                "Ensure model/irrigation/irrigation_pipeline.joblib is present."
             )
         _PIPELINE = joblib.load(MODEL_PATH)
     return _PIPELINE

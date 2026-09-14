@@ -13,4 +13,5 @@ urlpatterns = [
     path('api/dashboard/', include('dashboard.urls')),
     path('api/assistant/', include('assistant.urls')),
     path('api/irrigation/', include('irrigation.urls')),
+    path('api/crops/', include('crops.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

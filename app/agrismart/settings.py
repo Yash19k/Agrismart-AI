@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'dashboard',
     'assistant',
     'irrigation',
+    'crops',
 ]
 
 MIDDLEWARE = [
