@@ -60,7 +60,7 @@ export default function AppSidebar({
       if (id === 'sustainability') navigate('/sustainability');
       if (id === 'myfarm') navigate('/dashboard?modal=farm');
       if (id === 'weather') navigate('/dashboard?modal=weather');
-      if (id === 'crop') navigate('/dashboard');
+      if (id === 'crop') navigate('/crop');
     }
     if (setMobileOpen) setMobileOpen(false);
   };

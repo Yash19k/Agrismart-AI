@@ -44,6 +44,7 @@ venv.bak/
 *.zip
 *.tar.gz
 *.pth
+!model/*.pth
 *.pt
 *.h5
 *.onnx
