@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AgriSmart - AI-Powered Agriculture &amp; Crop Health Intelligence</title>
+<!-- Google Fonts: EB Garamond for editorial serif & Plus Jakarta Sans / DM Sans for clean body -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..700;1,400..700&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700&amp;family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 with forms and container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"EB Garamond"', 'serif'],
+            sans: ['"Plus Jakarta Sans"', '"DM Sans"', 'sans-serif'],
+          },
+          colors: {
+            forest: {
+              50: '#ecfef3',
+              100: '#baeed9',
+              200: '#9ed1bd',
+              600: '#2e6a47',
+              700: '#1b4d3e',
+              800: '#144c32',
+              900: '#003629',
+              950: '#002117',
+            },
+            mint: {
+              50: '#f2fcf6',
+              100: '#ecfef3',
+              200: '#afeec2',
+              300: '#8abda9',
+              500: '#2e6a47',
+            }
+          }
+        }
+      }
+    }
+</script>
+<!-- Custom Styles for Arch Clipping and Subtleties -->
+<style data-purpose="hero-styling">
+    .hero-arch-mask {
+      border-bottom-left-radius: 40px;
+      border-bottom-right-radius: 40px;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background-color: #d1d5db;
+      border-radius: 9999px;
+    }
+</style>
+</head>
+<body class="bg-stone-900 text-stone-800 font-sans antialiased min-h-screen p-2 sm:p-4 md:p-6 lg:p-8 relative selection:bg-emerald-200" style="background: linear-gradient(180deg, #dcfce7 0%, #e0f2fe 45%, #bae6fd 80%, #f0fdf4 100%); min-height: 100vh;">
+<!-- BEGIN: PageBackground -->
+<!-- Full-page panoramic landscape wallpaper from input dataset (IMAGE_3) -->
+<div class="fixed inset-0 pointer-events-none z-0"><div class="absolute inset-0 bg-gradient-to-b from-[#ecfef3]/90 via-[#f0fdf4]/70 to-[#dff1fd]/90"></div><div class="absolute -bottom-40 left-1/4 w-[700px] h-[700px] rounded-full bg-[#38bdf8]/15 blur-3xl pointer-events-none"></div><div class="absolute top-1/3 -right-20 w-[550px] h-[550px] rounded-full bg-[#bae6fd]/25 blur-3xl pointer-events-none"></div></div>
+<!-- END: PageBackground -->
+<!-- BEGIN: AppContainer -->
+<div class="relative z-10 max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<!-- ========================================================================= -->
+<!-- BEGIN: LeftMainPanel (Large Column)                                       -->
+<!-- ========================================================================= -->
+<main class="lg:col-span-8 bg-[#fbfdfb]/95 backdrop-blur-md rounded-[32px] shadow-2xl border border-white/70 overflow-hidden flex flex-col space-y-0" style="background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.94) 60%, rgba(240,249,255,0.92) 100%); box-shadow: 0 20px 50px -12px rgba(16, 30, 24, 0.08), 0 0 0 1px rgba(255,255,255,0.9);">
+<!-- 1. Navigation Bar -->
+<nav aria-label="Main Navigation" class="px-6 md:px-8 py-4 md:py-5 flex items-center justify-between border-b border-stone-200/70 bg-white/80 sticky top-0 z-30 backdrop-blur-md">
+<!-- Logo & AI CORE Badge -->
+<div class="flex items-center space-x-3">
+<a class="text-2xl font-serif font-bold tracking-tight text-forest-900 flex items-center" href="#">
+          AgriSmart
+        </a>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-mint-100 text-forest-700 border border-mint-200 uppercase tracking-wider">
+          AI CORE
+        </span>
+</div>
+<!-- Navigation Links -->
+<div class="hidden md:flex items-center space-x-6 text-xs font-medium text-stone-600">
+<a class="text-forest-800 font-semibold underline underline-offset-4 decoration-forest-600" href="#">Home</a>
+<a class="hover:text-forest-900 transition-colors" href="#disease-detection">Disease Detection</a>
+<a class="hover:text-forest-900 transition-colors" href="#supported-crops">Supported Crops</a>
+<a class="hover:text-forest-900 transition-colors" href="#technology">Technology</a>
+<a class="hover:text-forest-900 transition-colors" href="#how-it-works">How It Works</a>
+<a class="hover:text-forest-900 transition-colors" href="#insights">Insights</a>
+</div>
+<!-- CTA Action -->
+<div>
+<a class="px-4 py-2 text-xs font-medium border border-stone-300 hover:border-forest-700 rounded-full text-stone-800 bg-white hover:bg-forest-50 shadow-sm transition inline-flex items-center gap-1.5 group" href="#disease-detection">
+<span>Scan a Plant</span>
+<span class="text-forest-700 group-hover:translate-x-0.5 transition-transform">→</span>
+</a>
+</div>
+</nav>
+<!-- 2. Hero Section with Curved Arch -->
+<header class="relative overflow-hidden hero-arch-mask border-b border-forest-900/10 min-h-[520px] flex flex-col justify-between">
+<!-- Hero Background Image (IMAGE_5) -->
+<div class="absolute inset-0 z-0">
+<img alt="Illustrated agricultural fields with tractors and mountain landscape" class="w-full h-full object-cover object-bottom" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtt4sCx7i8CjVDnMvkihtjmMmBhCqhPTZ-lMtRBXHe3cq7dWTPsDM_1jk0eDpRvH-ARuikM-bQuX1WR2p-KO1gZreolRitle-JAd0EjXb4XUw4YFwc4KBZeZfwL1XuRIqeSkHxOdQvDyH5BSxZy5n2ByQqN27KpFTi19qtfyZMhR7Keik_jasQyFt5IiNdhU1t9vZA_fO9RlcOjV3MRoQswzdHzZ-n9Jj9MtPUNrFnvviGPTQyVHarDZ1ranCAK6BL174"/>
+<!-- Gradient veil for maximum editorial legibility -->
+<div class="absolute inset-0 bg-gradient-to-b from-[#fbfdfb]/95 via-[#fbfdfb]/80 to-transparent h-3/4"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent"></div>
+</div>
+<!-- Hero Content Layer -->
+<div class="relative z-10 pt-10 pb-20 px-6 md:px-14 text-center max-w-2xl mx-auto flex flex-col items-center">
+<!-- Value Flow Pill Badge -->
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-forest-50/90 border border-forest-200 text-[10px] font-semibold tracking-wider text-forest-800 uppercase mb-4 shadow-sm backdrop-blur-sm">
+<span>IMAGE</span>
+<span class="text-forest-600">→</span>
+<span>AI ANALYSIS</span>
+<span class="text-forest-600">→</span>
+<span>DISEASE DETECTION</span>
+</div>
+<h1 class="text-4xl sm:text-5xl md:text-[54px] font-serif text-forest-950 leading-[1.12] tracking-tight mb-4">
+          Where AI Meets <br/>
+<span class="italic font-normal text-forest-700">Healthier Crops</span>
+</h1>
+<p class="text-sm md:text-base text-stone-700 leading-relaxed max-w-xl font-normal mb-7">
+          AI-powered crop health intelligence that helps farmers identify plant diseases early, understand crop health, and make faster field decisions.
+        </p>
+<!-- CTAs -->
+<div class="flex flex-wrap items-center justify-center gap-3">
+<a class="px-6 py-2.5 rounded-full bg-forest-700 hover:bg-forest-900 text-white text-xs font-semibold shadow-md hover:shadow-lg transition" href="#disease-detection">
+            Analyze a Crop
+          </a>
+<a class="px-6 py-2.5 rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-300 text-xs font-medium shadow-sm transition" href="#technology">
+            Explore Technology
+          </a>
+</div>
+</div>
+<!-- Transparent spacer maintaining visual depth for bottom tractors -->
+<div class="relative z-10 h-16 pointer-events-none"></div>
+</header><div class="px-8 md:px-14 py-8 bg-gradient-to-r from-white via-[#f0fdf4] to-white border-b border-stone-200/60 flex flex-col sm:flex-row items-center justify-between gap-6"><div class="max-w-md"><p class="text-base md:text-lg font-serif text-[#101e18] leading-snug font-normal">We are committed to transforming agriculture with innovative <span class="text-[#2e6a47] font-semibold">technology and eco-friendly</span> practices.</p></div><div class="flex items-center space-x-10 sm:space-x-12"><div class="text-center sm:text-left"><div class="text-3xl sm:text-4xl font-serif text-[#101e18] font-normal tracking-tight">193k+</div><div class="text-[11px] text-[#707974] tracking-wide mt-0.5">Field diagnoses in 2024</div></div><div class="text-center sm:text-left"><div class="text-3xl sm:text-4xl font-serif text-[#101e18] font-normal tracking-tight">90%</div><div class="text-[11px] text-[#707974] tracking-wide mt-0.5">Farmer satisfaction</div></div></div></div>
+<!-- 3. SECTION 2: VALUE PROPOSITION ('Smarter Detection. Healthier Crops.') -->
+<section class="px-8 md:px-12 py-10 border-b border-stone-200/70 bg-white/60"><div class="text-center max-w-lg mx-auto mb-10"><span class="text-[11px] font-bold uppercase tracking-widest text-[#2e6a47] bg-[#afeec2]/40 px-3 py-1 rounded-full border border-[#afeec2]">Core Capabilities</span><h2 class="text-3xl md:text-4xl font-serif text-[#101e18] mt-3 font-normal">Our <span class="text-[#2e6a47] font-semibold">Services</span></h2><p class="text-xs text-[#707974] mt-2 font-normal">Dedicated to automated crop detection, agronomic computer vision, and sustainable field management.</p></div><div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5"><div class="bg-white rounded-2xl p-5 border border-white/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-lg transition group"><div class="w-10 h-10 rounded-xl bg-[#ecfef3] text-[#2e6a47] flex items-center justify-center mb-4 group-hover:scale-105 transition-transform"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div><h3 class="font-serif font-bold text-[#101e18] text-base mb-1.5 group-hover:text-[#2e6a47]">Early Detection</h3><p class="text-xs text-[#707974] leading-relaxed">Identify visible crop diseases before they spread across the field canopy.</p></div><div class="bg-white rounded-2xl p-5 border border-white/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-lg transition group"><div class="w-10 h-10 rounded-xl bg-[#ecfef3] text-[#2e6a47] flex items-center justify-center mb-4 group-hover:scale-105 transition-transform"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div><h3 class="font-serif font-bold text-[#101e18] text-base mb-1.5 group-hover:text-[#2e6a47]">AI-Powered Analysis</h3><p class="text-xs text-[#707974] leading-relaxed">Use computer vision to analyze crop and leaf images automatically and accurately.</p></div><div class="bg-white rounded-2xl p-5 border border-white/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-lg transition group"><div class="w-10 h-10 rounded-xl bg-[#ecfef3] text-[#2e6a47] flex items-center justify-center mb-4 group-hover:scale-105 transition-transform"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div><h3 class="font-serif font-bold text-[#101e18] text-base mb-1.5 group-hover:text-[#2e6a47]">Confidence Results</h3><p class="text-xs text-[#707974] leading-relaxed">Receive a predicted disease together with the model's calibrated confidence score.</p></div><div class="bg-white rounded-2xl p-5 border border-white/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-lg transition group"><div class="w-10 h-10 rounded-xl bg-[#ecfef3] text-[#2e6a47] flex items-center justify-center mb-4 group-hover:scale-105 transition-transform"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div><h3 class="font-serif font-bold text-[#101e18] text-base mb-1.5 group-hover:text-[#2e6a47]">Actionable Insights</h3><p class="text-xs text-[#707974] leading-relaxed">Turn disease detection into practical, chemical-conscious next steps for management.</p></div></div></section>
+<!-- 4. SECTION 3: PRIMARY PRODUCT: AI CROP DISEASE DETECTION -->
+<section aria-label="Interactive Model Preview" class="p-6 md:p-10 bg-forest-50/30 border-b border-stone-200/70" id="disease-detection">
+<div class="bg-white rounded-3xl border border-stone-200/90 shadow-sm p-6 md:p-8">
+<!-- Header Bar of Preview -->
+<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+<div>
+<div class="flex items-center space-x-3 mb-1">
+<span class="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-forest-50 text-forest-800 rounded-full border border-forest-200">
+                Primary Product
+              </span>
+<h3 class="text-xl md:text-2xl font-serif font-bold text-stone-900">
+                AI Crop Disease Detection
+              </h3>
+</div>
+<p class="text-xs text-stone-500">
+              Upload a crop or leaf image and let AgriSmart analyze it using our trained computer-vision model.
+            </p>
+</div>
+<span class="text-xs italic text-stone-400 font-serif self-start sm:self-auto">Simulated Field Inference Engine</span>
+</div>
+<!-- Diagnostic Interactive Workspace -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+<!-- Left: Inputs -->
+<div class="md:col-span-6 space-y-4">
+<!-- Crop Selector -->
+<div>
+<label class="block text-xs font-semibold text-stone-700 mb-1.5" for="crop-select">
+                Select Target Crop
+              </label>
+<div class="relative">
+<select class="w-full text-xs rounded-xl border-stone-300 bg-stone-50/60 py-2.5 pl-3 pr-8 focus:border-forest-700 focus:ring-forest-700 text-stone-800 font-medium" id="crop-select">
+<option selected="">Tomato (Solanum lycopersicum)</option>
+<option>Potato (Solanum tuberosum)</option>
+<option>Corn / Maize (Zea mays)</option>
+<option>Apple (Malus domestica)</option>
+<option>Grape (Vitis vinifera)</option>
+</select>
+</div>
+</div>
+<!-- Upload Drag Area -->
+<div class="border-2 border-dashed border-forest-200 bg-forest-50/40 rounded-2xl p-6 text-center hover:bg-forest-50/70 hover:border-forest-400 transition cursor-pointer group">
+<div class="w-10 h-10 mx-auto rounded-full bg-forest-100/70 flex items-center justify-center text-forest-700 mb-2 group-hover:scale-105 transition-transform">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+</div>
+<p class="text-xs font-semibold text-forest-950">
+                Click to upload leaf photo or <span class="underline decoration-forest-600">drag &amp; drop</span>
+</p>
+<p class="text-[11px] text-stone-500 mt-1">Supports JPG, PNG, WEBP (Smartphone &amp; drone high-res samples)</p>
+</div>
+<!-- Diagnostic Button -->
+<button class="w-full py-3 rounded-xl bg-forest-700 hover:bg-forest-800 active:bg-forest-900 text-white text-xs font-semibold shadow transition flex items-center justify-center gap-2">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Run Diagnostic Analysis</span>
+</button>
+</div>
+<!-- Right: Results Card -->
+<div class="md:col-span-6 bg-[#fbfdfa] rounded-2xl p-5 border border-stone-200/90 shadow-sm flex flex-col justify-between h-full">
+<div>
+<div class="flex items-center justify-between pb-3 border-b border-stone-200">
+<span class="text-[11px] font-bold uppercase tracking-wider text-stone-500">Diagnosis Summary</span>
+<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-200">
+                  Needs Attention
+                </span>
+</div>
+<!-- Pathogen -->
+<div class="mt-3">
+<span class="text-[11px] text-stone-500 block">Identified Pathogen Condition:</span>
+<div class="text-base font-serif font-bold text-stone-900 mt-0.5">
+                  Tomato Early Blight <span class="font-normal italic text-stone-500 text-xs">(Alternaria solani)</span>
+</div>
+</div>
+<!-- Confidence Bar -->
+<div class="mt-3">
+<div class="flex justify-between text-xs text-stone-600 font-medium mb-1">
+<span>Model Confidence</span>
+<span class="font-semibold text-forest-800">91.4%</span>
+</div>
+<div class="w-full h-2 bg-stone-200 rounded-full overflow-hidden">
+<div class="h-full bg-forest-700 rounded-full transition-all duration-500" style="width: 91.4%;"></div>
+</div>
+</div>
+<!-- Recommended Field Protocol -->
+<div class="mt-4 p-3.5 bg-forest-50/60 rounded-xl border border-forest-200/80 text-xs">
+<div class="font-semibold text-forest-950 flex items-center gap-1.5 mb-1 text-[11px] uppercase tracking-wide">
+<svg class="w-3.5 h-3.5 text-forest-700" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Recommended Field Guidance</span>
+</div>
+<p class="text-stone-700 text-[11px] leading-relaxed">
+                  Prune lower affected foliage immediately to halt upward spread. Avoid overhead sprinkler irrigation during warm afternoons to keep leaves dry.
+                </p>
+</div>
+</div>
+<div class="mt-4 pt-3 border-t border-stone-200 text-[10px] text-stone-400 flex items-center justify-between">
+<span>Direct field inference simulator</span>
+<span class="text-forest-700 font-medium">Model PyTorch ConvNeXt-v1</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 5. SECTION 4: SUPPORTED CROPS & DISEASES -->
+<section aria-label="Supported Crops" class="p-8 md:p-12 border-b border-stone-200/70" id="supported-crops">
+<div class="text-center max-w-lg mx-auto mb-8">
+<span class="text-[10px] font-bold uppercase tracking-widest text-forest-700 bg-forest-50 px-2.5 py-1 rounded-full border border-forest-100">
+          Field Coverage
+        </span>
+<h2 class="text-2xl md:text-3xl font-serif text-stone-900 mt-2">
+          What Can <span class="italic text-forest-700 font-normal">AgriSmart Detect?</span>
+</h2>
+<p class="text-xs text-stone-500 mt-1">
+          Authentic model classes organized by high-value commercial and staple crops.
+        </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Crop 1: Tomato -->
+<div class="bg-white rounded-2xl p-5 border border-stone-200/80 shadow-sm hover:border-forest-300 transition">
+<div class="flex items-center justify-between mb-3 pb-2 border-b border-stone-100">
+<div class="flex items-center space-x-2">
+<span class="text-lg">🍅</span>
+<div>
+<h3 class="font-serif font-bold text-stone-900 text-sm leading-none">Tomato</h3>
+<span class="text-[10px] italic text-stone-400">Solanum lycopersicum</span>
+</div>
+</div>
+<span class="text-[10px] font-semibold px-2 py-0.5 bg-stone-100 text-stone-600 rounded-full">5 Classes</span>
+</div>
+<div class="flex flex-wrap gap-1.5">
+<span class="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-amber-50 text-amber-900 border border-amber-200">Early Blight</span>
+<span class="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-red-50 text-red-900 border border-red-200">Late Blight</span>
+<span class="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-amber-50 text-amber-900 border border-amber-200">Leaf Mold</span>
+<span class="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-amber-50 text-amber-900 border border-amber-200">Bacterial Spot</span>
+<span class="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-900 border border-emerald-200">Healthy Canopy</span>
+</div>
+</div>
+<!-- Crop 2: Potato -->
+<div class="bg-white rounded-2xl p-5 border border-stone-200/80 shadow-sm hover:border-forest-300 transition">
+<div class="flex items-center justify-between mb-3 pb-2 border-b border-stone-100">
+<div class="flex items-center space-x-2">
+<span class="text-lg">🥔</span>
+<div>
+<h3 class="font-serif font-bold text-stone-900 text-sm leading-none">Potato</h3>
+<span class="text-[10px] italic text-stone-400">Solanum tuberosum</span>
+</div>
+</div>
+<span class="text-[10px] font-semibold px-2 py-0.5 bg-stone-100 text-stone-600 rounded-full">3 Classes</span>
+</div>
+<div class="flex flex-wrap gap-1.5">
+<span class="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-amber-50 text-amber-900 border border-amber-200">Early Blight</span>
+<span class="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-red-50 text-red-900 border border-red-200">Late Blight</span>
+<span class="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-900 border border-emerald-200">Healthy Foliage</span>
+</div>
+</div>
+<!-- Crop 3: Corn / Maize -->
+<div class="bg-white rounded-2xl p-5 border border-stone-200/80 shadow-sm hover:border-forest-300 transition">
+<div class="flex items-center justify-between mb-3 pb-2 border-b border-stone-100">
+<div class="flex items-center space-x-2">
+<span class="text-lg">🌽</span>
+<div>
+<h3 class="font-serif font-bold text-stone-900 text-sm leading-none">Corn (Maize)</h3>
+<span class="text-[10px] italic text-stone-400">Zea mays</span>
+</div>
+</div>
+<span class="text-[10px] font-semibold px-2 py-0.5 bg-stone-100 text-stone-600 rounded-full">4 Classes</span>
+</div>
+<div class="flex flex-wrap gap-1.5">
+<span class="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-amber-50 text-amber-900 border border-amber-200">Common Rust</span>
+<span class="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-amber-50 text-amber-900 border border-amber-200">Gray Leaf Spot</span>
+<span class="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-red-50 text-red-900 border border-red-200">Northern Leaf Blight</span>
+<span class="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-900 border border-emerald-200">Healthy Leaves</span>
+</div>
+</div>
+<!-- Crop 4: Apple -->
+<div class="bg-white rounded-2xl p-5 border border-stone-200/80 shadow-sm hover:border-forest-300 transition">
+<div class="flex items-center justify-between mb-3 pb-2 border-b border-stone-100">
+<div class="flex items-center space-x-2">
+<span class="text-lg">🍏</span>
+<div>
+<h3 class="font-serif font-bold text-stone-900 text-sm leading-none">Apple</h3>
+<span class="text-[10px] italic text-stone-400">Malus domestica</span>
+</div>
+</div>
+<span class="text-[10px] font-semibold px-2 py-0.5 bg-stone-100 text-stone-600 rounded-full">4 Classes</span>
+</div>
+<div class="flex flex-wrap gap-1.5">
+<span class="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-amber-50 text-amber-900 border border-amber-200">Apple Scab</span>
+<span class="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-red-50 text-red-900 border border-red-200">Black Rot</span>
+<span class="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-amber-50 text-amber-900 border border-amber-200">Cedar Apple Rust</span>
+<span class="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-900 border border-emerald-200">Healthy Leaves</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 6. SECTION 5: HOW IT WORKS ('From Leaf Image to Diagnosis') -->
+<section aria-label="How It Works" class="p-8 md:p-12 border-b border-stone-200/70 bg-stone-50/50" id="how-it-works">
+<div class="text-center max-w-lg mx-auto mb-10">
+<span class="text-[10px] font-bold uppercase tracking-widest text-forest-700 bg-forest-50 px-2.5 py-1 rounded-full border border-forest-100">
+          Simple 3-Step Workflow
+        </span>
+<h2 class="text-2xl md:text-3xl font-serif text-stone-900 mt-2">
+          From Leaf Image to <span class="italic text-forest-700 font-normal">Diagnosis</span>
+</h2>
+<p class="text-xs text-stone-500 mt-1">
+          Streamlined for instant field usage without requiring agronomic laboratory setups.
+        </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+<!-- Step 1 -->
+<div class="bg-white rounded-2xl p-6 border border-stone-200 shadow-sm relative">
+<div class="text-3xl font-serif font-bold text-forest-200 mb-2">01</div>
+<h3 class="font-serif font-bold text-stone-900 text-base mb-1.5">Upload</h3>
+<p class="text-xs text-stone-600 leading-relaxed">
+            Take or upload a clear smartphone photo of the affected crop or symptomatic leaf directly in the field.
+          </p>
+</div>
+<!-- Step 2 -->
+<div class="bg-white rounded-2xl p-6 border border-stone-200 shadow-sm relative">
+<div class="text-3xl font-serif font-bold text-forest-200 mb-2">02</div>
+<h3 class="font-serif font-bold text-stone-900 text-base mb-1.5">Analyze</h3>
+<p class="text-xs text-stone-600 leading-relaxed">
+            AgriSmart processes the image using its trained computer-vision model, extracting key foliar lesion signatures.
+          </p>
+</div>
+<!-- Step 3 -->
+<div class="bg-white rounded-2xl p-6 border border-stone-200 shadow-sm relative">
+<div class="text-3xl font-serif font-bold text-forest-200 mb-2">03</div>
+<h3 class="font-serif font-bold text-stone-900 text-base mb-1.5">Understand</h3>
+<p class="text-xs text-stone-600 leading-relaxed">
+            Receive the predicted disease, confidence score, and relevant agronomic guidance to protect your crops.
+          </p>
+</div>
+</div>
+</section>
+<!-- 7. SECTION 6: TECHNOLOGY PIPELINE & SECTION 7: MODEL PERFORMANCE -->
+<section aria-label="Technology &amp; Model Performance" class="p-8 md:p-12 border-b border-stone-200/70" id="technology">
+<div class="text-center max-w-xl mx-auto mb-8">
+<span class="text-[10px] font-bold uppercase tracking-widest text-forest-700 bg-forest-50 px-2.5 py-1 rounded-full border border-forest-100">
+          Architecture &amp; Rigor
+        </span>
+<h2 class="text-2xl md:text-3xl font-serif text-stone-900 mt-2">
+          Built with <span class="italic text-forest-700 font-normal">Computer Vision</span>
+</h2>
+<p class="text-xs text-stone-500 mt-1">
+          Combining state-of-the-art vision backbones with practical field agronomy calibrations.
+        </p>
+</div>
+<!-- Architectural Pipeline Diagram -->
+<div class="bg-stone-50 rounded-2xl border border-stone-200/90 p-5 md:p-6 mb-8 overflow-x-auto">
+<div class="min-w-[620px] flex items-center justify-between gap-2 text-center text-xs">
+<!-- Stage 1 -->
+<div class="bg-white p-3 rounded-xl border border-stone-200 flex-1 shadow-xs">
+<span class="text-[10px] font-bold uppercase text-forest-700 block">Input</span>
+<span class="font-serif font-semibold text-stone-900 text-xs">Crop Leaf Image</span>
+</div>
+<span class="text-stone-400 font-bold">→</span>
+<!-- Stage 2 -->
+<div class="bg-white p-3 rounded-xl border border-stone-200 flex-1 shadow-xs">
+<span class="text-[10px] font-bold uppercase text-forest-700 block">Preprocessing</span>
+<span class="font-serif font-semibold text-stone-900 text-xs">Normalization</span>
+</div>
+<span class="text-stone-400 font-bold">→</span>
+<!-- Stage 3 -->
+<div class="bg-white p-3 rounded-xl border-2 border-forest-600/70 flex-1 shadow-sm bg-forest-50/30">
+<span class="text-[10px] font-bold uppercase text-forest-800 block">Deep Learning</span>
+<span class="font-serif font-bold text-stone-900 text-xs">ConvNeXt / PyTorch</span>
+</div>
+<span class="text-stone-400 font-bold">→</span>
+<!-- Stage 4 -->
+<div class="bg-white p-3 rounded-xl border border-stone-200 flex-1 shadow-xs">
+<span class="text-[10px] font-bold uppercase text-forest-700 block">Inference</span>
+<span class="font-serif font-semibold text-stone-900 text-xs">Calibrated Score</span>
+</div>
+<span class="text-stone-400 font-bold">→</span>
+<!-- Stage 5 -->
+<div class="bg-white p-3 rounded-xl border border-emerald-300 flex-1 shadow-xs bg-emerald-50/40">
+<span class="text-[10px] font-bold uppercase text-emerald-800 block">Output</span>
+<span class="font-serif font-semibold text-stone-900 text-xs">Action Guidance</span>
+</div>
+</div>
+</div>
+<!-- Model Performance Held-out Benchmark Grid -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+<div class="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm">
+<div class="text-3xl font-serif font-bold text-forest-900">88.7%</div>
+<div class="text-[11px] font-bold uppercase tracking-wider text-stone-700 mt-1">Macro-F1 Score</div>
+<div class="text-[10px] text-stone-400">Held-out test split</div>
+</div>
+<div class="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm">
+<div class="text-3xl font-serif font-bold text-forest-900">92.1%</div>
+<div class="text-[11px] font-bold uppercase tracking-wider text-stone-700 mt-1">Top-1 Accuracy</div>
+<div class="text-[10px] text-stone-400">Field-verified photography</div>
+</div>
+<div class="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm">
+<div class="text-3xl font-serif font-bold text-forest-900">15+</div>
+<div class="text-[11px] font-bold uppercase tracking-wider text-stone-700 mt-1">Pathologies</div>
+<div class="text-[10px] text-stone-400">Multi-crop classes</div>
+</div>
+<div class="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm">
+<div class="text-3xl font-serif font-bold text-forest-900">~140ms</div>
+<div class="text-[11px] font-bold uppercase tracking-wider text-stone-700 mt-1">Inference Latency</div>
+<div class="text-[10px] text-stone-400">Optimized lightweight runtime</div>
+</div>
+</div>
+</section>
+<!-- 8. SECTION 9 & 10: WHY AGRISMART & FINAL CALL TO ACTION -->
+<section class="p-8 md:p-12 text-center bg-gradient-to-b from-white to-forest-50/40">
+<div class="max-w-xl mx-auto">
+<h2 class="text-2xl md:text-3xl font-serif text-stone-900 mb-3">
+          Technology for <span class="italic text-forest-700 font-normal">More Resilient Agriculture</span>
+</h2>
+<p class="text-xs text-stone-600 leading-relaxed mb-6">
+          Fast foliar diagnostics, accessible image-based evaluation, and transparent guidance engineered to reduce over-spraying and protect seasonal yields.
+        </p>
+<!-- Final CTA Box -->
+<div class="bg-forest-900 text-white rounded-3xl p-8 shadow-xl relative overflow-hidden text-left sm:flex sm:items-center sm:justify-between gap-6">
+<div class="relative z-10 mb-4 sm:mb-0">
+<h3 class="text-xl md:text-2xl font-serif font-medium text-white mb-1">
+              Is Your Crop Showing Signs of Disease?
+            </h3>
+<p class="text-xs text-emerald-100/80">
+              Upload a leaf image and let AgriSmart analyze it in seconds.
+            </p>
+</div>
+<a class="relative z-10 px-6 py-3 rounded-full bg-emerald-400 hover:bg-emerald-300 text-forest-950 text-xs font-bold shadow-lg transition whitespace-nowrap inline-flex items-center gap-1.5" href="#disease-detection">
+<span>Analyze a Crop</span>
+<span>→</span>
+</a>
+<!-- Decorative subtle ring in card -->
+<div class="absolute -right-10 -bottom-10 w-44 h-44 rounded-full bg-forest-800/40 pointer-events-none"></div>
+</div>
+</div>
+</section>
+<!-- Footer Bar -->
+<footer class="mt-auto px-8 py-6 bg-stone-100/90 border-t border-stone-200/80 text-[11px] text-stone-500">
+<div class="flex flex-col md:flex-row justify-between items-center gap-4">
+<div>
+<span class="font-serif font-bold text-stone-800 text-sm">AgriSmart</span>
+<span class="mx-2 text-stone-300">•</span>
+<span>AI-powered crop health intelligence.</span>
+</div>
+<div class="flex flex-wrap gap-4 text-stone-600">
+<a class="hover:text-forest-800 transition" href="#disease-detection">Disease Detection</a>
+<a class="hover:text-forest-800 transition" href="#supported-crops">Supported Crops</a>
+<a class="hover:text-forest-800 transition" href="#technology">Technology</a>
+<a class="hover:text-forest-800 transition" href="#insights">Crop Health Insights</a>
+<a class="hover:text-forest-800 transition" href="#">Privacy Policy</a>
+</div>
+</div>
+<div class="text-center md:text-left text-[10px] text-stone-400 mt-3 pt-3 border-t border-stone-200">
+        © 2025 AgriSmart AI Technologies Inc. Field intelligence dedicated to agricultural resilience and food security.
+      </div>
+</footer>
+</main>
+<!-- END: LeftMainPanel -->
+<!-- ========================================================================= -->
+<!-- BEGIN: RightSidebarPanel (Narrow Column)                                 -->
+<!-- ========================================================================= -->
+<aside class="lg:col-span-4 space-y-6" id="insights">
+<!-- Top Card: Solutions for Agriculture Modules -->
+<section aria-label="Solutions for Agriculture" class="bg-[#fbfdfb]/95 backdrop-blur-md rounded-[32px] shadow-2xl border border-white/70 p-6 md:p-8"><div class="text-center mb-6"><h2 class="text-2xl md:text-3xl font-serif text-[#101e18] leading-tight font-normal">Solutions for <span class="text-[#2e6a47] font-semibold">Agriculture</span></h2><p class="text-[11px] text-[#707974] mt-1">End-to-end crop intelligence and field modules</p></div><div class="grid grid-cols-12 gap-4 items-start border-b border-stone-200/60 pb-6 mb-5"><div class="col-span-5 space-y-1.5 text-xs"><button class="w-full text-left py-2 px-2.5 rounded-xl bg-[#afeec2]/40 text-[#101e18] font-semibold border-l-2 border-[#2e6a47] text-[11px] shadow-xs">Farming Methods</button><button class="w-full text-left py-2 px-2.5 rounded-xl text-[#404945] hover:bg-stone-50 transition text-[11px] font-medium">Smart Irrigation</button><button class="w-full text-left py-2 px-2.5 rounded-xl text-[#404945] hover:bg-stone-50 transition text-[11px] font-medium">Vertical Farming</button><button class="w-full text-left py-2 px-2.5 rounded-xl text-[#404945] hover:bg-stone-50 transition text-[11px] font-medium flex items-center justify-between"><span>Energy Solutions</span></button><button class="w-full text-left py-2 px-2.5 rounded-xl text-[#404945] hover:bg-stone-50 transition text-[11px] font-medium">Water Conservation</button><div class="pt-4"><div class="text-3xl font-serif text-[#101e18] font-normal">40%</div><div class="text-[10px] text-[#707974] leading-tight mt-0.5">Crop yields improved</div></div></div><div class="col-span-7 pl-3 border-l border-stone-200/60 flex flex-col justify-between h-full"><div><h3 class="font-serif font-bold text-[#101e18] text-sm mb-1.5">Farming Methods</h3><p class="text-[11px] text-[#707974] leading-relaxed mb-3">Precision agriculture involves modern data analytics and computer vision to optimize field inputs and disease mitigation.</p></div><div class="relative rounded-xl overflow-hidden shadow-sm aspect-[16/9] border border-stone-200/70"><img alt="Field inspection and rover analysis" class="w-full h-full object-cover object-bottom" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXrJAKqSln9Vexen6wChQo25vWpDTt0GHY7wDkktjxXFtawSERz8wFSOHmEuInR7gb6I5c77fOWXZgvsg_OXfCLebPdKdIjGH2R5GwWeB86OKeNJqWtfxSTkL15faTp-c3WLQvUrykA8dMlm-3qVresLT9nVmw0n8cHLY_aSmablr6CDq0wgiIoavmHRWBmel5UMQXQUNyPNGmfKBdkj3MJ6LdFjfxN5uEButY9q6CsxJOqRLPtzT16OWIAuSkb6Nh8ak"/><span class="absolute bottom-1 right-1 bg-black/60 backdrop-blur-sm text-white text-[9px] px-1.5 py-0.5 rounded font-mono">Field Rover Link</span></div></div></div><div class="grid grid-cols-4 gap-2 text-center pt-1"><div class="p-1"><div class="text-lg font-serif font-normal text-[#101e18]">2.8M</div><div class="text-[9px] text-[#707974] leading-tight">Sequestered CO₂ tons</div></div><div class="p-1"><div class="text-lg font-serif font-normal text-[#101e18]">3.2M</div><div class="text-[9px] text-[#707974] leading-tight">Supported acres</div></div><div class="p-1"><div class="text-lg font-serif font-normal text-[#101e18]">$75M</div><div class="text-[9px] text-[#707974] leading-tight">Crop loss saved</div></div><div class="p-1"><div class="text-lg font-serif font-normal text-[#101e18]">30+</div><div class="text-[9px] text-[#707974] leading-tight">Global testbeds</div></div></div></section>
+<!-- Customer Stories Testimonials Card -->
+<section aria-label="Customer Stories" class="bg-[#fbfdfb]/95 backdrop-blur-md rounded-[32px] shadow-2xl border border-white/70 p-6 md:p-8" style="background: radial-gradient(circle at 50% 90%, #bae6fd 0%, #e0f2fe 35%, #ffffff 85%); box-shadow: 0 20px 45px -10px rgba(56, 189, 248, 0.15), 0 0 0 1px rgba(255,255,255,0.9);"><div class="text-center mb-6"><h3 class="text-2xl font-serif text-[#101e18] font-normal">Customer <span class="text-[#2e6a47] font-semibold">Stories</span></h3></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left relative z-10"><div class="bg-white/95 p-4 rounded-2xl border border-white shadow-[0_4px_20px_-4px_rgba(0,0,0,0.06)] flex flex-col justify-between backdrop-blur-sm"><p class="text-xs text-[#404945] leading-relaxed mb-4">"The farm consistently delivers fresh, nutrient-rich produce that far exceeds our expectations. Their dedication to sustainable farming shows in both quality and flavor."</p><div><div class="font-semibold text-xs text-[#101e18]">Alex R.</div><div class="text-[10px] text-[#707974]">Orchard Operations Lead</div></div></div><div class="bg-white/95 p-4 rounded-2xl border border-white shadow-[0_4px_20px_-4px_rgba(0,0,0,0.06)] flex flex-col justify-between backdrop-blur-sm"><p class="text-xs text-[#404945] leading-relaxed mb-4">"We rely on this farm for high-volume supply, and they've never disappointed us. Every batch arrives clean, well-packaged, and incredibly fresh."</p><div><div class="font-semibold text-xs text-[#101e18]">Priya S.</div><div class="text-[10px] text-[#707974]">Protected Horticulture Manager</div></div></div></div><div class="flex items-center justify-center space-x-2 mt-5 text-stone-400 relative z-10"><button aria-label="Previous story" class="w-6 h-6 rounded-full border border-stone-300 hover:border-[#2e6a47] flex items-center justify-center text-xs hover:text-[#2e6a47] bg-white transition">←</button><button aria-label="Next story" class="w-6 h-6 rounded-full bg-[#2e6a47] text-white flex items-center justify-center text-xs hover:bg-[#1b4d3e] transition">→</button></div></section>
+<!-- Latest Crop Health Insights & Tips Articles Card -->
+<section aria-label="Crop Health Insights" class="bg-[#fbfdfb]/95 backdrop-blur-md rounded-[32px] shadow-2xl border border-white/70 p-6 md:p-8">
+<div class="text-center mb-5">
+<h3 class="text-2xl font-serif text-[#101e18] font-normal">Latest <span class="text-[#2e6a47] font-semibold">Insights</span> &amp; Tips</h3>
+<p class="text-[11px] text-stone-500 mt-0.5">Field guides and technical recommendations</p>
+</div>
+<div class="space-y-3">
+<!-- Article 1 with IMAGE_6 -->
+<article class="flex items-center space-x-3 p-2 rounded-xl hover:bg-stone-50 transition border border-transparent hover:border-stone-200">
+<div class="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-stone-200">
+<img alt="Foliar signs article thumbnail" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCl5JxlNPlqMYLqrTqLOEo7GURQoOsdhQdc0CK_wJTcDQqcYe0Zfp0nfOm2BMcPAJU3O3p7QXwTEBRD5dFScaF1c_MLeGccEaxIyVKGZeXrSMIxJ7WRIhjzUdOC4TbdqQP4Zax46vmqfol0bZQK6Of_FOlcTj2bcV7t51_SuNoMnCmIHO57uacOu3xa_SEJxm1GhtnpN-2uxMHoUdmMrh3-SSF2bZM1GxxOYvf4gliYWGJU7lZ-Djt1ORppqF_ya5tKjLQ"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="text-[9px] font-bold uppercase tracking-wider text-forest-800">Agronomy • June 15, 2025</div>
+<h4 class="text-xs font-serif font-bold text-stone-900 truncate">How to Identify Early Signs of Crop Disease</h4>
+<p class="text-[10px] text-stone-500 truncate">Visual criteria for differentiating fungal lesions...</p>
+</div>
+</article>
+<!-- Article 2 -->
+<article class="flex items-center space-x-3 p-2 rounded-xl hover:bg-stone-50 transition border border-transparent hover:border-stone-200">
+<div class="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-stone-200">
+<img alt="Leaf photo diagnostic protocol thumbnail" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDa_nE9HF9LX3OY4MmdV7paVzplR65v7Movbt52poILkRgm28-LJv3jgSUWyq6gWz_Sv-Fu22DwxS0VtNTLe14gi9XiCId4uV0ISQn3rTlieIWyu69Alk3WwO38aFzCGWKZo3AOBBQzeBAeeQsjgaJRNosCARH9gWFKn5oxXW5CC3idJpakVNMy1BJ_wBT9faK4rksYbpKuBBeTnujg-A-AGTkhv9PewVu3cJb3XSUy09ko93yCfE7sK7SSJIvrhsxiBG8"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="text-[9px] font-bold uppercase tracking-wider text-forest-800">Protocol • June 10, 2025</div>
+<h4 class="text-xs font-serif font-bold text-stone-900 truncate">Taking Better Leaf Photos for AI Diagnosis</h4>
+<p class="text-[10px] text-stone-500 truncate">Lighting, focal distance, and shadow management...</p>
+</div>
+</article>
+<!-- Article 3 with IMAGE_3 -->
+<article class="flex items-center space-x-3 p-2 rounded-xl hover:bg-stone-50 transition border border-transparent hover:border-stone-200">
+<div class="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-stone-200">
+<img alt="Drip irrigation thumbnail" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1XKJ67aNaTaRRtPG9zh0MQn96_WKD4mLHc55lzE4O_YP4m54Gh70UvUSR3xnk0VBfiBmXaYxmeFAEElRCPhCgY34EBCmgGDmdkQfXfGaMxnEtDcdjWQHBf1dRvqU2dYqFywQ3hh86eCXi65ya5ouloDCy7KXZEZ_pei0u_2-D9idfEojxwaXMqx4jBSHNAeyqVwPKS4xGrEYVGHrMdZaaEcm1iSTGusB6flZpQf2U3S5gOVIM_3ZhgyDufN"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="text-[9px] font-bold uppercase tracking-wider text-forest-800">Irrigation • June 04, 2025</div>
+<h4 class="text-xs font-serif font-bold text-stone-900 truncate">Smarter Irrigation &amp; Canopy Microclimate</h4>
+<p class="text-[10px] text-stone-500 truncate">Regulating canopy humidity to curtail fungal spread...</p>
+</div>
+</article>
+</div>
+<!-- Specialized Crop Help CTA Box -->
+<div class="mt-6 p-4 rounded-2xl bg-forest-50/70 border border-forest-200/80 text-center">
+<p class="text-xs text-stone-800 font-semibold">Have a specialized greenhouse or field crop?</p>
+<p class="text-[10px] text-stone-500 mb-3">Request custom disease dataset integration.</p>
+<button class="w-full py-2 bg-forest-700 hover:bg-forest-800 text-white rounded-lg text-xs font-medium transition shadow-sm">
+          Contact Agronomy Team
+        </button>
+</div>
+</section>
+</aside>
+<!-- END: RightSidebarPanel -->
+</div>
+<!-- END: AppContainer -->
+</body></html>
