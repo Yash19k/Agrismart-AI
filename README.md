@@ -10,9 +10,6 @@
 
 **AgriSmart AI** is a farmer-first agricultural intelligence platform that unifies deep learning computer vision, precision machine learning, real-time meteorological intelligence, irrigation scheduling, crop recommendation, sustainability scoring, and conversational agronomic advisory.
 
-Designed around the diagnostic paradigm:
-$$\mathbf{IMAGE \longrightarrow DIAGNOSIS \longrightarrow CONTEXT \longrightarrow DECISION \longrightarrow ACTION}$$
-
 AgriSmart AI moves beyond isolated disease classification. It grounds visual diagnosis in live environmental context, giving farmers actionable answers:
 - **What pathology is present and with what confidence?**
 - **What environmental drivers (humidity, leaf wetness, temperature) aggravate spread?**
@@ -24,7 +21,9 @@ AgriSmart AI moves beyond isolated disease classification. It grounds visual dia
 
 ## 🎥 Demo Video
 
-> **Demo Video**: https://drive.google.com/drive/folders/1lOc4-_8EOvZLj2vyPNE68JeB-4BFQjej?usp=sharing
+> 🎬 **Watch the AgriSmart AI Demo Video**: [AgriSmart AI Demo & Walkthrough (Google Drive)](https://drive.google.com/drive/folders/1lOc4-_8EOvZLj2vyPNE68JeB-4BFQjej?usp=sharing)  
+> *(Demonstrating end-to-end leaf disease diagnosis, CLI prediction interface, crop recommendation, smart irrigation advisory, live weather intelligence, and conversational agronomist guidance).*
+
 ---
 
 ## 🚀 Quick Start (Under 10 Minutes)
@@ -361,11 +360,11 @@ Below is the verified out-of-distribution confusion matrix evaluated on the fiel
 
 ---
 
-## Model Report
+## 📄 Model Report
 
-The verified model report covering training hyperparameters, per-class breakdown, and dataset governance is available in the repository:
+The official one-page **Model Evaluation Report** required under SIH 2026 Problem Statement Section 7.3 has been compiled and added to the [`report/`](report/) folder:
 
-- 📄 **[View Model Evaluation Report](report/README.md)**
+The report provides the complete technical audit, baseline model comparison (Majority, MobileNetV2, ResNet-50 vs. ConvNeXt-Tiny), two-stage transfer learning protocol, stratified data split verification, confusion matrix, and field-condition generalization analysis.
 
 ---
 
@@ -883,8 +882,8 @@ In accordance with strict scientific integrity, the following limitations are fo
 - [x] **Evaluation Metrics Reported**: Macro-F1, Accuracy, and Weighted F1 reported for both in-distribution and OOD benchmarks.
 - [x] **Confusion Matrix Embedded**: Real PlantDoc OOD confusion matrix image linked.
 - [x] **Limitations Disclosed**: Lab-to-field generalization gap, single-label scope, and uncalibrated softmax documented.
-- [x] **Model Report Linked**: Linked to `report/README.md`.
-- [x] **Demo Video Placeholder**: `[ADD DEMO VIDEO LINK]` flagged for single manual URL insertion.
+- [x] **Model Report Added**: One-page SIH 2026 Model Evaluation Report compiled in `report/` folder ([`report/model_report.md`](report/model_report.md) & [`report/README.md`](report/README.md)).
+- [x] **Demo Video Linked**: 3–5 minute video walkthrough linked via [Google Drive](https://drive.google.com/drive/folders/1lOc4-_8EOvZLj2vyPNE68JeB-4BFQjej?usp=sharing).
 
 ---
 
