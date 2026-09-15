@@ -13,14 +13,12 @@ import {
   ArrowRight,
   LogOut,
   Menu,
-  AlertCircle,
   X,
   Plus,
   AlertTriangle,
   RefreshCw,
   CheckCircle,
   CloudRain,
-  Wind,
   Layers,
   ShieldAlert,
   Check,
@@ -63,20 +61,6 @@ const POPULAR_CITIES = [
   { name: 'Jaipur, Rajasthan', latitude: 26.9124, longitude: 75.7873 },
 ];
 
-// Helper for botanical scientific names
-function getScientificCrop(crop) {
-  const c = (crop || '').toLowerCase();
-  if (c.includes('tomato')) return 'Solanum lycopersicum';
-  if (c.includes('cotton')) return 'Gossypium hirsutum';
-  if (c.includes('corn') || c.includes('maize')) return 'Zea mays';
-  if (c.includes('potato')) return 'Solanum tuberosum';
-  if (c.includes('grape')) return 'Vitis vinifera';
-  if (c.includes('apple')) return 'Malus domestica';
-  if (c.includes('strawberry')) return 'Fragaria × ananassa';
-  if (c.includes('rice')) return 'Oryza sativa';
-  if (c.includes('wheat')) return 'Triticum aestivum';
-  return 'Cultivated Specimen';
-}
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -97,8 +81,6 @@ export default function Dashboard() {
   const [showAlertsDropdown, setShowAlertsDropdown] = useState(false);
   const [showFarmDropdown, setShowFarmDropdown] = useState(false);
 
-  // Today's Action Plan interactive checklist
-  const [completedSteps, setCompletedSteps] = useState([1]); // step 1 checked by default
 
   // Add farm form state
   const [farmForm, setFarmForm] = useState({
@@ -221,12 +203,6 @@ export default function Dashboard() {
     }
   };
 
-  // Toggle checklist steps
-  const toggleStep = (stepNumber) => {
-    setCompletedSteps((prev) =>
-      prev.includes(stepNumber) ? prev.filter((s) => s !== stepNumber) : [...prev, stepNumber]
-    );
-  };
 
   // Derived real data
   const farm = dashboardData?.farm;
@@ -712,511 +688,156 @@ export default function Dashboard() {
             </section>
 
             {/* ═════════════════════════════════════════════════════════════ */}
-            {/* 4. TWO-COLUMN ADVISORY WORKSPACE (60% Left, 40% Right)        */}
+            {/* 4. MICROCLIMATE & SUSTAINABILITY INSIGHTS                    */}
             {/* ═════════════════════════════════════════════════════════════ */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* ── LEFT COLUMN: Diagnostic Alerts & Action Checklist (7 cols) ── */}
-              <div className="lg:col-span-7 space-y-8">
-                {/* Section A: Needs Your Attention */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <AlertCircle className="w-5 h-5 text-[#c95a5a]" />
-                      <h2 className="font-editorial text-2xl font-bold text-[#16352D]">
-                        Needs Your Attention
-                      </h2>
-                    </div>
-                    <span className="px-2.5 py-1 rounded-full bg-[#f2fbf5] text-[#1b4d3e] border border-[#d2f4e0] text-xs font-semibold">
-                      3 Active Items
-                    </span>
-                  </div>
-
-                  {/* Alert 1: Bacterial Spot / Pathogen Alert */}
-                  <div className="bg-white p-5 rounded-xl border border-[#DCE8DF] shadow-editorial hover:shadow-md transition-shadow">
-                    <div className="flex items-start gap-3.5">
-                      <div className="w-10 h-10 rounded-xl bg-[#fdf2f2] text-[#c95a5a] border border-[#f8d7d7] flex items-center justify-center shrink-0 mt-0.5">
-                        <ShieldAlert className="w-5 h-5" />
-                      </div>
-                      <div className="space-y-1 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-bold text-sm sm:text-base text-[#16352D]">
-                            Bacterial Spot Inoculum
-                          </span>
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F7F8F3] text-[#527d6a] border border-[#DCE8DF]">
-                            Block 4-B {primaryCrop}
-                          </span>
-                        </div>
-                        <p className="text-xs text-[#527d6a] leading-relaxed">
-                          <em className="italic text-[#16352D]">Xanthomonas campestris</em> detected on lower canopy leaves. Avoid overhead watering to suppress bacterial exudate splash dispersal.
-                        </p>
-                        <p className="text-xs text-[#2fa874] font-medium pt-0.5">
-                          Protocol: Plan dawn foliar application with copper bactericide.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-4 pt-3 flex items-center justify-between bg-[#f8faf8] px-3.5 py-2 rounded-lg border border-[#edf6f0]">
-                      <span className="text-[11px] text-[#6C7D76]">Model Confidence: 94.2%</span>
-                      <button
-                        type="button"
-                        onClick={() => navigate('/disease')}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-[#1b4d3e] hover:underline cursor-pointer"
-                      >
-                        <span>Review Diagnostic Report</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Alert 2: Irrigation Decoupling */}
-                  <div className="bg-white p-5 rounded-xl border border-[#DCE8DF] shadow-editorial hover:shadow-md transition-shadow">
-                    <div className="flex items-start gap-3.5">
-                      <div className="w-10 h-10 rounded-xl bg-[#ecfef3] text-[#1b4d3e] border border-[#bfe7cf] flex items-center justify-center shrink-0 mt-0.5">
-                        <Droplets className="w-5 h-5 text-[#2fa874]" />
-                      </div>
-                      <div className="space-y-1 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-bold text-sm sm:text-base text-[#16352D]">
-                            Automatic Irrigation Decoupled
-                          </span>
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#ecfef3] text-[#1b4d3e] border border-[#d2f4e0]">
-                            Preventative
-                          </span>
-                        </div>
-                        <p className="text-xs text-[#527d6a] leading-relaxed">
-                          Significant {rainInbound} mm rainfall inbound over 48 hours. Valves on sub-main lines 3 and 4 held closed to avoid root-zone hypoxia and collar rot.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-4 pt-3 flex items-center justify-between bg-[#f8faf8] px-3.5 py-2 rounded-lg border border-[#edf6f0]">
-                      <span className="text-[11px] text-[#2fa874] font-medium">
-                        Estimated Water Saved: 14,200 Liters
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => navigate('/irrigation')}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-[#1b4d3e] hover:underline cursor-pointer"
-                      >
-                        <span>Open Irrigation Engine</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Alert 3: Spray Window Restriced */}
-                  <div className="bg-white p-5 rounded-xl border border-[#DCE8DF] shadow-editorial hover:shadow-md transition-shadow">
-                    <div className="flex items-start gap-3.5">
-                      <div className="w-10 h-10 rounded-xl bg-[#F7F8F3] text-[#1b4d3e] border border-[#DCE8DF] flex items-center justify-center shrink-0 mt-0.5">
-                        <Wind className="w-5 h-5 text-[#527d6a]" />
-                      </div>
-                      <div className="space-y-1 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-bold text-sm sm:text-base text-[#16352D]">
-                            Foliar Application Window Restricted
-                          </span>
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F7F8F3] text-[#527d6a] border border-[#DCE8DF]">
-                            Microclimate Alert
-                          </span>
-                        </div>
-                        <p className="text-xs text-[#527d6a] leading-relaxed">
-                          Sustained wind gusts measure {weather?.wind_speed || 24} km/h. Droplet drift risk elevated. Hold all spray applications until morning calm window (&lt;18 km/h) tomorrow.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-4 pt-3 flex items-center justify-between bg-[#f8faf8] px-3.5 py-2 rounded-lg border border-[#edf6f0]">
-                      <span className="text-[11px] text-[#6C7D76]">
-                        Next Optimal Window: Tomorrow, 06:00 – 08:30 AM
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => navigate('/weather')}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-[#1b4d3e] hover:underline cursor-pointer"
-                      >
-                        <span>Check Spray Window</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+              {/* 1. 3-Day Microclimate Forecast */}
+              <div className="bg-white rounded-2xl p-6 shadow-editorial border border-[#DCE8DF] space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-editorial text-2xl font-bold text-[#16352D]">
+                    3-Day Microclimate
+                  </h2>
+                  <div className="flex items-center gap-1 text-[#2fa874] text-xs font-semibold">
+                    <CloudSun className="w-4 h-4" />
+                    <span>Hyperlocal Station</span>
                   </div>
                 </div>
 
-                {/* Section B: Today's Action Plan (Interactive Checklist) */}
-                <div className="bg-white rounded-2xl p-6 shadow-editorial border border-[#DCE8DF] space-y-5">
-                  <div className="flex items-center justify-between pb-2 border-b border-[#edf6f0]">
-                    <div>
-                      <span className="text-[11px] font-semibold text-[#2fa874] uppercase tracking-wider">
-                        Daily Execution
-                      </span>
-                      <h2 className="font-editorial text-2xl font-bold text-[#16352D]">
-                        Today's Field Action Plan
-                      </h2>
+                <div className="space-y-3">
+                  {/* Day 1 (Today) */}
+                  <div className="p-3.5 rounded-xl bg-[#ecfef3]/50 border border-[#d2f4e0] flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-white border border-[#bfe7cf] flex items-center justify-center text-[#2fa874] shadow-xs">
+                        <CloudRain className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm text-[#16352D]">Today</p>
+                        <p className="text-xs text-[#527d6a]">
+                          {weather?.condition || 'Light rain shower'}
+                        </p>
+                      </div>
                     </div>
                     <div className="text-right">
-                      <span className="text-xs font-semibold text-[#527d6a]">
-                        {completedSteps.length} of 4 Completed
+                      <span className="text-xs font-bold text-[#16352D]">
+                        {temperature - 1}° – {temperature + 3}°C
                       </span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    {/* Step 1 */}
-                    <label
-                      onClick={() => toggleStep(1)}
-                      className={`group flex items-start gap-3.5 p-3.5 rounded-xl border transition-colors cursor-pointer ${
-                        completedSteps.includes(1)
-                          ? 'bg-[#f4faf6] border-[#d2f4e0]'
-                          : 'bg-[#fafdfb] border-[#edf6f0] hover:bg-[#f4faf6]'
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={completedSteps.includes(1)}
-                        onChange={() => {}}
-                        className="mt-1 h-4 w-4 rounded text-[#1b4d3e] accent-[#1b4d3e] cursor-pointer"
-                      />
-                      <div className="space-y-0.5 flex-1">
-                        <span className="text-[11px] font-semibold text-[#2fa874]">STEP 01</span>
-                        <p
-                          className={`text-xs sm:text-sm font-medium ${
-                            completedSteps.includes(1)
-                              ? 'line-through text-[#6C7D76]'
-                              : 'text-[#16352D]'
-                          }`}
-                        >
-                          Postpone scheduled drip irrigation cycle across Block 4-B.
-                        </p>
-                        <p className="text-[11px] text-[#527d6a]">
-                          Automated valve override confirmed in sensor console.
-                        </p>
-                      </div>
-                    </label>
-
-                    {/* Step 2 */}
-                    <label
-                      onClick={() => toggleStep(2)}
-                      className={`group flex items-start gap-3.5 p-3.5 rounded-xl border transition-colors cursor-pointer ${
-                        completedSteps.includes(2)
-                          ? 'bg-[#f4faf6] border-[#d2f4e0]'
-                          : 'bg-[#fafdfb] border-[#edf6f0] hover:bg-[#f4faf6]'
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={completedSteps.includes(2)}
-                        onChange={() => {}}
-                        className="mt-1 h-4 w-4 rounded text-[#1b4d3e] accent-[#1b4d3e] cursor-pointer"
-                      />
-                      <div className="space-y-0.5 flex-1">
-                        <span className="text-[11px] font-semibold text-[#2fa874]">STEP 02</span>
-                        <p
-                          className={`text-xs sm:text-sm font-medium ${
-                            completedSteps.includes(2)
-                              ? 'line-through text-[#6C7D76]'
-                              : 'text-[#16352D]'
-                          }`}
-                        >
-                          Inspect tomato lower canopy for foliar halo lesions and prune symptomatic tissue.
-                        </p>
-                        <p className="text-[11px] text-[#527d6a]">
-                          Sterilize shears between rows using 70% isopropyl alcohol.
-                        </p>
-                      </div>
-                    </label>
-
-                    {/* Step 3 */}
-                    <label
-                      onClick={() => toggleStep(3)}
-                      className={`group flex items-start gap-3.5 p-3.5 rounded-xl border transition-colors cursor-pointer ${
-                        completedSteps.includes(3)
-                          ? 'bg-[#f4faf6] border-[#d2f4e0]'
-                          : 'bg-[#fafdfb] border-[#edf6f0] hover:bg-[#f4faf6]'
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={completedSteps.includes(3)}
-                        onChange={() => {}}
-                        className="mt-1 h-4 w-4 rounded text-[#1b4d3e] accent-[#1b4d3e] cursor-pointer"
-                      />
-                      <div className="space-y-0.5 flex-1">
-                        <span className="text-[11px] font-semibold text-[#2fa874]">STEP 03</span>
-                        <p
-                          className={`text-xs sm:text-sm font-medium ${
-                            completedSteps.includes(3)
-                              ? 'line-through text-[#6C7D76]'
-                              : 'text-[#16352D]'
-                          }`}
-                        >
-                          Clear low drainage furrows along perimeter to prevent standing rain pooling.
-                        </p>
-                        <p className="text-[11px] text-[#527d6a]">
-                          Mitigates runoff saturation ahead of incoming 30mm rainfall.
-                        </p>
-                      </div>
-                    </label>
-
-                    {/* Step 4 */}
-                    <label
-                      onClick={() => toggleStep(4)}
-                      className={`group flex items-start gap-3.5 p-3.5 rounded-xl border transition-colors cursor-pointer ${
-                        completedSteps.includes(4)
-                          ? 'bg-[#f4faf6] border-[#d2f4e0]'
-                          : 'bg-[#fafdfb] border-[#edf6f0] hover:bg-[#f4faf6]'
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={completedSteps.includes(4)}
-                        onChange={() => {}}
-                        className="mt-1 h-4 w-4 rounded text-[#1b4d3e] accent-[#1b4d3e] cursor-pointer"
-                      />
-                      <div className="space-y-0.5 flex-1">
-                        <span className="text-[11px] font-semibold text-[#2fa874]">STEP 04</span>
-                        <p
-                          className={`text-xs sm:text-sm font-medium ${
-                            completedSteps.includes(4)
-                              ? 'line-through text-[#6C7D76]'
-                              : 'text-[#16352D]'
-                          }`}
-                        >
-                          Prepare copper bactericide / bio-fungicide mix for tomorrow's dawn calm window.
-                        </p>
-                        <p className="text-[11px] text-[#527d6a]">
-                          Recommended dosage: 2.5g per liter as per ICAR-TNAU guidelines.
-                        </p>
-                      </div>
-                    </label>
-                  </div>
-
-                  <div className="pt-2 flex flex-wrap justify-between items-center text-xs text-[#527d6a] border-t border-[#edf6f0] gap-2">
-                    <span>Field Technician: {farmerName}</span>
-                    <button
-                      type="button"
-                      onClick={() => navigate('/assistant')}
-                      className="text-xs font-semibold text-[#1b4d3e] hover:underline flex items-center gap-1 cursor-pointer"
-                    >
-                      <span>Ask AI Agronomist for Guidance</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* ── RIGHT COLUMN: Crop Stand, 3-Day Microclimate, Sustainability (5 cols) ── */}
-              <div className="lg:col-span-5 space-y-8">
-                {/* 1. Crop Stand Status */}
-                <div className="bg-white rounded-2xl p-6 shadow-editorial border border-[#DCE8DF] space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="font-editorial text-2xl font-bold text-[#16352D]">
-                      Crop Stand Status
-                    </h2>
-                    <span className="text-xs font-medium text-[#527d6a]">{location}</span>
-                  </div>
-
-                  <div className="space-y-3">
-                    {/* Primary Crop */}
-                    <div className="p-3.5 rounded-xl bg-[#fafdfb] border border-[#edf6f0] flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-sm text-[#16352D]">{primaryCrop}</span>
-                          <span className="text-[11px] italic text-[#6C7D76]">
-                            ({getScientificCrop(primaryCrop)})
-                          </span>
-                        </div>
-                        <p className="text-xs text-[#527d6a]">Flowering &amp; Fruit Set Stage</p>
-                      </div>
-                      <div className="text-right">
-                        <span className="px-2.5 py-1 rounded-full bg-[#fdf2f2] text-[#c95a5a] border border-[#f8d7d7] text-[10px] font-semibold">
-                          Attention
-                        </span>
-                        <p className="text-[10px] text-[#6C7D76] mt-1">Bacterial spot</p>
-                      </div>
-                    </div>
-
-                    {/* Secondary Crop */}
-                    <div className="p-3.5 rounded-xl bg-[#fafdfb] border border-[#edf6f0] flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-sm text-[#16352D]">Cotton</span>
-                          <span className="text-[11px] italic text-[#6C7D76]">
-                            (Gossypium hirsutum)
-                          </span>
-                        </div>
-                        <p className="text-xs text-[#527d6a]">Vegetative Canopy Development</p>
-                      </div>
-                      <div className="text-right">
-                        <span className="px-2.5 py-1 rounded-full bg-[#ecfef3] text-[#1b4d3e] border border-[#d2f4e0] text-[10px] font-semibold">
-                          Healthy
-                        </span>
-                        <p className="text-[10px] text-[#6C7D76] mt-1">Vigorous foliage</p>
-                      </div>
-                    </div>
-
-                    {/* Crop 3 */}
-                    <div className="p-3.5 rounded-xl bg-[#fafdfb] border border-[#edf6f0] flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-sm text-[#16352D]">Corn / Maize</span>
-                          <span className="text-[11px] italic text-[#6C7D76]">(Zea mays)</span>
-                        </div>
-                        <p className="text-xs text-[#527d6a]">Tasseling &amp; Silking</p>
-                      </div>
-                      <div className="text-right">
-                        <span className="px-2.5 py-1 rounded-full bg-[#F7F8F3] text-[#527d6a] border border-[#DCE8DF] text-[10px] font-semibold">
-                          Monitor
-                        </span>
-                        <p className="text-[10px] text-[#6C7D76] mt-1">Blight contained</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 2. 3-Day Microclimate Forecast */}
-                <div className="bg-white rounded-2xl p-6 shadow-editorial border border-[#DCE8DF] space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="font-editorial text-2xl font-bold text-[#16352D]">
-                      3-Day Microclimate
-                    </h2>
-                    <div className="flex items-center gap-1 text-[#2fa874] text-xs font-semibold">
-                      <CloudSun className="w-4 h-4" />
-                      <span>Hyperlocal Station</span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    {/* Day 1 (Today) */}
-                    <div className="p-3.5 rounded-xl bg-[#ecfef3]/50 border border-[#d2f4e0] flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-white border border-[#bfe7cf] flex items-center justify-center text-[#2fa874] shadow-xs">
-                          <CloudRain className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <p className="font-bold text-sm text-[#16352D]">Today</p>
-                          <p className="text-xs text-[#527d6a]">
-                            {weather?.condition || 'Light rain shower'}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-xs font-bold text-[#16352D]">
-                          {temperature - 1}° – {temperature + 3}°C
-                        </span>
-                        <p className="text-[11px] text-[#2fa874] font-medium">
-                          {rainProb}% ({rainInbound} mm)
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Day 2 (Tomorrow) */}
-                    <div className="p-3.5 rounded-xl bg-[#fafdfb] border border-[#edf6f0] flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-white border border-[#DCE8DF] flex items-center justify-center text-[#527d6a] shadow-xs">
-                          <CloudSun className="w-5 h-5 text-[#e5a034]" />
-                        </div>
-                        <div>
-                          <p className="font-bold text-sm text-[#16352D]">Tomorrow</p>
-                          <p className="text-xs text-[#527d6a]">
-                            {forecastList[1]?.condition || 'Patchy rain nearby'}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-xs font-bold text-[#16352D]">
-                          {forecastList[1]?.temperature_min ? Math.round(forecastList[1].temperature_min) : 24}° –{' '}
-                          {forecastList[1]?.temperature_max ? Math.round(forecastList[1].temperature_max) : 30}°C
-                        </span>
-                        <p className="text-[11px] text-[#527d6a]">
-                          {forecastList[1]?.rain_probability || 45}% (5.3 mm)
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Day 3 */}
-                    <div className="p-3.5 rounded-xl bg-[#fafdfb] border border-[#edf6f0] flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-white border border-[#DCE8DF] flex items-center justify-center text-[#527d6a] shadow-xs">
-                          <Sun className="w-5 h-5 text-[#e5a034]" />
-                        </div>
-                        <div>
-                          <p className="font-bold text-sm text-[#16352D]">Day 3</p>
-                          <p className="text-xs text-[#527d6a]">
-                            {forecastList[2]?.condition || 'Overcast skies'}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-xs font-bold text-[#16352D]">
-                          {forecastList[2]?.temperature_min ? Math.round(forecastList[2].temperature_min) : 23}° –{' '}
-                          {forecastList[2]?.temperature_max ? Math.round(forecastList[2].temperature_max) : 29}°C
-                        </span>
-                        <p className="text-[11px] text-[#527d6a]">
-                          {forecastList[2]?.rain_probability || 20}% (0.5 mm)
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 3. Farm Snapshot & Sustainability Card */}
-                <div className="bg-white rounded-2xl p-6 shadow-editorial border border-[#DCE8DF] space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-semibold text-[#2fa874] uppercase tracking-wider">
-                      Ecological Performance
-                    </span>
-                    <Leaf className="w-4 h-4 text-[#2fa874]" />
-                  </div>
-
-                  <div className="flex items-center gap-5">
-                    {/* Inline Circular SVG Gauge */}
-                    <div className="relative w-20 h-20 shrink-0">
-                      <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                        <path
-                          className="text-[#e2efe7]"
-                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="3.5"
-                        />
-                        <path
-                          className="text-[#2fa874]"
-                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeDasharray={`${Math.min(100, Math.max(0, sustainabilityScore))}, 100`}
-                          strokeLinecap="round"
-                          strokeWidth="3.5"
-                        />
-                      </svg>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="font-editorial text-2xl font-bold text-[#16352D] leading-none">
-                          {sustainabilityScore}
-                        </span>
-                        <span className="text-[9px] text-[#527d6a] uppercase mt-0.5">/100</span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-1">
-                      <p className="font-bold text-sm text-[#16352D]">Sustainability Index</p>
-                      <p className="text-xs text-[#527d6a] leading-relaxed">
-                        Efficient water consumption · High organic matter score · Zero runoff penalty.
+                      <p className="text-[11px] text-[#2fa874] font-medium">
+                        {rainProb}% ({rainInbound} mm)
                       </p>
                     </div>
                   </div>
 
-                  <div className="pt-3 flex items-center justify-between bg-[#f8faf8] p-3 rounded-xl border border-[#edf6f0]">
-                    <div className="space-y-0.5">
-                      <span className="text-[10px] text-[#6C7D76] block">Infrastructure Asset</span>
-                      <span className="text-xs font-semibold text-[#16352D]">
-                        {acreage} Cultivated Acres · Drip Fed
-                      </span>
+                  {/* Day 2 (Tomorrow) */}
+                  <div className="p-3.5 rounded-xl bg-[#fafdfb] border border-[#edf6f0] flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-white border border-[#DCE8DF] flex items-center justify-center text-[#527d6a] shadow-xs">
+                        <CloudSun className="w-5 h-5 text-[#e5a034]" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm text-[#16352D]">Tomorrow</p>
+                        <p className="text-xs text-[#527d6a]">
+                          {forecastList[1]?.condition || 'Patchy rain nearby'}
+                        </p>
+                      </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => navigate('/sustainability')}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-[#1b4d3e] hover:underline cursor-pointer"
-                    >
-                      <span>View Details</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="text-right">
+                      <span className="text-xs font-bold text-[#16352D]">
+                        {forecastList[1]?.temperature_min ? Math.round(forecastList[1].temperature_min) : 24}° –{' '}
+                        {forecastList[1]?.temperature_max ? Math.round(forecastList[1].temperature_max) : 30}°C
+                      </span>
+                      <p className="text-[11px] text-[#527d6a]">
+                        {forecastList[1]?.rain_probability || 45}% (5.3 mm)
+                      </p>
+                    </div>
                   </div>
+
+                  {/* Day 3 */}
+                  <div className="p-3.5 rounded-xl bg-[#fafdfb] border border-[#edf6f0] flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-white border border-[#DCE8DF] flex items-center justify-center text-[#527d6a] shadow-xs">
+                        <Sun className="w-5 h-5 text-[#e5a034]" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm text-[#16352D]">Day 3</p>
+                        <p className="text-xs text-[#527d6a]">
+                          {forecastList[2]?.condition || 'Overcast skies'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xs font-bold text-[#16352D]">
+                        {forecastList[2]?.temperature_min ? Math.round(forecastList[2].temperature_min) : 23}° –{' '}
+                        {forecastList[2]?.temperature_max ? Math.round(forecastList[2].temperature_max) : 29}°C
+                      </span>
+                      <p className="text-[11px] text-[#527d6a]">
+                        {forecastList[2]?.rain_probability || 20}% (0.5 mm)
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Farm Snapshot & Sustainability Card */}
+              <div className="bg-white rounded-2xl p-6 shadow-editorial border border-[#DCE8DF] space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-[#2fa874] uppercase tracking-wider">
+                    Ecological Performance
+                  </span>
+                  <Leaf className="w-4 h-4 text-[#2fa874]" />
+                </div>
+
+                <div className="flex items-center gap-5">
+                  {/* Inline Circular SVG Gauge */}
+                  <div className="relative w-20 h-20 shrink-0">
+                    <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                      <path
+                        className="text-[#e2efe7]"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="3.5"
+                      />
+                      <path
+                        className="text-[#2fa874]"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeDasharray={`${Math.min(100, Math.max(0, sustainabilityScore))}, 100`}
+                        strokeLinecap="round"
+                        strokeWidth="3.5"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="font-editorial text-2xl font-bold text-[#16352D] leading-none">
+                        {sustainabilityScore}
+                      </span>
+                      <span className="text-[9px] text-[#527d6a] uppercase mt-0.5">/100</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <p className="font-bold text-sm text-[#16352D]">Sustainability Index</p>
+                    <p className="text-xs text-[#527d6a] leading-relaxed">
+                      Efficient water consumption · High organic matter score · Zero runoff penalty.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-3 flex items-center justify-between bg-[#f8faf8] p-3 rounded-xl border border-[#edf6f0]">
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] text-[#6C7D76] block">Infrastructure Asset</span>
+                    <span className="text-xs font-semibold text-[#16352D]">
+                      {acreage} Cultivated Acres · Drip Fed
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/sustainability')}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-[#1b4d3e] hover:underline cursor-pointer"
+                  >
+                    <span>View Details</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
             </div>
