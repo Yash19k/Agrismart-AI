@@ -1,16 +1,22 @@
 import React, { useState, useRef } from 'react';
-import { UploadCloud, Image, AlertCircle, Check, Shuffle, Sparkles, FolderOpen, ArrowRight, Loader2 } from 'lucide-react';
+import {
+  UploadCloud,
+  Check,
+  Shuffle,
+  Sparkles,
+  FolderOpen,
+  Sun,
+  AlertCircle,
+  Loader2
+} from 'lucide-react';
 import { SAMPLE_LEAVES, loadSampleAsFile } from '../../data/sampleLeaves';
 import SampleLeafModal from './SampleLeafModal';
 
 /**
- * ImageUpload Component
+ * ImageUpload Component (Stitch State 1: Empty Upload Screen)
  *
- * Provides a large, farmer-friendly drag-and-drop file upload zone.
- * Also includes options for users without photos to test the system:
- * 1. "Random Select Image" — instant random test leaf
- * 2. "Choose Sample Leaf" — modal to browse all provided specimens
- * 3. Quick sample chips for 1-click testing
+ * Provides the editorial AgroVerdant dropzone and agronomy lab specimen library.
+ * Preserves all functional upload handling, drag-and-drop, validation, and sample leaf loading.
  */
 export default function ImageUpload({ onImageSelected, disabled = false }) {
   const [dragActive, setDragActive] = useState(false);
@@ -21,7 +27,7 @@ export default function ImageUpload({ onImageSelected, disabled = false }) {
   const fileInputRef = useRef(null);
 
   const MAX_SIZE_MB = 10;
-  const ACCEPTED_TYPES = ['image/jpeg', 'image/jpg', 'image/png'];
+  const ACCEPTED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
   const validateAndPassFile = (file) => {
     setErrorMessage(null);
@@ -32,7 +38,7 @@ export default function ImageUpload({ onImageSelected, disabled = false }) {
     }
 
     if (!ACCEPTED_TYPES.includes(file.type.toLowerCase())) {
-      setErrorMessage('Invalid file format. Please upload a JPG, JPEG, or PNG image.');
+      setErrorMessage('Invalid file format. Please upload a JPG, JPEG, PNG, or WEBP image.');
       return;
     }
 
@@ -71,7 +77,7 @@ export default function ImageUpload({ onImageSelected, disabled = false }) {
     }
   };
 
-  // 1. Pick a random sample image from our verified collection
+  // 1. Pick a random sample leaf from our verified collection
   const handleRandomSelect = async () => {
     if (disabled || loadingRandom) return;
     setErrorMessage(null);
@@ -106,56 +112,58 @@ export default function ImageUpload({ onImageSelected, disabled = false }) {
   };
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full flex flex-col gap-7">
       {/* Hidden native input */}
       <input
         ref={fileInputRef}
         type="file"
-        accept=".jpg,.jpeg,.png"
+        accept=".jpg,.jpeg,.png,.webp"
         disabled={disabled}
         onChange={handleChange}
         className="hidden"
         id="crop-leaf-file-input"
       />
 
-      {/* Error Banner */}
+      {/* Error Alert */}
       {errorMessage && (
-        <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 flex items-start gap-2.5 text-red-800 text-sm animate-fadeIn">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-          <div className="flex-1 font-medium">{errorMessage}</div>
+        <div className="p-4 rounded-2xl bg-[#fdf2f2] border border-[#f8d7d7] flex items-start gap-3 text-[#c95a5a] text-xs font-semibold animate-fadeIn">
+          <AlertCircle className="w-4 h-4 text-[#c95a5a] shrink-0 mt-0.5" />
+          <div className="flex-1 leading-relaxed">{errorMessage}</div>
         </div>
       )}
 
-      {/* ── Side-by-Side Containers (Upload Card & Sample Test Card) ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-        {/* Left Side: Drag & Drop Boundary Box */}
-        <div
-          onDragEnter={handleDrag}
-          onDragOver={handleDrag}
-          onDragLeave={handleDrag}
-          onDrop={handleDrop}
-          onClick={() => !disabled && fileInputRef.current?.click()}
-          className={`relative flex flex-col items-center justify-between p-7 sm:p-8 rounded-3xl border-2 border-dashed cursor-pointer transition-all bg-white ${
-            dragActive
-              ? 'border-emerald-500 bg-emerald-50/70 scale-[1.01]'
-              : 'border-emerald-200 hover:border-emerald-400 hover:bg-emerald-50/30'
-          } ${disabled ? 'opacity-60 cursor-not-allowed' : ''} shadow-xs h-full min-h-[380px]`}
-        >
-          <div className="flex flex-col items-center text-center my-auto">
-            {/* Upload Icon with subtle badge */}
-            <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-700 mb-3.5 shadow-xs">
-              <UploadCloud className="w-8 h-8 stroke-[2]" />
+      {/* ── CARD 1: Upload Dropzone Area ── */}
+      <section
+        className="w-full bg-white rounded-3xl p-7 border border-[#d3ebd9] shadow-editorial flex flex-col justify-between relative overflow-hidden group"
+        data-purpose="upload-card"
+      >
+        <div className="absolute -right-20 -top-20 w-64 h-64 bg-[#ecfef3] rounded-full blur-3xl pointer-events-none" />
+
+        <div className="space-y-5 relative z-10">
+          <div
+            onDragEnter={handleDrag}
+            onDragOver={handleDrag}
+            onDragLeave={handleDrag}
+            onDrop={handleDrop}
+            onClick={() => !disabled && fileInputRef.current?.click()}
+            className={`relative rounded-2xl p-8 sm:p-10 text-center transition-all bg-[#fafdfb] hover:bg-[#f4faf6] border-2 border-dashed flex flex-col items-center justify-center cursor-pointer ${
+              dragActive
+                ? 'border-[#1b4d3e] bg-[#ecfef3]'
+                : 'border-[#57b98d] group-hover:border-[#1b4d3e]'
+            } ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
+          >
+            <div className="w-16 h-16 rounded-2xl bg-[#ecfef3] border border-[#a6e7c4] flex items-center justify-center text-[#1b4d3e] mb-4 shadow-xs group-hover:scale-105 transition-transform duration-300">
+              <UploadCloud className="w-8 h-8 stroke-[1.8]" />
             </div>
 
-            {/* Headings */}
-            <h3 className="text-lg sm:text-xl font-extrabold text-gray-900">
-              Upload Crop Leaf Image
-            </h3>
-            <p className="text-xs sm:text-sm font-medium text-gray-600 mt-1 max-w-sm">
-              Drag and drop your crop leaf photo here, or click to browse from your device.
+            <h2 className="font-editorial text-2xl font-normal text-[#1a2421] tracking-normal">
+              Upload Crop Leaf Photograph
+            </h2>
+
+            <p className="text-xs sm:text-sm text-[#4d7362] mt-1 max-w-sm leading-relaxed">
+              Drop your specimen image here or select one from your computer.
             </p>
 
-            {/* Action Button */}
             <button
               type="button"
               disabled={disabled}
@@ -163,53 +171,57 @@ export default function ImageUpload({ onImageSelected, disabled = false }) {
                 e.stopPropagation();
                 fileInputRef.current?.click();
               }}
-              className="mt-5 px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-bold shadow-md shadow-emerald-700/20 transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
+              className="mt-6 inline-flex items-center gap-2.5 px-6 py-3 bg-[#1b4d3e] hover:bg-[#133a2f] active:bg-[#0c261e] text-white text-xs sm:text-sm font-semibold rounded-xl shadow-md shadow-[#1b4d3e]/25 hover:shadow-lg transition-all duration-200 cursor-pointer"
             >
-              <Image className="w-4 h-4" />
-              <span>Browse Image from Device</span>
+              Choose Image File
             </button>
-          </div>
-
-          {/* Requirements Pill */}
-          <div className="mt-4 pt-4 border-t border-gray-100 w-full flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-xs text-gray-500">
-            <span className="flex items-center gap-1 font-semibold">
-              <Check className="w-3.5 h-3.5 text-emerald-600" /> JPG, JPEG, PNG
-            </span>
-            <span className="w-1 h-1 rounded-full bg-gray-300" />
-            <span className="font-semibold">Max size: 10 MB</span>
-            <span className="w-1 h-1 rounded-full bg-gray-300" />
-            <span className="font-semibold">Natural light</span>
           </div>
         </div>
 
-        {/* Right Side: Test with Provided Sample Leaves Section */}
-        <div className="bg-white rounded-3xl p-6 sm:p-7 border border-emerald-100 shadow-sm flex flex-col justify-between h-full min-h-[380px]">
-          <div>
-            <div className="flex items-start justify-between gap-3 mb-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="p-1.5 rounded-xl bg-emerald-100 text-emerald-800">
-                    <Sparkles className="w-4 h-4 text-emerald-700" />
-                  </span>
-                  <h4 className="text-base font-extrabold text-gray-900">
-                    Don't have a leaf image right now?
-                  </h4>
-                </div>
-                <p className="text-xs text-gray-500 pl-8 leading-relaxed">
-                  Test our AI detector using real specimen leaves provided by our agronomy lab.
+        {/* Requirements Strip */}
+        <div className="mt-6 pt-4 border-t border-[#edf6f0] flex flex-wrap items-center justify-center gap-y-2 gap-x-4 text-xs text-[#527d6a]">
+          <span className="inline-flex items-center gap-1.5 font-medium">
+            <Check className="w-4 h-4 text-[#2fa874] stroke-[2.5]" />
+            JPG, JPEG, PNG, WEBP
+          </span>
+          <span className="text-[#b2ebd0]">•</span>
+          <span className="font-medium">Max file size: 10 MB</span>
+          <span className="text-[#b2ebd0]">•</span>
+          <span className="font-medium text-[#2f664e] flex items-center gap-1.5">
+            <Sun className="w-3.5 h-3.5 text-[#e5a034]" />
+            Natural sunlight recommended
+          </span>
+        </div>
+      </section>
+
+      {/* ── CARD 2: Specimen Library & Quick Test Specimens ── */}
+      <section
+        className="w-full bg-white rounded-3xl p-7 border border-[#d3ebd9] shadow-editorial flex flex-col justify-between"
+        data-purpose="specimen-library-card"
+      >
+        <div className="space-y-5">
+          {/* Top Banner */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-[#ecfef3]/80 border border-[#bfe7cf]">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-white border border-[#aee3c5] flex items-center justify-center text-[#1b4d3e] shrink-0 shadow-xs">
+                <Sparkles className="w-5 h-5 text-[#2fa874]" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-[#113329]">
+                  Don't have a leaf image right now?
+                </h4>
+                <p className="text-xs text-[#4d7362] mt-0.5 leading-relaxed">
+                  Test our Vision ML detector instantly using real-world field specimen leaves provided by our agronomy research lab.
                 </p>
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-5">
-              {/* 1. Random Select Image Button */}
+            <div className="flex items-center gap-3 shrink-0">
               <button
                 type="button"
                 disabled={disabled || loadingRandom}
                 onClick={handleRandomSelect}
-                className="w-full px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-800 hover:to-teal-800 text-white text-xs font-extrabold shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50"
-                title="Pick a random sample leaf"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#1b4d3e] hover:bg-[#133a2f] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
               >
                 {loadingRandom ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -219,76 +231,68 @@ export default function ImageUpload({ onImageSelected, disabled = false }) {
                 <span>{loadingRandom ? 'Loading...' : 'Random Select Image'}</span>
               </button>
 
-              {/* 2. Choose Sample Leaf Button (Opens Modal) */}
               <button
                 type="button"
                 disabled={disabled}
                 onClick={() => setModalOpen(true)}
-                className="w-full px-4 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 text-xs font-extrabold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-                title="Browse all provided sample images"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#ecfef3] hover:bg-[#d8f5e4] text-[#153f33] border border-[#aae1c2] text-xs font-semibold transition-colors cursor-pointer"
               >
-                <FolderOpen className="w-3.5 h-3.5 text-emerald-700" />
+                <FolderOpen className="w-4 h-4 text-[#2fa874]" />
                 <span>Choose Sample Leaf...</span>
               </button>
             </div>
           </div>
 
-          {/* Quick Sample Leaf Strip */}
-          <div className="pt-3 border-t border-gray-100">
-            <div className="flex items-center justify-between mb-2.5">
-              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                Quick Test Specimens (Click any to test):
-              </span>
-              <button
-                type="button"
-                onClick={() => setModalOpen(true)}
-                className="text-xs font-bold text-emerald-700 hover:text-emerald-900 flex items-center gap-1 cursor-pointer"
-              >
-                View all 5 <ArrowRight className="w-3 h-3" />
-              </button>
-            </div>
+          {/* Quick Test Specimens */}
+          <div className="pt-2 flex items-center justify-between">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#577f6d]">
+              Quick Test Specimens (Click any to test):
+            </span>
+          </div>
 
-            <div className="grid grid-cols-5 gap-2">
-              {SAMPLE_LEAVES.map((sample) => {
-                const isLoading = loadingSampleId === sample.id;
-                return (
-                  <div
-                    key={sample.id}
-                    onClick={() => !isLoading && handleSelectSample(sample)}
-                    className={`group p-1.5 sm:p-2 rounded-2xl border transition-all cursor-pointer flex flex-col items-center text-center ${
-                      sample.isHealthy
-                        ? 'border-emerald-200 bg-emerald-50/40 hover:bg-emerald-50 hover:border-emerald-400'
-                        : 'border-gray-200 bg-gray-50/50 hover:bg-emerald-50/40 hover:border-emerald-400'
-                    } hover:shadow-sm`}
-                  >
-                    <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-gray-200 mb-1.5">
-                      <img
-                        src={sample.imageUrl}
-                        alt={sample.crop}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                      />
-                      {isLoading && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white">
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        </div>
-                      )}
-                      <span className="absolute bottom-0.5 right-0.5 px-1 py-0.2 rounded bg-black/70 text-white text-[8px] sm:text-[9px] font-bold">
-                        {sample.isHealthy ? 'Healthy' : sample.severity}
-                      </span>
-                    </div>
-                    <span className="text-[10px] sm:text-xs font-extrabold text-gray-900 truncate w-full">
-                      {sample.crop}
-                    </span>
-                    <span className="text-[8px] sm:text-[10px] font-semibold text-gray-500 truncate w-full">
-                      {sample.condition}
-                    </span>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+            {SAMPLE_LEAVES.slice(0, 5).map((sample) => {
+              const isLoading = loadingSampleId === sample.id;
+              return (
+                <button
+                  key={sample.id}
+                  type="button"
+                  disabled={disabled || isLoading}
+                  onClick={() => handleSelectSample(sample)}
+                  className={`group/specimen p-2.5 rounded-2xl bg-[#fafdfb] hover:bg-[#ecfef3] border transition-all text-left flex flex-col items-center cursor-pointer ${
+                    sample.isHealthy
+                      ? 'border-[#d6ecdf] hover:border-[#2fa874] ring-1 ring-[#2fa874]/30'
+                      : 'border-[#d6ecdf] hover:border-[#2fa874]'
+                  }`}
+                >
+                  <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-gray-100 mb-2">
+                    <img
+                      src={sample.imageUrl}
+                      alt={`${sample.crop} ${sample.condition} specimen leaf`}
+                      className="w-full h-full object-cover group-hover/specimen:scale-110 transition-transform duration-300"
+                    />
+                    {isLoading && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white rounded-xl">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      </div>
+                    )}
                   </div>
-                );
-              })}
-            </div>
+                  <p className="text-xs font-bold text-[#113329] text-center w-full truncate">
+                    {sample.crop}
+                  </p>
+                  <p
+                    className={`text-[10px] text-center w-full truncate ${
+                      sample.isHealthy ? 'text-[#2fa874] font-semibold' : 'text-[#55826f]'
+                    }`}
+                  >
+                    {sample.condition}
+                  </p>
+                </button>
+              );
+            })}
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Modal for browsing all sample leaves */}
       <SampleLeafModal
@@ -300,4 +304,3 @@ export default function ImageUpload({ onImageSelected, disabled = false }) {
     </div>
   );
 }
-

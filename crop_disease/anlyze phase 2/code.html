@@ -1,0 +1,315 @@
+<!DOCTYPE html><html class="h-full bg-[#FBFBF8]" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>AgriSmart - AI Crop Disease Detection</title>
+<!-- Tailwind CSS v3 with plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: EB Garamond (Editorial Serif) & Plus Jakarta Sans (Precision Sans) -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<script data-purpose="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"EB Garamond"', 'Georgia', 'serif'],
+            sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          },
+          colors: {
+            verdant: {
+              50: '#F4F8F5',
+              100: '#E7F2EA',
+              200: '#CDE4D4',
+              300: '#9ECDB0',
+              500: '#3D8C61',
+              700: '#1F5A3F',
+              800: '#174833',
+              900: '#123F32',
+              950: '#0B261E',
+            },
+            parchment: {
+              50: '#FDFDFC',
+              100: '#FBFBF8',
+              200: '#F4F4EE',
+              300: '#E9E9E0',
+              border: '#E2E8E0',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<!-- BEGIN: Custom Styles -->
+<style data-purpose="typography">
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: #1A2621;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-editorial {
+      font-family: 'EB Garamond', Georgia, serif;
+      letter-spacing: -0.015em;
+    }
+  </style>
+<style data-purpose="scrollbar-and-effects">
+    /* Subtle hairline focus ring */
+    .focus-ring:focus-visible {
+      outline: 2px solid #1B4D3E;
+      outline-offset: 2px;
+    }
+    /* Subtle paper texture border */
+    .editorial-border {
+      border: 1px solid #E2E8E0;
+    }
+  </style>
+<!-- END: Custom Styles -->
+</head>
+<body class="h-full bg-[#FBFBF8] text-[#1D2B24] flex overflow-hidden antialiased select-none">
+<!-- BEGIN: Sidebar Navigation -->
+<aside class="w-64 flex-shrink-0 bg-white border-r border-[#E5ECE5] flex flex-col justify-between h-full z-20" data-purpose="sidebar">
+<div class="flex flex-col h-full">
+<!-- Logo Lockup Area -->
+<div class="px-6 pt-5 pb-5 border-b border-[#F0F4F0]">
+<div class="flex items-center gap-2.5">
+<img alt="AgriSmart" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTWkCx8_qWRNsUApIUq-r-IRFil_k01KMeo-h_ABHiWitkcWwPXeZOBkbaj2ryGSHG5eF7dXiYO2TRuYH46KCMCepo09v2U4oHEK7oy2rN4JoDQIq1yhbf96Sb_Mcb9m5WgRv6FPw2lXg6Zvr5jYUS_sPTjwZjJ9QZlmttctWBnQWUA9tVxaOZjNmjvREXmEPK9djS-9dmX6rPoTqRf_Ie-Gbr9JVTQpR6VidQ76SoN8koSK0GAXQ9K_urzyfzGiOpsas">
+</div>
+<div class="mt-1 flex items-center gap-1.5">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-verdant-700"></span>
+
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto" data-purpose="sidebar-links">
+<!-- Dashboard -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] font-medium text-stone-600 hover:text-verdant-900 hover:bg-[#F3F7F4] transition-colors group" href="#">
+<svg class="w-[18px] h-[18px] text-stone-400 group-hover:text-verdant-700 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+          Dashboard
+        </a>
+<!-- Disease Detection (ACTIVE) -->
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg text-[13.5px] font-semibold text-verdant-900 bg-[#E8F5ED] border border-[#D5EAD9] transition-colors shadow-sm" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-[18px] h-[18px] text-verdant-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+            Disease Detection
+          </div>
+<span class="w-1.5 h-1.5 rounded-full bg-verdant-700"></span>
+</a>
+<!-- AI Agronomist -->
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg text-[13.5px] font-medium text-stone-600 hover:text-verdant-900 hover:bg-[#F3F7F4] transition-colors group" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-[18px] h-[18px] text-stone-400 group-hover:text-verdant-700 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.523a4.5 4.5 0 01-2.915-.052L12 14.5M19.8 15.3A4.478 4.478 0 0121 18.5a4.5 4.5 0 01-9 0c0-.85.236-1.644.646-2.32m0 0L12 14.5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+            AI Agronomist
+          </div>
+
+</a>
+<!-- Weather & Advisory -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] font-medium text-stone-600 hover:text-verdant-900 hover:bg-[#F3F7F4] transition-colors group" href="#">
+<svg class="w-[18px] h-[18px] text-stone-400 group-hover:text-verdant-700 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+          Weather &amp; Advisory
+        </a>
+<!-- Irrigation -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] font-medium text-stone-600 hover:text-verdant-900 hover:bg-[#F3F7F4] transition-colors group" href="#">
+<svg class="w-[18px] h-[18px] text-stone-400 group-hover:text-verdant-700 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+          Irrigation
+        </a>
+<!-- Sustainability Score -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] font-medium text-stone-600 hover:text-verdant-900 hover:bg-[#F3F7F4] transition-colors group" href="#">
+<svg class="w-[18px] h-[18px] text-stone-400 group-hover:text-verdant-700 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+          Sustainability Score
+        </a>
+<!-- Crop Recommendation -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] font-medium text-stone-600 hover:text-verdant-900 hover:bg-[#F3F7F4] transition-colors group" href="#">
+<svg class="w-[18px] h-[18px] text-stone-400 group-hover:text-verdant-700 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7C5 4 4 5 4 7zm4 4h8m-8 4h5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+          Crop Recommendation
+        </a>
+<!-- My Farm -->
+
+</nav>
+<!-- Bottom User Profile and Logout -->
+<div class="p-3 border-t border-[#EDF2EE] bg-[#FCFDFC]">
+<div class="flex items-center justify-between p-2 rounded-lg bg-white border border-[#E7EFE9] mb-2 shadow-xs">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-verdant-900 text-white flex items-center justify-center font-semibold text-xs tracking-wide">
+              Y
+            </div>
+<div class="overflow-hidden">
+<p class="text-xs font-semibold text-stone-800 leading-tight">Yash</p>
+<p class="text-[11px] text-stone-400 truncate">yash@gmail.com</p>
+</div>
+</div>
+<span class="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+</div>
+<button class="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50/60 rounded-md transition-colors" data-purpose="logout-btn">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Log out
+        </button>
+</div>
+</div>
+</aside>
+<!-- END: Sidebar Navigation -->
+<!-- BEGIN: Main Content Area -->
+<div class="flex-1 flex flex-col h-full overflow-hidden">
+<!-- Top Utility Header -->
+<header class="h-14 bg-white/80 backdrop-blur-sm border-b border-[#E6EDE7] px-8 flex items-center flex-shrink-0 z-10 justify-center" data-purpose="top-utility-header">
+
+<!-- Top Right Badges & Controls -->
+<div class="flex items-center gap-3.5" style="margin-left: auto;">
+<!-- Language Selector -->
+<button class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-stone-700 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-md transition-colors">
+<svg class="w-3.5 h-3.5 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<circle cx="12" cy="12" r="10" stroke-width="1.8"></circle>
+<path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" stroke-width="1.8"></path>
+</svg>
+<span class="">English <strong class="font-semibold ml-0.5">EN</strong></span>
+<svg class="w-3 h-3 text-stone-400 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<!-- Vision ML Active Badge -->
+
+
+</div>
+</header>
+<!-- Scrollable Workspace -->
+<main class="flex-1 overflow-y-auto px-10 py-6" data-purpose="workspace">
+<div class="max-w-6xl mx-auto space-y-6">
+<!-- Breadcrumb & Header Block -->
+<div>
+<nav class="flex items-center gap-1.5 text-xs font-medium text-stone-400 mb-1.5">
+<a class="hover:text-stone-700 transition-colors" href="#">
+<svg class="w-3.5 h-3.5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+</a>
+<span class="">›</span>
+<span class="text-verdant-800 font-semibold">Disease Detection</span>
+</nav>
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h1 class="font-editorial text-[34px] font-semibold text-stone-900 tracking-tight leading-none">
+                AI Crop Disease Detection
+              </h1>
+<p class="text-[13.5px] text-stone-600 mt-2 max-w-2xl font-normal leading-relaxed">
+                Upload a leaf image and get instant AI-powered analysis with personalized agronomic recommendations.
+              </p>
+</div>
+<!-- BEGIN: 3-Step Stepper Component -->
+
+<!-- END: 3-Step Stepper Component -->
+</div>
+</div>
+<!-- BEGIN: Main Analysis Card -->
+<section class="bg-white rounded-2xl border border-[#E0E7DF] shadow-sm overflow-hidden" data-purpose="analysis-card">
+<div class="p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+<!-- LEFT COLUMN: Selected Leaf Image Preview -->
+<div class="lg:col-span-5 flex flex-col">
+<div class="relative rounded-xl overflow-hidden border border-[#DCE4DD] bg-[#F7FAF8] flex-1 flex flex-col group">
+<!-- Status Badge -->
+<div class="absolute top-3.5 left-3.5 z-10">
+
+</div>
+<!-- Zoom / Fullscreen Button -->
+<button class="absolute top-3.5 right-3.5 z-10 w-8 h-8 rounded-full bg-white/80 hover:bg-white text-stone-700 backdrop-blur-md flex items-center justify-center shadow-xs transition-colors" title="Inspect Specimen">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<!-- Leaf Preview Image with framing -->
+<div class="w-full h-80 lg:h-full min-h-[300px] overflow-hidden relative flex items-center justify-center bg-stone-100">
+<img alt="Selected crop specimen preview" class="w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-300 ease-out" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPg6ynq2wUunmzQXrEk6InKnDU8WLyCe2jYlSt2Z6BKxdcnRVLQPKWY0gGa0gc6_wtEgg1zUMV_cy55JgY_WDCzCHBl_vk6nOHWmKx0zeDFrvVzwyCLaapPujn76s4XnU9Wjopb9anyzmIB8iYfKj2ebWPpdbBurzFaQvTNKIMfkQIusG7c4bmnr3GTNgonLmpZdy1rrsawqNcUFBHKS3HtTSAoZPzO8bHiYbo8mGJVLmQ15Yl_9Qa-Xr0aR99rm3i7rE">
+<!-- Optical Grid Overlay Hint -->
+<div class="absolute inset-0 pointer-events-none opacity-20" style="background-size: 32px 32px; background-image: linear-gradient(to right, #1b4d3e 1px, transparent 1px), linear-gradient(to bottom, #1b4d3e 1px, transparent 1px);"></div>
+</div>
+<!-- Bottom Image Bar -->
+<div class="px-4 py-2.5 bg-white/90 backdrop-blur-xs border-t border-[#E5EBE6] flex items-center justify-between text-xs text-stone-500">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-verdant-600"></span>
+<span class="font-medium text-stone-700">Specimen Leaf: Field Sample #42</span>
+</div>
+
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN: File Metadata & Action Panel -->
+<div class="lg:col-span-7 flex flex-col justify-between space-y-6">
+<div>
+<!-- Eyebrow Tag -->
+<div class="flex items-center justify-between">
+
+
+</div>
+<!-- Specimen File Title -->
+<h2 class="text-2xl font-bold text-stone-900 mt-3 font-sans tracking-tight">
+                  PhotoshopExtension_Image (36).png
+                </h2>
+<!-- Metadata Chips -->
+<div class="flex flex-wrap items-center gap-2 mt-3">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#F2F6F3] text-stone-700 text-xs font-medium border border-[#E0ECE2]">
+<svg class="w-3.5 h-3.5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+                    153.1 KB
+                  </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#F2F6F3] text-stone-700 text-xs font-medium border border-[#E0ECE2]">
+                    Format: <strong class="text-verdant-900">PNG</strong>
+</span>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#F2F6F3] text-stone-700 text-xs font-medium border border-[#E0ECE2]">
+                    Dimensions: <strong class="text-stone-800">1613 × 975</strong>
+</span>
+
+</div>
+<!-- Descriptive briefing -->
+
+<!-- Specimen Sub-actions Row -->
+
+</div>
+<!-- Main Primary CTA Button & Latency Note -->
+<div class="pt-4 border-t border-[#EEF3EF]">
+<div class="flex flex-col gap-3 w-full"><button type="button" class="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-red-200 bg-red-50/50 hover:bg-red-100/80 text-red-600 font-semibold text-sm shadow-xs transition-all"><svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>Remove Image</button><button class="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-verdant-900 hover:bg-verdant-950 active:bg-black text-white font-semibold text-sm shadow-sm hover:shadow-md transition-all" type="button"><svg class="w-4 h-4 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg><span class="">Analyze Image Now</span></button></div>
+<p class="text-[11.5px] text-stone-500 mt-2.5 flex items-center justify-between">
+
+
+</p>
+</div>
+</div>
+</div>
+<!-- Quick Comparison Tray -->
+<div class="bg-[#F8FAF8] px-8 py-3.5 border-t border-[#E3EBE4] flex flex-wrap items-center justify-between gap-4 text-xs">
+
+
+</div>
+</section>
+<!-- END: Main Analysis Card -->
+<!-- Trust Baseline / Editorial Agronomy Footer -->
+<footer class="pt-2 pb-6 text-center text-xs text-stone-400">
+
+</footer>
+</div>
+</main>
+</div>
+<!-- END: Main Content Area -->
+
+
+
+
+
+
+
+
+</body></html>
