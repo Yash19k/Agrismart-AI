@@ -11,6 +11,7 @@ class DiseaseScanSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'predicted_class', 'confidence', 'confidence_percent',
             'severity', 'is_healthy', 'model_status', 'crop_type',
+            'plant_name', 'disease_name',
             'image_url', 'created_at',
         )
 
