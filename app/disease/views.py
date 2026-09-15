@@ -83,6 +83,8 @@ class DiseasePredictView(APIView):
         scan.severity = pred_res["severity_level"].lower()
         scan.is_healthy = pred_res["is_healthy"]
         scan.crop_type = pred_res["crop_name"]
+        scan.plant_name = pred_res["crop_name"]
+        scan.disease_name = pred_res["disease_name"]
         scan.model_status = 'ready'
         scan.save()
 

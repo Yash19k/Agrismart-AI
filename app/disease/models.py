@@ -32,8 +32,10 @@ class DiseaseScan(models.Model):
     is_healthy      = models.BooleanField(null=True, blank=True)
     model_status    = models.CharField(max_length=20, choices=MODEL_STATUS, default='pending')
 
-    crop_type = models.CharField(max_length=100, blank=True)
-    notes     = models.TextField(blank=True)
+    crop_type    = models.CharField(max_length=100, blank=True)
+    plant_name   = models.CharField(max_length=100, blank=True, default='', help_text='Detected crop/plant name')
+    disease_name = models.CharField(max_length=200, blank=True, default='', help_text='Detected disease name')
+    notes        = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
