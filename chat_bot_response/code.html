@@ -1,0 +1,478 @@
+<!DOCTYPE html><html class="h-full" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>AgriSmart — AI Agronomist Consultation</title>
+<!-- Tailwind CSS v3 with plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            agro: {
+              forest: '#123F32',
+              deep: '#0e2b22',
+              emerald: '#1b4d3e',
+              sage: '#465E52',
+              leaf: '#2e7d32',
+              mint: '#e8f5e9',
+              tint: '#f7faf6',
+              surface: '#ffffff',
+              border: '#dbe7df',
+              borderLight: '#e7efe9',
+              accentWarm: '#b45309',
+              accentAlert: '#991b1b',
+              alertBg: '#fef2f2',
+              warnBg: '#fffbeb',
+              sand: '#fbfdfa'
+            }
+          },
+          fontFamily: {
+            serif: ['"EB Garamond"', 'Georgia', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+<!-- Google Fonts for EB Garamond and Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..700;1,400..700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+    /* Subtle editorial scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f4f8f5;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #c7d8ce;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #9ab9a5;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="h-full bg-agro-tint font-sans text-slate-800 antialiased flex overflow-hidden">
+<!-- BEGIN: NavigationSidebar -->
+<aside class="w-64 flex-shrink-0 bg-white border-r border-agro-border flex flex-col justify-between z-20" data-purpose="brand-navigation-sidebar">
+<div>
+<!-- AgriSmart Logo Header -->
+<div class="px-5 py-4 border-b border-agro-border flex items-center justify-between">
+<img alt="AgriSmart" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDj4m1WN-0n8Z4lgapqJrw2YF4vD3mBmXyF-j6fILtD3qSuPNgfwVKWXrNdnnNCxdlCBOoSP98H9Ju-GMdwD7IfIuNm-eRA0ZyyCC427aoF81jswpCcXB_hCmLMKWzQdIsu1yPDTaB8EnXY9Zt8gRAUUlQU99T1V5gL4Zoa-5Z5w-B91OpSBVeE322YNQ9xuAx9t_eMAAwoB6MmYBUeI2uhqmFljNsYa0imX_SfvEEJnmbMTgtkP22I41ok7MUHPoTEYm0">
+<span class="text-[10px] font-semibold tracking-wider uppercase text-agro-sage bg-agro-mint/60 px-2 py-0.5 rounded border border-agro-border">Farmer-First</span>
+</div>
+<!-- Main Navigation Menu -->
+<nav aria-label="Primary Navigation" class="p-3 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:text-agro-forest hover:bg-agro-mint/40 transition-colors" href="#dashboard">
+<svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+<rect height="9" rx="1" width="7" x="3" y="3"></rect>
+<rect height="5" rx="1" width="7" x="14" y="3"></rect>
+<rect height="9" rx="1" width="7" x="14" y="12"></rect>
+<rect height="5" rx="1" width="7" x="3" y="16"></rect>
+</svg>
+          Dashboard
+        </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:text-agro-forest hover:bg-agro-mint/40 transition-colors" href="#disease-detection">
+<svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+<path d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+          Disease Detection
+        </a>
+<!-- ACTIVE: AI Agronomist -->
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-semibold bg-agro-mint/70 text-agro-forest border border-emerald-200/70 shadow-xs transition-colors" href="#ai-agronomist">
+<div class="flex items-center gap-3">
+<svg class="w-5 h-5 text-agro-forest" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="">AI Agronomist</span>
+</div>
+
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:text-agro-forest hover:bg-agro-mint/40 transition-colors" href="#weather">
+<svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+<path d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+          Weather &amp; Advisory
+        </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:text-agro-forest hover:bg-agro-mint/40 transition-colors" href="#irrigation">
+<svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+<path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+          Irrigation Plan
+        </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:text-agro-forest hover:bg-agro-mint/40 transition-colors" href="#sustainability">
+<svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+<path d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+          Sustainability Score
+        </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:text-agro-forest hover:bg-agro-mint/40 transition-colors" href="#crop-recommendation">
+<svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+<path d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+          Crop Recommendation
+        </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:text-agro-forest hover:bg-agro-mint/40 transition-colors" href="#my-farm">
+<svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+<path d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+          My Farm Plots
+        </a>
+</nav>
+</div>
+<!-- User Profile & Session Footer -->
+<div class="p-3 border-t border-agro-border space-y-2">
+<div class="flex items-center gap-3 p-2 bg-agro-sand rounded-lg border border-agro-border">
+<div class="w-9 h-9 rounded-full bg-agro-forest text-white font-serif font-bold text-sm flex items-center justify-center flex-shrink-0">
+          Y
+        </div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-semibold text-slate-800 truncate">Yash Patel</p>
+<p class="text-xs text-slate-500 truncate">yash@gmail.com</p>
+</div>
+</div>
+<a class="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 rounded-lg transition-colors" href="#logout">
+<svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+<path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+        Log out
+      </a>
+</div>
+</aside>
+<!-- END: NavigationSidebar -->
+<!-- BEGIN: MainContentArea -->
+<div class="flex-1 flex flex-col h-full overflow-hidden bg-agro-tint">
+<!-- Top Utility & Context Bar -->
+<header class="h-16 border-b border-agro-border bg-white px-8 flex items-center justify-between flex-shrink-0 z-10" data-purpose="top-utility-bar">
+<!-- Left: Title & Mission Context -->
+<div class="flex items-center gap-3">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+<div>
+<h1 class="text-base font-bold text-agro-forest tracking-tight font-serif">AgriSmart AI Agronomist</h1>
+<p class="text-[11px] text-agro-sage">Evidence-backed conversational agricultural decision support</p>
+</div>
+</div>
+<!-- Center-Right Controls: Language, Model Inspector, Engine Status -->
+<div class="flex items-center gap-3">
+<!-- Language Switcher -->
+<div class="flex items-center bg-agro-sand rounded-lg border border-agro-border p-0.5 text-xs font-medium">
+<button class="px-2.5 py-1 rounded bg-white text-agro-forest font-semibold shadow-xs" type="button">English</button>
+<button class="px-2.5 py-1 text-slate-600 hover:text-agro-forest" type="button">ગુજરાતી</button>
+<button class="px-2.5 py-1 text-slate-600 hover:text-agro-forest" type="button">हिन्दी</button>
+</div>
+<div class="h-4 w-px bg-agro-border"></div>
+<!-- Technical Telemetry / Inspector -->
+<button class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-slate-600 bg-white border border-agro-border hover:bg-agro-sand transition-colors" type="button">
+<svg class="w-3.5 h-3.5 text-agro-sage" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+<path d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+          Inspector
+        </button>
+<!-- Engine Badge -->
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+<span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+<span class="">Groq gpt-oss-120b Active</span>
+</div>
+</div>
+</header>
+<!-- Context Telemetry Strip -->
+<section class="bg-agro-sand border-b border-agro-border px-8 py-2 flex items-center justify-between text-xs text-agro-sage" data-purpose="telemetry-banner">
+<div class="flex items-center gap-2">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+<span class="font-medium text-slate-700">Mode A: General Agricultural Advisor</span>
+<span class="text-slate-400">—</span>
+<span class="">No leaf scan active. Inquiring on live agronomic parameters, crops, irrigation, or pest prevention.</span>
+</div>
+<a class="inline-flex items-center gap-1 font-semibold text-agro-forest hover:text-emerald-700 transition-colors" href="#upload-leaf">
+<span class="">Upload Leaf Scan</span>
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</a>
+</section>
+<!-- BEGIN: ChatScrollWorkspace (Digital Agronomist Field Note Editorial Document) -->
+<main class="flex-1 overflow-y-auto px-6 py-8 md:px-12 lg:px-16" data-purpose="consultation-viewport">
+<div class="max-w-[1020px] mx-auto space-y-9">
+<!-- Understated User Field Inquiry Row -->
+<div class="flex items-baseline justify-between border-b border-agro-border pb-4 pt-1">
+<div class="space-y-1">
+<span class="text-[11px] font-bold tracking-wider uppercase text-agro-sage">YOU · FIELD INQUIRY</span>
+<p class="text-lg font-medium text-agro-forest tracking-tight">
+              What should I do today? <span class="text-slate-400 font-normal">— Corn Field Block B</span>
+</p>
+</div>
+<div class="text-xs text-slate-400 font-mono tracking-tight whitespace-nowrap pl-4">
+            08:58 AM
+          </div>
+</div>
+<!-- Editorial Agronomist Memo (Frameless, flows naturally on background) -->
+<article class="space-y-9" data-purpose="digital-agronomist-field-note">
+<!-- Memo Header & Actions -->
+<div class="flex items-start justify-between gap-4 border-b border-agro-border pb-5">
+<div>
+<p class="text-[11px] font-bold uppercase tracking-widest text-agro-sage">
+                FIELD ADVISORY MEMO · CORN-PLOT-04 (HYBRID PIONEER 3302)
+              </p>
+<h2 class="text-3xl font-serif font-medium text-agro-forest tracking-tight mt-1.5">
+                Field Diagnosis &amp; Immediate Protocol
+              </h2>
+</div>
+<!-- Quiet Utility Controls -->
+<div class="flex items-center gap-1 flex-shrink-0 pt-1">
+<button aria-label="Listen to voice readout" class="p-2 text-agro-sage hover:text-agro-forest hover:bg-agro-mint/50 rounded-lg transition-colors" title="Audio readout">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+<path d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.212-1.623.585-2.316.234-.847 1.058-1.354 1.938-1.354h2.24z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+<button aria-label="Copy recommendation text" class="p-2 text-agro-sage hover:text-agro-forest hover:bg-agro-mint/50 rounded-lg transition-colors" title="Copy note">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+<path d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+</div>
+<!-- Editorial Lead Callout Quote -->
+<blockquote class="border-l-2 border-agro-forest pl-6 py-2 my-2">
+<p class="font-serif italic text-xl md:text-2xl text-slate-800 leading-relaxed">
+              “Your corn is showing moderate <strong class="font-bold text-agro-forest not-italic">Northern Leaf Blight</strong> and the weather today is very favorable for the disease to spread. Hold off on any irrigation now, and avoid spraying because the wind is strong. Plan to apply a fungicide later when the wind calms, and keep the field well-drained and monitored over the next few days.”
+            </p>
+</blockquote>
+<!-- Decision Logic / Why This Recommendation -->
+<section class="space-y-4 pt-2">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-agro-forest"></span>
+<h3 class="text-xs font-bold tracking-widest uppercase text-agro-forest">
+                Why This Recommendation (Decision Factors)
+              </h3>
+</div>
+<div class="border-t border-agro-border divide-y divide-agro-borderLight">
+<div class="py-3 flex items-baseline gap-3">
+<span class="text-agro-forest font-serif text-lg leading-none select-none">•</span>
+<p class="text-sm text-slate-700 leading-relaxed">
+<strong class="font-semibold text-slate-900">High Humidity &amp; Imminent Rain:</strong>
+                  Creates near-ideal sporulation conditions for leaf-spot fungi to spread across the lower canopy.
+                </p>
+</div>
+<div class="py-3 flex items-baseline gap-3">
+<span class="text-agro-forest font-serif text-lg leading-none select-none">•</span>
+<p class="text-sm text-slate-700 leading-relaxed">
+<strong class="font-semibold text-slate-900">Strong Wind (&gt;25 km/h):</strong>
+                  Makes foliar sprays drift and drastically reduces droplet coverage, risking chemical runoff and waste.
+                </p>
+</div>
+<div class="py-3 flex items-baseline gap-3">
+<span class="text-agro-forest font-serif text-lg leading-none select-none">•</span>
+<p class="text-sm text-slate-700 leading-relaxed">
+<strong class="font-semibold text-slate-900">Moisture Saturation Risk:</strong>
+                  Irrigating now would elevate root moisture excessively, compounding fungal virulence and root stress.
+                </p>
+</div>
+</div>
+</section>
+<!-- Agricultural Action Plan Timeline (Connected Sequence with unified tones) -->
+<section class="space-y-4 pt-2">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-agro-forest"></span>
+<h3 class="text-xs font-bold tracking-widest uppercase text-agro-forest">
+                  Action Plan Timeline
+                </h3>
+</div>
+<span class="text-[11px] text-agro-sage">Priority sequential execution</span>
+</div>
+<!-- Integrated Agricultural Timeline Grid -->
+<div class="border-t border-agro-border pt-5">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative">
+<!-- Step 1: TODAY / IMMEDIATE -->
+<div class="relative flex flex-col space-y-2 border-l border-agro-forest/40 pl-4 py-1">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-rose-600"></span>
+<span class="text-[11px] font-bold uppercase tracking-wider text-rose-800">Today · Immediate</span>
+</div>
+<h4 class="text-sm font-bold text-slate-900">Postpone Irrigation</h4>
+<p class="text-xs text-slate-600 leading-relaxed">
+                    Check drainage furrows immediately to eliminate ponding and avoid moisture saturation in root zone.
+                  </p>
+<span class="text-[10px] font-medium text-rose-700 pt-2">Critical intervention</span>
+</div>
+<!-- Step 2: WITHIN 24 HOURS -->
+<div class="relative flex flex-col space-y-2 border-l border-agro-forest/40 pl-4 py-1">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-amber-600"></span>
+<span class="text-[11px] font-bold uppercase tracking-wider text-amber-900">Within 24 Hours</span>
+</div>
+<h4 class="text-sm font-bold text-slate-900">Calm-Window Foliar Spray</h4>
+<p class="text-xs text-slate-600 leading-relaxed">
+                    When local wind speed recedes below 20 km/h, apply recommended foliar fungicide (Azoxystrobin or Mancozeb) at dawn.
+                  </p>
+<span class="text-[10px] font-medium text-amber-800 pt-2">Weather contingent</span>
+</div>
+<!-- Step 3: NEXT 3 DAYS -->
+<div class="relative flex flex-col space-y-2 border-l border-agro-forest/40 pl-4 py-1">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-agro-forest"></span>
+<span class="text-[11px] font-bold uppercase tracking-wider text-agro-forest">Next 3 Days</span>
+</div>
+<h4 class="text-sm font-bold text-slate-900">Canopy Monitoring</h4>
+<p class="text-xs text-slate-600 leading-relaxed">
+                    Audit lesion expansion on ear leaf. Ensure foliage aeration and remove decaying lower leaf trash.
+                  </p>
+<span class="text-[10px] font-medium text-agro-sage pt-2">Scouting phase</span>
+</div>
+<!-- Step 4: NEXT WEEK -->
+<div class="relative flex flex-col space-y-2 border-l border-agro-forest/40 pl-4 py-1">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-slate-400"></span>
+<span class="text-[11px] font-bold uppercase tracking-wider text-slate-600">Next Week</span>
+</div>
+<h4 class="text-sm font-bold text-slate-900">Evaluation &amp; Rotation Strategy</h4>
+<p class="text-xs text-slate-600 leading-relaxed">
+                    Re-assess blight arrest rates, log findings into Farm Journal, and review resistant seed genetics for next planting cycle.
+                  </p>
+<span class="text-[10px] font-medium text-slate-500 pt-2">Season-long resilience</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Verified Evidence Sources (Institutional Reference List) -->
+<section class="space-y-3 pt-2">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-agro-forest"></span>
+<h3 class="text-xs font-bold tracking-widest uppercase text-agro-forest">
+                Verified Evidence Sources (4 Institutions)
+              </h3>
+</div>
+<div class="border-t border-agro-border divide-y divide-agro-borderLight">
+<!-- Source 1 -->
+<div class="py-3 flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 group">
+<div class="flex items-baseline gap-2">
+<span class="text-xs font-bold text-agro-forest min-w-[200px] flex-shrink-0">
+                    FAO &amp; Ministry of Agriculture:
+                  </span>
+<span class="text-xs text-slate-700">
+                    Scientific Principles of Smart Agricultural Irrigation and Weather Response
+                  </span>
+</div>
+<a class="text-[11px] font-medium text-agro-forest hover:text-emerald-700 inline-flex items-center gap-1 group-hover:underline flex-shrink-0 pt-1 sm:pt-0" href="#fao">
+                  View official source →
+                </a>
+</div>
+<!-- Source 2 -->
+<div class="py-3 flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 group">
+<div class="flex items-baseline gap-2">
+<span class="text-xs font-bold text-agro-forest min-w-[200px] flex-shrink-0">
+                    Indian Meteorological Dept (IMD):
+                  </span>
+<span class="text-xs text-slate-700">
+                    Weather Factors Driving Plant Disease Sporulation and Vector Dynamics
+                  </span>
+</div>
+<a class="text-[11px] font-medium text-agro-forest hover:text-emerald-700 inline-flex items-center gap-1 group-hover:underline flex-shrink-0 pt-1 sm:pt-0" href="#imd">
+                  View official source →
+                </a>
+</div>
+<!-- Source 3 -->
+<div class="py-3 flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 group">
+<div class="flex items-baseline gap-2">
+<span class="text-xs font-bold text-agro-forest min-w-[200px] flex-shrink-0">
+                    ICAR Agro-Advisory Cell:
+                  </span>
+<span class="text-xs text-slate-700">
+                    Farm Decision Matrix for Rainfall and Temperature Spikes
+                  </span>
+</div>
+<a class="text-[11px] font-medium text-agro-forest hover:text-emerald-700 inline-flex items-center gap-1 group-hover:underline flex-shrink-0 pt-1 sm:pt-0" href="#icar">
+                  View official source →
+                </a>
+</div>
+<!-- Source 4 -->
+<div class="py-3 flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 group">
+<div class="flex items-baseline gap-2">
+<span class="text-xs font-bold text-agro-forest min-w-[200px] flex-shrink-0">
+                    WeatherAPI Hyperlocal Live Feed:
+                  </span>
+<span class="text-xs text-slate-700">
+                    Live Meteorological Observations (Partly Cloudy, 25.9°C, 89% Humidity)
+                  </span>
+</div>
+<a class="text-[11px] font-medium text-agro-forest hover:text-emerald-700 inline-flex items-center gap-1 group-hover:underline flex-shrink-0 pt-1 sm:pt-0" href="#weatherapi">
+                  View official source →
+                </a>
+</div>
+</div>
+</section>
+<!-- Subtle Editorial Footer Assurance -->
+<div class="pt-4 border-t border-agro-border flex items-center justify-between text-[11px] text-agro-sage">
+<p class="">AgriSmart · Agricultural advisory grounded in ICAR, TNAU, and live meteorological telemetry.</p>
+<span class="font-mono text-slate-400">Corn-Plot-04 · Latency 242ms</span>
+</div>
+</article>
+</div>
+</main>
+<!-- END: ChatScrollWorkspace -->
+<!-- BEGIN: InputAndSuggestionsArea -->
+<footer class="border-t border-agro-border bg-white px-6 py-4 md:px-12 lg:px-16 space-y-3 flex-shrink-0" data-purpose="chat-input-controls">
+<div class="max-w-[1020px] mx-auto space-y-3">
+<!-- Suggested Queries: Clean Understated Links with subtle arrows -->
+<div class="flex items-center gap-2 overflow-x-auto pb-0.5 text-xs no-scrollbar">
+<span class="text-[11px] uppercase tracking-wider font-bold text-agro-sage whitespace-nowrap mr-1">Suggested:</span>
+<button class="whitespace-nowrap px-3 py-1 rounded-full bg-agro-sand hover:bg-agro-mint/60 text-slate-700 hover:text-agro-forest border border-agro-border text-xs font-medium transition-colors inline-flex items-center gap-1" type="button">
+<span class="">Tomato watering frequency</span>
+<span class="text-agro-sage">→</span>
+</button>
+<button class="whitespace-nowrap px-3 py-1 rounded-full bg-agro-sand hover:bg-agro-mint/60 text-slate-700 hover:text-agro-forest border border-agro-border text-xs font-medium transition-colors inline-flex items-center gap-1" type="button">
+<span class="">Prevent fungal diseases</span>
+<span class="text-agro-sage">→</span>
+</button>
+<button class="whitespace-nowrap px-3 py-1 rounded-full bg-agro-sand hover:bg-agro-mint/60 text-slate-700 hover:text-agro-forest border border-agro-border text-xs font-medium transition-colors inline-flex items-center gap-1" type="button">
+<span class="">What to check before watering?</span>
+<span class="text-agro-sage">→</span>
+</button>
+<button class="whitespace-nowrap px-3 py-1 rounded-full bg-agro-sand hover:bg-agro-mint/60 text-slate-700 hover:text-agro-forest border border-agro-border text-xs font-medium transition-colors inline-flex items-center gap-1" type="button">
+<span class="">Explain rainfall forecast</span>
+<span class="text-agro-sage">→</span>
+</button>
+</div>
+<!-- Main Query Input Bar: Warm-white, spacious, delicate border -->
+<form action="#" class="relative flex items-center" method="POST" onsubmit="event.preventDefault();">
+<div class="relative w-full flex items-center">
+<input class="w-full bg-[#fcfefd] border border-agro-border rounded-xl pl-4 pr-24 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-agro-emerald focus:border-agro-emerald transition-all shadow-2xs" placeholder="Ask about your crop, disease, weather, or irrigation..." type="text">
+<!-- Voice / Mic Dictation Button -->
+<div class="absolute right-12 flex items-center">
+<button aria-label="Activate voice dictation" class="p-2 text-slate-400 hover:text-agro-forest rounded-lg hover:bg-agro-sand transition-colors" title="Voice dictation" type="button">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+<path d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+<!-- Deep Forest Green Send Button -->
+<div class="absolute right-2 flex items-center">
+<button aria-label="Send query" class="p-2 rounded-lg bg-agro-forest text-white hover:bg-agro-emerald transition-colors shadow-xs" type="submit">
+<svg class="w-4 h-4 transform rotate-45 -mt-0.5 -ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+<path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path>
+</svg>
+</button>
+</div>
+</div>
+</form>
+</div>
+</footer>
+<!-- END: InputAndSuggestionsArea -->
+</div>
+<!-- END: MainContentArea -->
+
+
+</body></html>

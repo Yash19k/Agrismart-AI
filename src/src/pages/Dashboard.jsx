@@ -13,6 +13,7 @@ import {
   ArrowRight,
   LogOut,
   Menu,
+  AlertCircle,
   X,
   Plus,
   AlertTriangle,
@@ -514,7 +515,7 @@ export default function Dashboard() {
                   </span>
                 </div>
 
-                <h1 className="font-editorial text-4xl sm:text-5xl text-[#003629] font-normal tracking-tight leading-tight">
+                <h1 className="font-editorial text-4xl sm:text-5xl text-[#16352D] font-normal tracking-tight leading-tight">
                   {greeting}, {firstName}. Here's your farm brief for today.
                 </h1>
 
@@ -528,7 +529,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   onClick={() => setShowForecastModal(true)}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#ecfef3] hover:bg-[#d8f5e4] text-[#003629] border border-[#d2f4e0] transition-colors text-xs font-semibold shadow-xs cursor-pointer"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#ecfef3] hover:bg-[#d8f5e4] text-[#16352D] border border-[#d2f4e0] transition-colors text-xs font-semibold shadow-xs cursor-pointer"
                 >
                   <Sliders className="w-4 h-4 text-[#2fa874]" />
                   <span>Field Telemetry</span>
@@ -549,15 +550,16 @@ export default function Dashboard() {
             {/* 2. HERO AGRICULTURAL PANORAMA & FLOATING INSET BADGE          */}
             {/* ═════════════════════════════════════════════════════════════ */}
             <section className="relative w-full rounded-2xl overflow-hidden shadow-editorial aspect-[21/9] max-h-[380px] bg-[#eaf4ee] border border-[#DCE8DF]">
-              <div
-                className="w-full h-full bg-cover bg-center transition-transform duration-700 hover:scale-[1.01]"
-                style={{ backgroundImage: `url(${farmHeroImg})` }}
+              <img
+                src={farmHeroImg}
+                alt="Agricultural field panorama"
+                className="w-full h-full object-cover object-center transition-transform duration-700 hover:scale-[1.01]"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#003629]/85 via-[#003629]/25 to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
 
               {/* Top Inset Status Indicators */}
               <div className="absolute top-5 left-6 flex items-center gap-2">
-                <span className="px-3 py-1 rounded-full bg-white/90 backdrop-blur-md text-[#003629] text-[11px] font-semibold flex items-center gap-1.5 shadow-xs border border-white/40">
+                <span className="px-3 py-1 rounded-full bg-white/90 backdrop-blur-md text-[#16352D] text-[11px] font-semibold flex items-center gap-1.5 shadow-xs border border-white/40">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#2fa874] animate-ping" />
                   Telemetry Synced 06:15 IST
                 </span>
@@ -575,7 +577,7 @@ export default function Dashboard() {
                       Active Agricultural Zone
                     </span>
                   </div>
-                  <p className="font-editorial text-xl sm:text-2xl font-bold text-[#003629] leading-snug">
+                  <p className="font-editorial text-xl sm:text-2xl font-bold text-[#16352D] leading-snug">
                     {farmName}: {primaryCrop} &amp; {secondaryCrop} Rotation
                   </p>
                   <p className="text-xs text-[#527d6a] mt-0.5">
@@ -583,7 +585,7 @@ export default function Dashboard() {
                   </p>
                 </div>
 
-                <div className="hidden md:flex items-center gap-2 bg-white/90 backdrop-blur-md px-4 py-2.5 rounded-full text-[#003629] text-xs font-semibold border border-white/50 shadow-xs">
+                <div className="hidden md:flex items-center gap-2 bg-white/90 backdrop-blur-md px-4 py-2.5 rounded-full text-[#16352D] text-xs font-semibold border border-white/50 shadow-xs">
                   <Droplet className="w-4 h-4 text-[#2fa874]" />
                   <span>Rain Intercept Mode: {rainProb >= 50 ? 'Active' : 'Standby'}</span>
                 </div>
@@ -604,7 +606,7 @@ export default function Dashboard() {
                     </span>
                   </div>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="font-editorial text-4xl font-normal text-[#003629]">
+                    <span className="font-editorial text-4xl font-normal text-[#16352D]">
                       {temperature}°
                     </span>
                     <span className="text-xs text-[#6C7D76] font-medium">C</span>
@@ -623,7 +625,7 @@ export default function Dashboard() {
                     </span>
                   </div>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="font-editorial text-4xl font-normal text-[#003629]">
+                    <span className="font-editorial text-4xl font-normal text-[#16352D]">
                       {humidity}
                     </span>
                     <span className="text-xs text-[#6C7D76] font-medium">%</span>
@@ -642,7 +644,7 @@ export default function Dashboard() {
                     </span>
                   </div>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="font-editorial text-4xl font-normal text-[#003629]">
+                    <span className="font-editorial text-4xl font-normal text-[#16352D]">
                       {rainInbound}
                     </span>
                     <span className="text-xs text-[#6C7D76] font-medium">mm</span>
@@ -661,7 +663,7 @@ export default function Dashboard() {
                     </span>
                   </div>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="font-editorial text-4xl font-normal text-[#003629]">
+                    <span className="font-editorial text-4xl font-normal text-[#16352D]">
                       {soilMoisture}
                     </span>
                     <span className="text-xs text-[#6C7D76] font-medium">% VWC</span>
@@ -686,7 +688,7 @@ export default function Dashboard() {
                     </span>
                   </div>
                   <div className="my-2">
-                    <p className="font-editorial text-lg font-bold text-[#003629] leading-tight">
+                    <p className="font-editorial text-lg font-bold text-[#16352D] leading-tight">
                       {postponeHours > 0
                         ? `Postpone Irrigation ${postponeHours} Hours`
                         : 'Irrigation Recommended Today'}
@@ -700,7 +702,7 @@ export default function Dashboard() {
                   <button
                     type="button"
                     onClick={() => navigate('/irrigation')}
-                    className="inline-flex items-center gap-1 text-[#1b4d3e] hover:text-[#003629] text-xs font-semibold hover:underline cursor-pointer"
+                    className="inline-flex items-center gap-1 text-[#1b4d3e] hover:text-[#16352D] text-xs font-semibold hover:underline cursor-pointer"
                   >
                     <span>Review Decision Log</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -720,7 +722,7 @@ export default function Dashboard() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <AlertCircle className="w-5 h-5 text-[#c95a5a]" />
-                      <h2 className="font-editorial text-2xl font-bold text-[#003629]">
+                      <h2 className="font-editorial text-2xl font-bold text-[#16352D]">
                         Needs Your Attention
                       </h2>
                     </div>
@@ -843,7 +845,7 @@ export default function Dashboard() {
                       <span className="text-[11px] font-semibold text-[#2fa874] uppercase tracking-wider">
                         Daily Execution
                       </span>
-                      <h2 className="font-editorial text-2xl font-bold text-[#003629]">
+                      <h2 className="font-editorial text-2xl font-bold text-[#16352D]">
                         Today's Field Action Plan
                       </h2>
                     </div>
@@ -1003,7 +1005,7 @@ export default function Dashboard() {
                 {/* 1. Crop Stand Status */}
                 <div className="bg-white rounded-2xl p-6 shadow-editorial border border-[#DCE8DF] space-y-4">
                   <div className="flex items-center justify-between">
-                    <h2 className="font-editorial text-2xl font-bold text-[#003629]">
+                    <h2 className="font-editorial text-2xl font-bold text-[#16352D]">
                       Crop Stand Status
                     </h2>
                     <span className="text-xs font-medium text-[#527d6a]">{location}</span>
@@ -1070,7 +1072,7 @@ export default function Dashboard() {
                 {/* 2. 3-Day Microclimate Forecast */}
                 <div className="bg-white rounded-2xl p-6 shadow-editorial border border-[#DCE8DF] space-y-4">
                   <div className="flex items-center justify-between">
-                    <h2 className="font-editorial text-2xl font-bold text-[#003629]">
+                    <h2 className="font-editorial text-2xl font-bold text-[#16352D]">
                       3-Day Microclimate
                     </h2>
                     <div className="flex items-center gap-1 text-[#2fa874] text-xs font-semibold">
@@ -1094,7 +1096,7 @@ export default function Dashboard() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="text-xs font-bold text-[#003629]">
+                        <span className="text-xs font-bold text-[#16352D]">
                           {temperature - 1}° – {temperature + 3}°C
                         </span>
                         <p className="text-[11px] text-[#2fa874] font-medium">
@@ -1117,7 +1119,7 @@ export default function Dashboard() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="text-xs font-bold text-[#003629]">
+                        <span className="text-xs font-bold text-[#16352D]">
                           {forecastList[1]?.temperature_min ? Math.round(forecastList[1].temperature_min) : 24}° –{' '}
                           {forecastList[1]?.temperature_max ? Math.round(forecastList[1].temperature_max) : 30}°C
                         </span>
@@ -1141,7 +1143,7 @@ export default function Dashboard() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="text-xs font-bold text-[#003629]">
+                        <span className="text-xs font-bold text-[#16352D]">
                           {forecastList[2]?.temperature_min ? Math.round(forecastList[2].temperature_min) : 23}° –{' '}
                           {forecastList[2]?.temperature_max ? Math.round(forecastList[2].temperature_max) : 29}°C
                         </span>
@@ -1184,7 +1186,7 @@ export default function Dashboard() {
                         />
                       </svg>
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="font-editorial text-2xl font-bold text-[#003629] leading-none">
+                        <span className="font-editorial text-2xl font-bold text-[#16352D] leading-none">
                           {sustainabilityScore}
                         </span>
                         <span className="text-[9px] text-[#527d6a] uppercase mt-0.5">/100</span>
@@ -1192,7 +1194,7 @@ export default function Dashboard() {
                     </div>
 
                     <div className="space-y-1">
-                      <p className="font-bold text-sm text-[#003629]">Sustainability Index</p>
+                      <p className="font-bold text-sm text-[#16352D]">Sustainability Index</p>
                       <p className="text-xs text-[#527d6a] leading-relaxed">
                         Efficient water consumption · High organic matter score · Zero runoff penalty.
                       </p>
@@ -1202,7 +1204,7 @@ export default function Dashboard() {
                   <div className="pt-3 flex items-center justify-between bg-[#f8faf8] p-3 rounded-xl border border-[#edf6f0]">
                     <div className="space-y-0.5">
                       <span className="text-[10px] text-[#6C7D76] block">Infrastructure Asset</span>
-                      <span className="text-xs font-semibold text-[#003629]">
+                      <span className="text-xs font-semibold text-[#16352D]">
                         {acreage} Cultivated Acres · Drip Fed
                       </span>
                     </div>
@@ -1228,7 +1230,7 @@ export default function Dashboard() {
                   <span className="text-[11px] font-semibold text-[#2fa874] uppercase tracking-wider">
                     Operational Engines
                   </span>
-                  <h2 className="font-editorial text-2xl font-bold text-[#003629]">
+                  <h2 className="font-editorial text-2xl font-bold text-[#16352D]">
                     AgriSmart AI Suites
                   </h2>
                 </div>
@@ -1248,7 +1250,7 @@ export default function Dashboard() {
                       <ShieldAlert className="w-5 h-5" />
                     </div>
                     <div className="space-y-1">
-                      <h3 className="font-bold text-sm text-[#003629]">Disease Detection</h3>
+                      <h3 className="font-bold text-sm text-[#16352D]">Disease Detection</h3>
                       <p className="text-xs text-[#527d6a] line-clamp-2 leading-relaxed">
                         Scan crop leaves for instant pathology diagnosis and prescriptive treatment.
                       </p>
@@ -1270,7 +1272,7 @@ export default function Dashboard() {
                       <Bot className="w-5 h-5" />
                     </div>
                     <div className="space-y-1">
-                      <h3 className="font-bold text-sm text-[#003629]">AI Agronomist</h3>
+                      <h3 className="font-bold text-sm text-[#16352D]">AI Agronomist</h3>
                       <p className="text-xs text-[#527d6a] line-clamp-2 leading-relaxed">
                         Access research-grounded advisory desk and ICAR/TNAU certified agronomic evidence.
                       </p>
@@ -1292,7 +1294,7 @@ export default function Dashboard() {
                       <Droplets className="w-5 h-5" />
                     </div>
                     <div className="space-y-1">
-                      <h3 className="font-bold text-sm text-[#003629]">Smart Irrigation</h3>
+                      <h3 className="font-bold text-sm text-[#16352D]">Smart Irrigation</h3>
                       <p className="text-xs text-[#527d6a] line-clamp-2 leading-relaxed">
                         Inspect real-time soil moisture and automated precipitation decoupling telemetry.
                       </p>
@@ -1314,7 +1316,7 @@ export default function Dashboard() {
                       <Sprout className="w-5 h-5" />
                     </div>
                     <div className="space-y-1">
-                      <h3 className="font-bold text-sm text-[#003629]">Crop Recommendation</h3>
+                      <h3 className="font-bold text-sm text-[#16352D]">Crop Recommendation</h3>
                       <p className="text-xs text-[#527d6a] line-clamp-2 leading-relaxed">
                         Analyze multi-variable N-P-K soil chemistry and climate factors for seasonal sowings.
                       </p>
@@ -1362,7 +1364,7 @@ export default function Dashboard() {
               <div className="flex items-center gap-2.5">
                 <Sun className="w-6 h-6 text-[#e5a034]" />
                 <div>
-                  <h3 className="font-editorial text-xl font-bold text-[#003629]">
+                  <h3 className="font-editorial text-xl font-bold text-[#16352D]">
                     7-Day Agricultural Forecast
                   </h3>
                   <p className="text-xs text-[#6C7D76]">
