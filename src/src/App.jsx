@@ -13,6 +13,7 @@ import IrrigationPage from './pages/IrrigationPage';
 import SustainabilityPage from './pages/SustainabilityPage';
 import AssistantPage from './pages/AssistantPage';
 import CropRecommendationPage from './pages/CropRecommendationPage';
+import WeatherPage from './pages/WeatherPage';
 
 // Protected route: redirect to login if not authenticated
 const ProtectedRoute = ({ children }) => {
@@ -40,6 +41,7 @@ export function App() {
 
             {/* Protected routes */}
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/weather" element={<ProtectedRoute><WeatherPage /></ProtectedRoute>} />
             <Route path="/disease" element={<ProtectedRoute><DiseaseDetectionPage /></ProtectedRoute>} />
             <Route path="/crop" element={<ProtectedRoute><CropRecommendationPage /></ProtectedRoute>} />
             <Route path="/crop-recommendation" element={<ProtectedRoute><CropRecommendationPage /></ProtectedRoute>} />
