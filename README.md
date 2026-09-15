@@ -66,7 +66,7 @@ python manage.py migrate
 python manage.py runserver 127.0.0.1:8000
 
 # Terminal 2 — Frontend (Vite + React on port 5173)
-cd ..\src
+cd Agrismart-AI\src
 npm install
 npm run dev
 ```
