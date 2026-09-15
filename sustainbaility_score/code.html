@@ -1,0 +1,667 @@
+<!DOCTYPE html><html class="h-full" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>AgriSmart — Agricultural Stewardship Report</title>
+<!-- Tailwind CSS CDN with forms and container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: EB Garamond (Editorial Serif) + DM Sans / Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..700;1,400..600&amp;family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,400&amp;display=swap" rel="stylesheet">
+<script data-purpose="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            paper: {
+              50: '#FBFBF8',
+              100: '#F7F8F4',
+              200: '#EFEFE8',
+              300: '#E2E5DC',
+              400: '#CDD2C5',
+            },
+            forest: {
+              950: '#0E241B',
+              900: '#16382C',
+              850: '#1B4D3E',
+              800: '#235D4B',
+              700: '#2E735D',
+              600: '#3D8C72',
+              100: '#E5EFEA',
+              50: '#F1F7F4',
+            },
+            amberAccent: {
+              50: '#FDF8F0',
+              100: '#FBF1DF',
+              700: '#9B5B16',
+              800: '#7F460E',
+            }
+          },
+          fontFamily: {
+            serif: ['"EB Garamond"', 'Georgia', 'serif'],
+            sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .font-feature-tnum {
+      font-feature-settings: "tnum" 1;
+    }
+    body {
+      background-color: #F7F8F4;
+      color: #1A2822;
+      font-family: "DM Sans", system-ui, sans-serif;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #EFEFE8;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CDD2C5;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #B6BDAB;
+    }
+  </style>
+</head>
+<body class="h-full antialiased text-[#1A2822] flex overflow-hidden">
+<!-- BEGIN: NavigationSidebar -->
+<aside class="w-72 bg-white border-r border-paper-300 flex flex-col justify-between shrink-0 select-none z-20">
+<div>
+<!-- Brand Logo Container -->
+<div class="px-6 py-6 border-b border-paper-200">
+<a class="block focus:outline-none focus:ring-2 focus:ring-forest-850 rounded-md" href="#">
+<img alt="AgriSmart — Farmer-First AI Agriculture" class="h-9 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCW_2qXXV5-3bd-e4iXHadC116jwlPNijHhPvDZAw9c_xnMNdXoxxugAOAsJZIa-G6nXM4dJKnwocq6tw71A1WAM11fxnaRTh5afOROfJOclf2lEFhuFCoTusg2ftDIYfcfHFS50oAWfcQ9oD8erhOXUbHnLYfBWISb-jFrRxz--2nwL6VuEvbiTQLYd03_W6l6-2sZRDlmpAgB0m-F-hZ36HpYfpOWSavkZttkp2eJB7u3Lx6IVISv8DLqp-cbAFZWbVQ">
+</a>
+<p class="text-[11px] uppercase tracking-wider text-forest-850/70 font-semibold mt-2 pl-0.5 font-sans">
+        Farmer-First AI Agriculture
+      </p>
+</div>
+<!-- Main Navigation Menu -->
+<nav aria-label="Primary Navigation" class="px-3.5 py-5 space-y-1 text-[13px]">
+<!-- Dashboard -->
+<a class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-lg font-medium text-stone-600 hover:text-forest-950 hover:bg-paper-100 transition-colors" href="#">
+<svg class="w-4 h-4 text-stone-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+<rect height="7" rx="1.5" width="7" x="3" y="3"></rect>
+<rect height="7" rx="1.5" width="7" x="14" y="3"></rect>
+<rect height="7" rx="14" width="7" x="14" y="14"></rect>
+<rect height="7" rx="1.5" width="7" x="3" y="14"></rect>
+</svg>
+<span class="">Dashboard</span>
+</a>
+<!-- Disease Detection -->
+<a class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-lg font-medium text-stone-600 hover:text-forest-950 hover:bg-paper-100 transition-colors" href="#">
+<svg class="w-4 h-4 text-stone-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+<path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="">Disease Detection</span>
+</a>
+<!-- AI Agronomist -->
+<a class="flex items-center justify-between px-3.5 py-2.5 rounded-lg font-medium text-stone-600 hover:text-forest-950 hover:bg-paper-100 transition-colors" href="#">
+<div class="flex items-center gap-3.5">
+<svg class="w-4 h-4 text-stone-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+<path d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.524A9.012 9.012 0 0112 16.5c-2.22 0-4.29-.806-5.83-2.176l-.4-.324" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="">AI Agronomist</span>
+</div>
+<span class="text-[10px] font-mono uppercase tracking-widest text-forest-850 font-semibold bg-forest-100 px-1.5 py-0.5 rounded">GROQ</span>
+</a>
+<!-- Weather & Advisory -->
+<a class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-lg font-medium text-stone-600 hover:text-forest-950 hover:bg-paper-100 transition-colors" href="#">
+<svg class="w-4 h-4 text-stone-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+<path d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="">Weather &amp; Advisory</span>
+</a>
+<!-- Irrigation -->
+<a class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-lg font-medium text-stone-600 hover:text-forest-950 hover:bg-paper-100 transition-colors" href="#">
+<svg class="w-4 h-4 text-stone-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+<path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="">Irrigation Scheduler</span>
+</a>
+<!-- Sustainability Stewardship Score (Active) -->
+<a aria-current="page" class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-lg font-semibold text-forest-950 bg-paper-100 border border-paper-300/80 shadow-xs" href="#">
+<svg class="w-4 h-4 text-forest-850 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-.778.099-1.533.284-2.253" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="">Sustainability Score</span>
+</a>
+<!-- Crop Recommendation -->
+<a class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-lg font-medium text-stone-600 hover:text-forest-950 hover:bg-paper-100 transition-colors" href="#">
+<svg class="w-4 h-4 text-stone-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+<path d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="">Crop Recommendation</span>
+</a>
+<!-- My Farm Plots -->
+<a class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-lg font-medium text-stone-600 hover:text-forest-950 hover:bg-paper-100 transition-colors" href="#">
+<svg class="w-4 h-4 text-stone-400 shrink-0" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+<path d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="">My Farm Plots</span>
+</a>
+</nav>
+</div>
+<!-- Bottom User Profile Card -->
+<div class="p-4 border-t border-paper-200 bg-white">
+<div class="flex items-center justify-between p-2.5 rounded-lg bg-paper-50 border border-paper-200">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-8 h-8 rounded-full bg-forest-950 text-white font-medium flex items-center justify-center text-xs shrink-0">
+          Y
+        </div>
+<div class="truncate">
+<h4 class="text-xs font-semibold text-stone-900 truncate">Yash Patel</h4>
+<p class="text-[11px] text-stone-500 truncate">yash@gmail.com</p>
+</div>
+</div>
+</div>
+<button class="mt-2 w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-stone-500 hover:text-red-700 hover:bg-red-50/50 rounded-md transition-colors">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+      Log out
+    </button>
+</div>
+</aside>
+<!-- END: NavigationSidebar -->
+<!-- BEGIN: MainContentArea -->
+<div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-paper-100">
+<!-- Top Bar Navigation Header -->
+<header class="h-14 bg-white border-b border-paper-300 px-8 flex items-center justify-between shrink-0 z-10">
+<div class="flex items-center gap-3">
+<span class="text-[11px] font-mono uppercase tracking-wider text-forest-850 font-medium">Report Edition · Autumn 2024</span>
+<span class="text-paper-300">|</span>
+<span class="text-xs text-stone-500">Vadodara Micro-Agroclimatic Sector #4</span>
+</div>
+<!-- Language & Actions -->
+<div class="flex items-center gap-4">
+<div class="relative">
+<select aria-label="Select Interface Language" class="appearance-none bg-paper-50 border border-paper-300 text-stone-700 text-xs font-medium py-1.5 pl-2.5 pr-7 rounded focus:outline-none focus:border-forest-850 cursor-pointer">
+<option value="en">English (EN)</option>
+<option value="gu">ગુજરાતી (GU)</option>
+<option value="hi">हिन्दी (HI)</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-stone-400">
+<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+<path clip-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" fill-rule="evenodd"></path>
+</svg>
+</div>
+</div>
+<button class="text-stone-400 hover:text-stone-700 p-1.5 transition-colors" title="Sync live telemetry">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+<path d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+</header>
+<!-- Scrollable Report Canvas -->
+<main class="flex-1 overflow-y-auto px-8 lg:px-12 py-10 space-y-12 max-w-6xl mx-auto w-full">
+<!-- 1. Report Header Section -->
+<section class="border-b border-paper-300 pb-8">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<div class="text-[11px] font-mono tracking-widest uppercase text-forest-700 font-semibold mb-2">
+            Sustainability · Field Stewardship Assessment
+          </div>
+<h1 class="font-serif text-3xl lg:text-4xl text-forest-950 font-normal tracking-tight">
+            How sustainable is your farm today?
+          </h1>
+<p class="text-stone-600 text-sm mt-2 max-w-2xl leading-relaxed font-sans">
+            Understand how your current water use, soil conditions, crop health, and farm resources contribute to your overall sustainability.
+          </p>
+</div>
+<!-- Farm Selector Dropdown -->
+<div class="shrink-0">
+<label class="block text-[11px] font-mono text-stone-500 uppercase tracking-wider mb-1" for="farm-select">
+            Selected Parcel
+          </label>
+<div class="relative min-w-[260px]">
+<select class="w-full bg-white border border-paper-300 rounded px-3.5 py-2 text-xs font-semibold text-forest-950 shadow-2xs hover:border-forest-850 focus:outline-none focus:border-forest-850 pr-8 cursor-pointer" id="farm-select">
+<option selected="">Maize Farm — Vadodara, Gujarat</option>
+<option>Cotton Block B — Rajkot, Gujarat</option>
+<option>Wheat Parcel #4 — Anand, Gujarat</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-stone-500">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 2. Your Farm at a Glance (Editorial Score Hero) -->
+<section class="bg-white rounded-lg border border-paper-300 overflow-hidden shadow-2xs">
+<div class="grid grid-cols-1 lg:grid-cols-12">
+<!-- Text & Metric Narrative -->
+<div class="lg:col-span-7 p-8 lg:p-10 flex flex-col justify-between">
+<div>
+<div class="flex items-baseline justify-between border-b border-paper-200 pb-4">
+<span class="text-xs font-mono uppercase tracking-widest text-stone-500 font-medium">Stewardship Index</span>
+<span class="text-xs font-mono text-forest-850 bg-forest-50 px-2.5 py-0.5 rounded border border-forest-100 font-semibold">Verified Model v2.4</span>
+</div>
+<!-- Score Display -->
+<div class="mt-6 flex items-baseline gap-3">
+<span class="font-serif text-6xl lg:text-7xl font-normal text-forest-950 tracking-tight font-feature-tnum">79.2</span>
+<span class="font-serif text-2xl text-stone-400 font-light">/ 100</span>
+<span class="ml-3 px-2.5 py-1 rounded bg-forest-100 text-forest-900 text-xs font-semibold tracking-wide">
+                Good Stewardship
+              </span>
+</div>
+<!-- Subtle benchmark bar indicator -->
+<div class="mt-5 space-y-1.5">
+<div class="h-1.5 w-full bg-paper-200 rounded-full overflow-hidden relative">
+<div class="h-full bg-forest-850 rounded-full" style="width: 79.2%"></div>
+</div>
+<div class="flex justify-between text-[11px] font-mono text-stone-500">
+<span class="">Regional Baseline: 64.0</span>
+<span class="text-forest-850 font-medium">Top 18% among Vadodara Maize parcels</span>
+</div>
+</div>
+<!-- Plain-language narrative summary -->
+<p class="mt-6 text-sm text-stone-700 leading-relaxed">
+              Your farm is maintaining a strong overall balance across water, soil, and resource efficiency. Crop health is currently the primary area where targeted intervention will have the greatest impact.
+            </p>
+</div>
+<!-- Metadata note -->
+<div class="mt-8 pt-4 border-t border-paper-200 text-xs text-stone-500 flex items-center gap-2">
+<svg class="w-3.5 h-3.5 text-stone-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+<path clip-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" fill-rule="evenodd"></path>
+</svg>
+<span class="">Calculated for <strong>Maize Farm</strong> · Vadodara, Gujarat · In-situ telemetry &amp; live weather verified.</span>
+</div>
+</div>
+<!-- Landscape Editorial Photography -->
+
+</div>
+</section>
+<!-- 3. Four Sustainability Dimensions (Editorial List/Grid with Thin Dividers) -->
+<section>
+<div class="flex items-baseline justify-between border-b border-paper-300 pb-3">
+<h2 class="font-serif text-xl font-normal text-forest-950">Component Breakdown</h2>
+<span class="text-xs text-stone-500 font-mono">Normalized to 100-pt Agronomic Scale</span>
+</div>
+<div class="mt-4 space-y-3">
+<!-- Dimension 1: Water -->
+<div class="p-5 sm:p-6 rounded-lg border border-[#d2e4ea] bg-[#f0f7f9] flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors">
+<div class="flex items-start gap-4">
+<div class="w-8 h-8 rounded border border-stone-200 bg-paper-50 flex items-center justify-center text-stone-700 shrink-0 mt-0.5">
+<!-- Water outline icon -->
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+<path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="text-sm font-semibold text-forest-950 tracking-tight">Water Stewardship</h3>
+<span class="text-[11px] font-mono text-stone-500 font-medium">30% weight</span>
+</div>
+<p class="text-xs text-stone-600 mt-1 leading-relaxed max-w-xl">
+                Your current soil moisture (26%) and estimated water demand indicate a healthy water balance.
+              </p>
+</div>
+</div>
+<div class="flex items-center md:flex-col md:items-end justify-between shrink-0 pl-12 md:pl-0">
+<div class="text-right">
+<span class="font-serif text-2xl font-normal text-forest-950 font-feature-tnum">90</span>
+<span class="font-serif text-xs text-stone-400">/ 100</span>
+</div>
+<span class="text-[11px] font-mono text-forest-800 font-medium mt-0.5">Strong</span>
+</div>
+</div>
+<!-- Dimension 2: Soil Health -->
+<div class="p-5 sm:p-6 rounded-lg border border-[#eae3ce] bg-[#faf6ee] flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors">
+<div class="flex items-start gap-4">
+<div class="w-8 h-8 rounded border border-stone-200 bg-paper-50 flex items-center justify-center text-stone-700 shrink-0 mt-0.5">
+<!-- Soil / Layers outline icon -->
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+<path d="M12 3L2 8l10 5 10-5-10-5zM2 13l10 5 10-5M2 18l10 5 10-5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="text-sm font-semibold text-forest-950 tracking-tight">Soil Health</h3>
+<span class="text-[11px] font-mono text-stone-500 font-medium">25% weight</span>
+</div>
+<p class="text-xs text-stone-600 mt-1 leading-relaxed max-w-xl">
+                Soil moisture is currently within the preferred agronomic range (20%–50% optimal target).
+              </p>
+</div>
+</div>
+<div class="flex items-center md:flex-col md:items-end justify-between shrink-0 pl-12 md:pl-0">
+<div class="text-right">
+<span class="font-serif text-2xl font-normal text-forest-950 font-feature-tnum">85</span>
+<span class="font-serif text-xs text-stone-400">/ 100</span>
+</div>
+<span class="text-[11px] font-mono text-forest-800 font-medium mt-0.5">Good</span>
+</div>
+</div>
+<!-- Dimension 3: Crop Health (Needs Attention) -->
+<div class="p-5 sm:p-6 rounded-lg border border-[#f5d6d0] bg-[#fdf2f0] flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors">
+<div class="flex items-start gap-4">
+<div class="w-8 h-8 rounded border border-amber-200 bg-amber-50 flex items-center justify-center text-amber-800 shrink-0 mt-0.5">
+<!-- Leaf / Attention outline icon -->
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+<path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="text-sm font-semibold text-amber-900 tracking-tight">Crop Health</h3>
+<span class="text-[11px] font-mono text-amber-700/80 font-medium">25% weight</span>
+</div>
+<p class="text-xs text-amber-900/80 mt-1 leading-relaxed max-w-xl">
+                Recent foliar scans indicate the largest opportunity for improvement (0 healthy / 1 total scan with Northern Leaf Blight detected).
+              </p>
+</div>
+</div>
+<div class="flex items-center md:flex-col md:items-end justify-between shrink-0 pl-12 md:pl-0">
+<div class="text-right">
+<span class="font-serif text-2xl font-normal text-amber-800 font-feature-tnum">50</span>
+<span class="font-serif text-xs text-stone-400">/ 100</span>
+</div>
+<span class="text-[11px] font-mono text-amber-800 font-medium mt-0.5">Needs Attention</span>
+</div>
+</div>
+<!-- Dimension 4: Resource Use -->
+<div class="p-5 sm:p-6 rounded-lg border border-[#d1e8da] bg-[#f1f9f4] flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors">
+<div class="flex items-start gap-4">
+<div class="w-8 h-8 rounded border border-stone-200 bg-paper-50 flex items-center justify-center text-stone-700 shrink-0 mt-0.5">
+<!-- Efficiency / Sprout outline icon -->
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+<path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="text-sm font-semibold text-forest-950 tracking-tight">Resource Use</h3>
+<span class="text-[11px] font-mono text-stone-500 font-medium">20% weight</span>
+</div>
+<p class="text-xs text-stone-600 mt-1 leading-relaxed max-w-xl">
+                Your drip irrigation system is helping your farm use water with high baseline efficiency.
+              </p>
+</div>
+</div>
+<div class="flex items-center md:flex-col md:items-end justify-between shrink-0 pl-12 md:pl-0">
+<div class="text-right">
+<span class="font-serif text-2xl font-normal text-forest-950 font-feature-tnum">92</span>
+<span class="font-serif text-xs text-stone-400">/ 100</span>
+</div>
+<span class="text-[11px] font-mono text-forest-800 font-medium mt-0.5">Strong</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. Actionable Field Guidance -->
+<section class="space-y-6">
+<div class="border-b border-paper-300 pb-3">
+<h2 class="font-serif text-xl font-normal text-forest-950">Actionable Field Guidance</h2>
+<p class="text-xs text-stone-500 mt-0.5">Targeted agronomic directives derived from your active microclimate telemetry.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<!-- What's Going Well -->
+<div class="bg-white rounded-lg border border-paper-300 p-6 flex flex-col justify-between">
+<div>
+<h3 class="text-xs font-mono uppercase tracking-wider text-forest-850 font-semibold mb-4 flex items-center gap-2">
+<span class="">What's Going Well</span>
+</h3>
+<ul class="space-y-3.5 text-xs text-stone-700">
+<li class="flex items-start gap-3">
+<span class="text-forest-700 font-bold mt-0.5 shrink-0">✓</span>
+<div>
+<strong class="font-medium text-stone-900">High-efficiency drip irrigation method deployed</strong>
+<p class="text-stone-500 mt-0.5">Minimizes percolation losses and evaporative drift by ~45% compared to furrow.</p>
+</div>
+</li>
+<li class="flex items-start gap-3">
+<span class="text-forest-700 font-bold mt-0.5 shrink-0">✓</span>
+<div>
+<strong class="font-medium text-stone-900">Soil moisture within agronomic safety bounds (26%)</strong>
+<p class="text-stone-500 mt-0.5">Maintains optimal capillary suction tension for root intake without waterlogging.</p>
+</div>
+</li>
+<li class="flex items-start gap-3">
+<span class="text-forest-700 font-bold mt-0.5 shrink-0">✓</span>
+<div>
+<strong class="font-medium text-stone-900">Moderate atmospheric evapotranspiration demand</strong>
+<p class="text-stone-500 mt-0.5">Field ET₀ rate (3.8 mm/day) ensures steady, manageable crop vapor deficit.</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="mt-6 pt-4 border-t border-paper-200 text-[11px] font-mono text-stone-500">
+            Positive pillars contribute +66.6 pts to total score
+          </div>
+</div>
+<!-- What Needs Attention -->
+<div class="bg-white rounded-lg border border-paper-300 p-6 flex flex-col justify-between">
+<div>
+<h3 class="text-xs font-mono uppercase tracking-wider text-amber-800 font-semibold mb-4 flex items-center gap-2">
+<span class="">What Needs Attention</span>
+</h3>
+<div class="p-4 rounded border border-amber-200 bg-amberAccent-50/70">
+<div class="flex items-start gap-2.5">
+<span class="text-amber-800 shrink-0 text-sm mt-0.5">⚠️</span>
+<div>
+<div class="text-xs font-semibold text-amber-950">
+                    Crop Health · 50 / 100: Northern Leaf Blight detected
+                  </div>
+<p class="text-xs text-amber-900/80 mt-1 leading-relaxed">
+                    Lesions flagged on lower foliage of Maize Block B during latest sensor scan. Requires immediate mitigation to prevent spore dispersion to adjacent parcels.
+                  </p>
+<a class="inline-flex items-center gap-1 text-xs font-semibold text-forest-850 hover:underline mt-3" href="#">
+                    Review Disease Detection Report →
+                  </a>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-4 border-t border-paper-200 text-[11px] font-mono text-stone-500">
+            Resolution unlocks potential score lift to <strong>89.4 / 100</strong>
+</div>
+</div>
+</div>
+<!-- How You Can Improve (Connected to AgriSmart modules) -->
+<div class="bg-white rounded-lg border border-paper-300 p-6">
+<h3 class="text-xs font-mono uppercase tracking-wider text-stone-500 font-semibold mb-4">
+          How You Can Improve · Recommended Field Protocol
+        </h3>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+<!-- Step 1 -->
+<div class="p-4 rounded border border-paper-200 bg-paper-50 flex flex-col justify-between">
+<div>
+<span class="text-[10px] font-mono text-stone-500 uppercase tracking-widest font-semibold">Priority Action</span>
+<h4 class="text-xs font-semibold text-stone-900 mt-1">Prune &amp; mitigate Northern Leaf Blight</h4>
+<p class="text-xs text-stone-600 mt-1.5 leading-relaxed">
+                Apply bio-fungicide or Trichoderma during tomorrow's calm dawn window before relative humidity peaks.
+              </p>
+</div>
+<a class="mt-4 text-xs font-medium text-forest-850 hover:underline inline-flex items-center gap-1" href="#">
+              Review Disease Report →
+            </a>
+</div>
+<!-- Step 2 -->
+<div class="p-4 rounded border border-paper-200 bg-paper-50 flex flex-col justify-between">
+<div>
+<span class="text-[10px] font-mono text-stone-500 uppercase tracking-widest font-semibold">Hydrology Sync</span>
+<h4 class="text-xs font-semibold text-stone-900 mt-1">Maintain root-zone moisture</h4>
+<p class="text-xs text-stone-600 mt-1.5 leading-relaxed">
+                Keep watering cycle aligned with incoming 30.9mm rainfall forecast to avoid soil nutrient leaching.
+              </p>
+</div>
+<a class="mt-4 text-xs font-medium text-forest-850 hover:underline inline-flex items-center gap-1" href="#">
+              Open Irrigation Advisory →
+            </a>
+</div>
+<!-- Step 3 -->
+<div class="p-4 rounded border border-paper-200 bg-paper-50 flex flex-col justify-between">
+<div>
+<span class="text-[10px] font-mono text-stone-500 uppercase tracking-widest font-semibold">Agronomic Counsel</span>
+<h4 class="text-xs font-semibold text-stone-900 mt-1">Consult Agronomist</h4>
+<p class="text-xs text-stone-600 mt-1.5 leading-relaxed">
+                Ask specific follow-up questions regarding dosage, tank mixes, and post-treatment scanning intervals.
+              </p>
+</div>
+<a class="mt-4 text-xs font-medium text-forest-850 hover:underline inline-flex items-center gap-1" href="#">
+              Ask AI Agronomist →
+            </a>
+</div>
+</div>
+</div>
+</section>
+<!-- 5. Live Farm Conditions & Telemetry -->
+<section>
+<div class="border-b border-paper-300 pb-3 flex items-baseline justify-between">
+<h2 class="font-serif text-xl font-normal text-forest-950">Live Farm Conditions &amp; Telemetry</h2>
+<span class="text-xs font-mono text-stone-500">Vadodara Rural AWS #4812 · Synced 14m ago</span>
+</div>
+<div class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Metric 1 -->
+<div class="bg-white rounded-lg border border-paper-300 p-5">
+<div class="text-[11px] font-mono uppercase tracking-wider text-stone-500">Soil Moisture</div>
+<div class="mt-2 text-2xl font-serif font-normal text-forest-950 font-feature-tnum">26.0%</div>
+<div class="mt-1 text-xs text-forest-800 font-medium">Live sensor probe</div>
+<p class="text-[11px] text-stone-500 mt-1">Calibrated for loamy clay soil profile</p>
+</div>
+<!-- Metric 2 -->
+<div class="bg-white rounded-lg border border-paper-300 p-5">
+<div class="text-[11px] font-mono uppercase tracking-wider text-stone-500">Water Demand</div>
+<div class="mt-2 text-2xl font-serif font-normal text-forest-950">Moderate</div>
+<div class="mt-1 text-xs text-stone-700 font-medium">ET₀: 3.8 mm/day</div>
+<p class="text-[11px] text-stone-500 mt-1">Evapotranspiration balance steady</p>
+</div>
+<!-- Metric 3 -->
+<div class="bg-white rounded-lg border border-paper-300 p-5">
+<div class="text-[11px] font-mono uppercase tracking-wider text-stone-500">Weather Source</div>
+<div class="mt-2 text-2xl font-serif font-normal text-forest-950">Live Sync</div>
+<div class="mt-1 text-xs text-stone-700 font-medium">WeatherAPI Gateway</div>
+<p class="text-[11px] text-stone-500 mt-1">Hyperlocal station 1.8km from field</p>
+</div>
+<!-- Metric 4 -->
+<div class="bg-white rounded-lg border border-paper-300 p-5">
+<div class="text-[11px] font-mono uppercase tracking-wider text-stone-500">Irrigation Method</div>
+<div class="mt-2 text-2xl font-serif font-normal text-forest-950">Drip Network</div>
+<div class="mt-1 text-xs text-stone-700 font-medium">From Farm Profile</div>
+<p class="text-[11px] text-stone-500 mt-1">Verified pressure-compensating emitters</p>
+</div>
+</div>
+</section>
+<!-- 6. Transparent Scoring Methodology (Readable Document Format) -->
+<section class="bg-white rounded-lg border border-paper-300 p-6 lg:p-8" data-purpose="formula-methodology">
+<div class="flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-paper-200 pb-4 gap-2">
+<div>
+<h3 class="font-serif text-xl font-normal text-forest-950">How is my score calculated?</h3>
+<p class="text-xs text-stone-500 mt-0.5">Transparent, rule-based agronomic evaluation specifications.</p>
+</div>
+<span class="text-[11px] font-mono uppercase tracking-wider text-forest-850 font-semibold bg-paper-100 px-2.5 py-1 rounded border border-paper-300 shrink-0">
+          Scoring Methodology Documentation
+        </span>
+</div>
+<!-- Authoritative Overall Score Formula Banner -->
+<div class="mt-6 p-5 rounded border border-paper-300 bg-paper-50 font-mono">
+<div class="text-[11px] uppercase tracking-wider text-forest-850 font-semibold">Authoritative Overall Score Formula</div>
+<div class="text-xs sm:text-sm font-semibold text-stone-900 mt-1.5 overflow-x-auto py-1">
+          Overall Score = (Water × 0.30) + (Soil × 0.25) + (Crop Health × 0.25) + (Resources × 0.20)
+        </div>
+<div class="mt-2 text-xs text-stone-600">
+          = (90 × 0.30) + (85 × 0.25) + (50 × 0.25) + (92 × 0.20) = 27.00 + 21.25 + 12.50 + 18.40 = <strong class="text-forest-950 font-semibold">79.15 ≈ 79.2</strong>
+</div>
+</div>
+<!-- Scoring Bands & Breakdown Rules -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+<!-- Water Efficiency Rules -->
+<div class="p-4 rounded border border-paper-200 bg-white">
+<h4 class="text-xs font-semibold text-forest-950 flex items-center justify-between">
+<span class="">Water Efficiency (30% weight)</span>
+<span class="font-mono text-stone-500">Active: 90 pts</span>
+</h4>
+<p class="text-[11px] font-mono text-stone-500 mt-1 pb-2 border-b border-paper-200">
+            Formula: (Soil Moisture Score × 0.60) + (ET₀ Demand Score × 0.40)
+          </p>
+<ul class="mt-2.5 space-y-1.5 text-xs text-stone-600 font-mono">
+<li class="flex justify-between"><span class="">• 25%–45% moisture:</span> <span class="font-semibold text-forest-900">100 pts (Optimal)</span></li>
+<li class="flex justify-between"><span class="">• 10%–25% moisture:</span> <span class="">40 + (moisture - 10) × 4</span></li>
+<li class="flex justify-between"><span class="">• 45%–60% moisture:</span> <span class="">100 - (moisture - 45) × 2</span></li>
+<li class="flex justify-between"><span class="">• &lt;10% moisture / &gt;60%:</span> <span class="">20 pts / 65 pts</span></li>
+<li class="pt-1.5 border-t border-paper-200 text-[11px] text-stone-500">ET₀ &lt; 3 mm: 90 pts | &lt; 5 mm: 75 pts | &lt; 7 mm: 60 pts</li>
+</ul>
+</div>
+<!-- Soil Health Rules -->
+<div class="p-4 rounded border border-paper-200 bg-white">
+<h4 class="text-xs font-semibold text-forest-950 flex items-center justify-between">
+<span class="">Soil Health (25% weight)</span>
+<span class="font-mono text-stone-500">Active: 85 pts</span>
+</h4>
+<p class="text-[11px] font-mono text-stone-500 mt-1 pb-2 border-b border-paper-200">
+            Moisture retention within agronomic safety bands:
+          </p>
+<ul class="mt-2.5 space-y-1.5 text-xs text-stone-600 font-mono">
+<li class="flex justify-between"><span class="">• 20%–50% moisture:</span> <span class="font-semibold text-forest-900">85 pts (Optimal target)</span></li>
+<li class="flex justify-between"><span class="">• 10%–20% moisture:</span> <span class="">50 + (moisture - 10) × 3.5</span></li>
+<li class="flex justify-between"><span class="">• 50%–70% moisture:</span> <span class="">85 - (moisture - 50) × 2</span></li>
+<li class="flex justify-between"><span class="">• &lt;10% moisture / &gt;70%:</span> <span class="">30 pts / 50 pts</span></li>
+</ul>
+</div>
+<!-- Crop Health Rules -->
+<div class="p-4 rounded border border-paper-200 bg-white">
+<h4 class="text-xs font-semibold text-forest-950 flex items-center justify-between">
+<span class="">Crop Health (25% weight)</span>
+<span class="font-mono text-amber-800 font-semibold">Active: 50 pts</span>
+</h4>
+<p class="text-[11px] font-mono text-stone-500 mt-1 pb-2 border-b border-paper-200">
+            Formula: 50 + (Healthy Leaf Scans / Total Scans × 50)
+          </p>
+<ul class="mt-2.5 space-y-1.5 text-xs text-stone-600 font-mono">
+<li class="flex justify-between"><span class="">• 100% healthy:</span> <span class="font-semibold text-forest-900">100 pts</span></li>
+<li class="flex justify-between"><span class="">• 80% healthy:</span> <span class="">90 pts</span></li>
+<li class="flex justify-between"><span class="">• 50% healthy:</span> <span class="">75 pts</span></li>
+<li class="flex justify-between"><span class="">• 0% healthy (Active):</span> <span class="font-semibold text-amber-800">50 pts</span></li>
+<li class="pt-1.5 border-t border-paper-200 text-[11px] text-stone-500">Unscanned baseline fallback: 75 pts</li>
+</ul>
+</div>
+<!-- Resource Efficiency Rules -->
+<div class="p-4 rounded border border-paper-200 bg-white">
+<h4 class="text-xs font-semibold text-forest-950 flex items-center justify-between">
+<span class="">Resource Efficiency (20% weight)</span>
+<span class="font-mono text-stone-500">Active: 92 pts</span>
+</h4>
+<p class="text-[11px] font-mono text-stone-500 mt-1 pb-2 border-b border-paper-200">
+            Irrigation method rating from Farm Profile:
+          </p>
+<ul class="mt-2.5 space-y-1.5 text-xs text-stone-600 font-mono">
+<li class="flex justify-between"><span class="">• Drip Irrigation (Active):</span> <span class="font-semibold text-forest-900">92 pts</span></li>
+<li class="flex justify-between"><span class="">• Sprinkler Irrigation:</span> <span class="">78 pts</span></li>
+<li class="flex justify-between"><span class="">• Manual Watering:</span> <span class="">62 pts</span></li>
+<li class="flex justify-between"><span class="">• Rainfed / No Irrigation:</span> <span class="">60 pts</span></li>
+<li class="flex justify-between"><span class="">• Flood Irrigation:</span> <span class="">48 pts</span></li>
+</ul>
+</div>
+</div>
+<!-- Footer Attribution -->
+<div class="mt-6 pt-4 border-t border-paper-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-[11px] text-stone-500 font-mono">
+<div class="">
+          Weather telemetry provided by WeatherAPI · Sustainability assessment calculated via AgriSmart transparent rule-based agronomic model.
+        </div>
+<div class="text-stone-400">
+          ISO 14064 &amp; ICAR GAP compliant
+        </div>
+</div>
+</section>
+<!-- Quiet Footer Branding Note -->
+<footer class="text-center py-6 text-xs text-stone-500 font-sans border-t border-paper-300">
+      AgriSmart™ Sustainability Stewardship Engine · Dedicated to regeneratively powered smallholder agriculture.
+    </footer>
+</main>
+</div>
+<!-- END: MainContentArea -->
+
+
+</body></html>
