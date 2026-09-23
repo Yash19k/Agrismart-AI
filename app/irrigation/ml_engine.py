@@ -4,6 +4,7 @@ Uses the trained XGBoost champion pipeline with live WeatherAPI intelligence.
 Self-contained in app/irrigation/ml/ with zero Flask dependencies.
 """
 
+import os
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
@@ -20,8 +21,11 @@ from .ml.constants import (
 )
 from .ml.recommendations import generate_recommendation
 
-PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
-MODEL_PATH: Path = PROJECT_ROOT / "model" / "irrigation" / "irrigation_pipeline.joblib"
+PROJECT_ROOT: Path = Path(os.environ.get('PROJECT_ROOT', Path(__file__).resolve().parent.parent.parent)).resolve()
+MODEL_DIR: Path = Path(os.environ.get('MODEL_DIR', PROJECT_ROOT / "model")).resolve()
+MODEL_PATH: Path = MODEL_DIR / "irrigation" / "irrigation_pipeline.joblib"
+if not MODEL_PATH.exists():
+    MODEL_PATH = PROJECT_ROOT / "model" / "irrigation" / "irrigation_pipeline.joblib"
 if not MODEL_PATH.exists():
     # Fallback to internal app path if present
     MODEL_PATH = Path(__file__).resolve().parent / "ml" / "irrigation_pipeline.joblib"

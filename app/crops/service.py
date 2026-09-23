@@ -96,9 +96,10 @@ class CropRecommendationService:
         # Resolve paths
         script_dir = Path(__file__).resolve().parent
         app_dir = script_dir.parent  # app
-        project_root = app_dir.parent  # Agrismart-AI
+        project_root = Path(os.environ.get('PROJECT_ROOT', app_dir.parent)).resolve()
+        model_root = Path(os.environ.get('MODEL_DIR', project_root / "model")).resolve()
 
-        self.model_dir = project_root / "model" / "crop_recommendation"
+        self.model_dir = model_root / "crop_recommendation"
         self.model_path = self.model_dir / "crop_model.pkl"
         self.minmax_path = self.model_dir / "crop_minmax_scaler.pkl"
         self.standard_path = self.model_dir / "crop_standard_scaler.pkl"

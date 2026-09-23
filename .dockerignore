@@ -1,0 +1,36 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Frontend
+src/
+node_modules/
+
+# Python Cache & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+
+# Development Databases & Media
+*.sqlite3
+*.db
+app/staticfiles/
+app/media/
+
+# IDE / Editor Files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Documentation / Training Notebooks / Large Reports
+report/
+images/
+*.log
