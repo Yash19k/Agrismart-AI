@@ -373,26 +373,27 @@ class DiseaseModelService:
         # Resolve paths relative to project root
         script_dir = Path(__file__).resolve().parent
         base_dir = script_dir.parent  # app
-        project_root = base_dir.parent  # Agrismart-AI
+        project_root = Path(os.environ.get('PROJECT_ROOT', base_dir.parent)).resolve()
+        model_root = Path(os.environ.get('MODEL_DIR', project_root / "model")).resolve()
 
         if model_path:
             self.model_path = Path(model_path)
         else:
             candidate_paths = [
+                model_root / "crop_disease_detection" / "agrismart_convnext_tiny_final.pth",
+                model_root / "crop_desaise_detection" / "agrismart_convnext_tiny_final.pth",
+                model_root / "agrismart_convnext_tiny_final.pth",
                 project_root / "model" / "crop_disease_detection" / "agrismart_convnext_tiny_final.pth",
-                project_root / "model" / "crop_desaise_detection" / "agrismart_convnext_tiny_final.pth",
                 project_root / "crop_disease_detection" / "agrismart_convnext_tiny_final.pth",
-                project_root / "crop_desaise_detection" / "agrismart_convnext_tiny_final.pth",
-                project_root / "model" / "agrismart_convnext_tiny_final.pth",
             ]
             self.model_path = next((p for p in candidate_paths if p.is_file()), candidate_paths[0])
 
         candidate_class_paths = [
+            model_root / "crop_disease_detection" / "class_names.json",
+            model_root / "crop_desaise_detection" / "class_names.json",
+            model_root / "class_names.json",
             project_root / "model" / "crop_disease_detection" / "class_names.json",
-            project_root / "model" / "crop_desaise_detection" / "class_names.json",
             project_root / "crop_disease_detection" / "class_names.json",
-            project_root / "crop_desaise_detection" / "class_names.json",
-            project_root / "model" / "class_names.json",
         ]
         self.class_names_path = next((p for p in candidate_class_paths if p.is_file()), candidate_class_paths[0])
 

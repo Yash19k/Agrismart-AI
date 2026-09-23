@@ -14,3 +14,8 @@ requests>=2.31
 groq>=0.37.0
 torch>=2.0
 torchvision>=0.15
+# Production deployment dependencies
+gunicorn>=21.2.0
+whitenoise[brotli]>=6.6.0
+dj-database-url>=2.1.0
+psycopg2-binary>=2.9.9

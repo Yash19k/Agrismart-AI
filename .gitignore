@@ -27,8 +27,18 @@ wheels/
 # Virtual environments
 venv/
 .venv/
+env/
 env.bak/
 venv.bak/
+
+# Environment files (never commit real environment secrets)
+.env
+.env.*
+*.env
+**/.env
+**/.env.*
+!**/.env.example
+!.env.example
 
 # IDE & Editor files
 .vscode/
@@ -41,8 +51,6 @@ venv.bak/
 !src/src/data/
 *.zip
 *.tar.gz
-*.pth
-!model/*.pth
 *.pt
 *.h5
 *.onnx
@@ -50,8 +58,11 @@ venv.bak/
 # Database
 *.sqlite3
 db.sqlite3
+**/db.sqlite3
 
-# Media and uploads
+# Static files and media
+staticfiles/
+app/staticfiles/
 media/
 app/media/
 
