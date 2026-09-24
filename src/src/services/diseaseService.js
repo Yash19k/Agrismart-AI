@@ -46,6 +46,7 @@ export async function analyzeDisease(imageFile) {
 /**
  * Backend response mapper.
  * Normalizes the Django API response payload into the structure expected by all UI components.
+ * Updated to support: risk_breakdown, ipm_guidance, referral, followup, needs_expert_review
  *
  * @param {object} apiResponse - Raw backend response payload from POST /api/disease/predict/
  * @returns {object} - Normalized structure matching UI contract
@@ -100,11 +101,14 @@ export function mapDiseaseApiResponse(apiResponse) {
     symptoms: apiResponse.symptoms || [],
     possibleCauses: apiResponse.possible_causes || [],
 
+    // Spread Risk — now from comprehensive 8-factor engine
     spreadRisk: {
       level: apiResponse.spread_risk_level || 'Medium',
       score: apiResponse.spread_risk_score ?? 50,
       explanation: apiResponse.spread_risk_explanation || 'Environmental conditions assessment.',
       factors: apiResponse.spread_risk_factors || [],
+      breakdown: apiResponse.risk_breakdown || {},
+      disclaimer: apiResponse.risk_disclaimer || '',
     },
 
     weather: {
@@ -122,6 +126,15 @@ export function mapDiseaseApiResponse(apiResponse) {
       source: apiResponse.weather?.source ?? 'Open-Meteo API',
       lastUpdated: apiResponse.weather?.last_updated ?? 'Live',
     },
+
+    // IPM Guidance — cultural → biological → chemical (new)
+    ipmGuidance: apiResponse.ipm_guidance ? {
+      cultural: apiResponse.ipm_guidance.cultural || [],
+      biological: apiResponse.ipm_guidance.biological || [],
+      chemicalGuidance: apiResponse.ipm_guidance.chemical_guidance || {},
+      riskLevel: apiResponse.ipm_guidance.risk_level || 'low',
+      interventionUrgency: apiResponse.ipm_guidance.intervention_urgency || '',
+    } : null,
 
     diseaseForecast: apiResponse.disease_forecast || [],
     irrigationAdvice: {
@@ -161,5 +174,11 @@ export function mapDiseaseApiResponse(apiResponse) {
       : (apiResponse.confidenceBreakdown || []),
 
     modelMetrics: apiResponse.model_metrics || null,
+
+    // Pipeline orchestration data (new)
+    needsExpertReview: Boolean(apiResponse.needs_expert_review),
+    priority: apiResponse.priority || 'normal',
+    followup: apiResponse.followup || null,
+    referral: apiResponse.referral || null,
   };
 }

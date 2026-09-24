@@ -12,3 +12,14 @@ export async function getDashboard(farmId = null) {
   const response = await client.get('/dashboard/', { params });
   return response.data;
 }
+
+/**
+ * Fetch unified regional surveillance dashboard payload for agricultural officers.
+ * Scoped to officer's assigned region.
+ *
+ * @returns {Promise<object>} Dashboard response shape from /api/dashboard/officer/
+ */
+export async function getOfficerDashboard() {
+  const response = await client.get('/dashboard/officer/');
+  return response.data;
+}

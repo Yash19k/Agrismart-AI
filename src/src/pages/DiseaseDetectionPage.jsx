@@ -11,7 +11,15 @@ import {
   Droplets,
   Calendar,
   BarChart2,
-  Check
+  Check,
+  ShieldCheck,
+  AlertCircle,
+  CalendarCheck,
+  PhoneCall,
+  FlaskConical,
+  Leaf,
+  ExternalLink,
+  Clock
 } from 'lucide-react';
 
 import '../styles/disease.css';
@@ -180,6 +188,12 @@ export default function DiseaseDetectionPage() {
   const irrigation = analysisResult?.irrigationAdvice || {};
   const actionTimeline = analysisResult?.actionTimeline || {};
   const confidenceBreakdown = analysisResult?.confidenceBreakdown || [];
+
+  const ipmGuidance = analysisResult?.ipmGuidance;
+  const referral = analysisResult?.referral;
+  const followup = analysisResult?.followup;
+  const needsExpertReview = analysisResult?.needsExpertReview;
+  const priority = analysisResult?.priority || 'normal';
 
   const infectionType = getInfectionType(diseaseName, diseaseInfo.category);
   const causalAgent = getCausalAgent(pathogen, diseaseName);
@@ -369,6 +383,105 @@ export default function DiseaseDetectionPage() {
                   Comprehensive pathology analysis and evidence-backed agronomic guidance for your crop specimen.
                 </p>
               </div>
+
+              {/* ── AUTOMATED PIPELINE ORCHESTRATION NOTICES ── */}
+              {(needsExpertReview || referral?.recommended || followup) && (
+                <div className="space-y-3">
+                  {/* Agronomist Review Queue Status */}
+                  {needsExpertReview && (
+                    <div className={`p-4 rounded-2xl border flex items-start gap-3.5 shadow-sm ${
+                      priority === 'urgent'
+                        ? 'bg-red-50/90 border-red-200 text-red-950'
+                        : 'bg-purple-50/90 border-purple-200 text-purple-950'
+                    }`}>
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                        priority === 'urgent' ? 'bg-red-100 text-red-700' : 'bg-purple-100 text-purple-700'
+                      }`}>
+                        <ShieldCheck className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-bold text-xs">Under Agronomist Clinical Review</span>
+                          <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full ${
+                            priority === 'urgent' ? 'bg-red-200/70 text-red-900' : 'bg-purple-200/70 text-purple-900'
+                          }`}>
+                            {priority === 'urgent' ? 'Urgent Priority Queue' : 'Standard Expert Queue'}
+                          </span>
+                        </div>
+                        <p className="text-xs mt-1 leading-relaxed opacity-90">
+                          {priority === 'urgent'
+                            ? 'High disease risk or severe canopy threat detected. This scan has been prioritized for urgent clinical validation by regional extension specialists.'
+                            : 'This scan has been automatically forwarded to regional agronomy experts for ground-truth verification. You will receive an in-app alert when an agronomist confirms or refines the action plan.'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* KVK / Lab Referral Recommendation */}
+                  {referral?.recommended && (
+                    <div className="p-4 rounded-2xl border border-amber-200 bg-amber-50/90 text-amber-950 flex items-start gap-3.5 shadow-sm">
+                      <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center flex-shrink-0">
+                        <PhoneCall className="w-5 h-5 text-amber-700" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-bold text-xs">Official Agricultural Extension / KVK Referral</span>
+                          <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-200/70 text-amber-900">
+                            Laboratory Testing Recommended
+                          </span>
+                        </div>
+                        <p className="text-xs mt-1 leading-relaxed opacity-90">
+                          {referral.reason}
+                        </p>
+                        {referral.kvk_name && (
+                          <div className="mt-2.5 p-3 rounded-xl bg-white/80 border border-amber-200/80 text-xs text-amber-900 space-y-1">
+                            <div className="font-bold flex items-center gap-1.5">
+                              <span>🏛️ Nearest Center:</span>
+                              <span className="text-amber-950">{referral.kvk_name}</span>
+                              {referral.kvk_district && <span className="text-[11px] font-normal text-amber-700">({referral.kvk_district} District)</span>}
+                            </div>
+                            {referral.kvk_contact && (
+                              <div className="flex items-center gap-2 pt-0.5 text-xs">
+                                <span className="font-medium text-amber-800">Helpline / Contact:</span>
+                                <a href={`tel:${referral.kvk_contact}`} className="font-bold underline text-amber-950 hover:text-black">
+                                  {referral.kvk_contact}
+                                </a>
+                              </div>
+                            )}
+                            {referral.kvk_note && (
+                              <p className="text-[11px] text-amber-700 italic">{referral.kvk_note}</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Auto-Scheduled Follow-Up Checkpoint */}
+                  {followup && (
+                    <div className="p-4 rounded-2xl border border-teal-200 bg-teal-50/90 text-teal-950 flex items-start gap-3.5 shadow-sm">
+                      <div className="w-9 h-9 rounded-xl bg-teal-100 text-teal-800 flex items-center justify-center flex-shrink-0">
+                        <CalendarCheck className="w-5 h-5 text-teal-700" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <span className="font-bold text-xs">Recovery Surveillance Follow-Up Auto-Scheduled</span>
+                          <button
+                            onClick={() => navigate('/followups')}
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-teal-800 hover:text-teal-950 underline underline-offset-2 cursor-pointer"
+                          >
+                            <span>Open Follow-Up Hub</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </button>
+                        </div>
+                        <p className="text-xs mt-1 leading-relaxed opacity-90">
+                          A 5–7 day recovery checkpoint has been automatically scheduled for <strong>{followup.scheduled_date}</strong> (in {followup.days_until} days). Re-scan this plant to monitor treatment efficacy and close the agronomic feedback loop.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* ── MAIN DIAGNOSIS CARD (Two Columns) ── */}
               <div className="bg-white border border-[#DCE8DF] rounded-2xl p-6 md:p-8 shadow-editorial">
@@ -732,6 +845,132 @@ export default function DiseaseDetectionPage() {
                   </div>
                 </div>
               </div>
+
+              {/* ── INTEGRATED PEST & DISEASE MANAGEMENT (IPM) SECTION ── */}
+              {ipmGuidance && (
+                <div className="bg-white border border-[#DCE8DF] rounded-2xl p-6 shadow-editorial space-y-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-[#DCE8DF] gap-2">
+                    <div className="flex items-center gap-2">
+                      <Leaf className="w-4 h-4 text-[#1b4d3e]" />
+                      <h3 className="font-editorial text-xl font-bold text-[#16352D]">
+                        Integrated Pest &amp; Disease Management (IPM)
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        CIBRC Safety Compliant
+                      </span>
+                      {ipmGuidance.interventionUrgency && (
+                        <span className="text-[10px] font-semibold text-[#6C7D76]">
+                          {ipmGuidance.interventionUrgency}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-[#6C7D76] leading-relaxed">
+                    Integrated crop management follows a structured, safety-first sequence: prioritize non-chemical cultural sanitation and biological controls, utilizing chemical interventions only when pathogen pressure crosses the economic injury threshold.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                    {/* 1. Cultural & Mechanical */}
+                    <div className="p-4 rounded-xl border border-[#DCE8DF] bg-[#F7FAF8] flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center gap-2 pb-2 border-b border-[#DCE8DF]">
+                          <span className="w-5 h-5 rounded-full bg-[#1b4d3e] text-white flex items-center justify-center font-bold text-[10px]">
+                            1
+                          </span>
+                          <span className="font-bold text-[#16352D]">Cultural &amp; Sanitation</span>
+                        </div>
+                        <ul className="space-y-2 text-[#4d6b5e] pt-3">
+                          {(ipmGuidance.cultural || []).map((item, idx) => (
+                            <li key={idx} className="flex items-start gap-1.5">
+                              <span className="text-[#1b4d3e] font-bold leading-none mt-0.5">•</span>
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="pt-3 mt-3 border-t border-[#DCE8DF]/70 text-[10px] text-[#6C7D76] font-medium">
+                        Non-chemical agronomic prevention
+                      </div>
+                    </div>
+
+                    {/* 2. Biological & Botanical */}
+                    <div className="p-4 rounded-xl border border-teal-200/80 bg-teal-50/50 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center gap-2 pb-2 border-b border-teal-200/80">
+                          <span className="w-5 h-5 rounded-full bg-teal-700 text-white flex items-center justify-center font-bold text-[10px]">
+                            2
+                          </span>
+                          <span className="font-bold text-teal-950">Biological &amp; Biorational</span>
+                        </div>
+                        <ul className="space-y-2 text-teal-900 pt-3">
+                          {(ipmGuidance.biological || []).map((item, idx) => (
+                            <li key={idx} className="flex items-start gap-1.5">
+                              <span className="text-teal-700 font-bold leading-none mt-0.5">•</span>
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="pt-3 mt-3 border-t border-teal-200/60 text-[10px] text-teal-800 font-medium">
+                        Eco-friendly beneficial protectants
+                      </div>
+                    </div>
+
+                    {/* 3. Chemical & Safe Input Usage */}
+                    <div className="p-4 rounded-xl border border-amber-200/80 bg-amber-50/40 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center gap-2 pb-2 border-b border-amber-200/80">
+                          <span className="w-5 h-5 rounded-full bg-amber-700 text-white flex items-center justify-center font-bold text-[10px]">
+                            3
+                          </span>
+                          <span className="font-bold text-amber-950">Chemical &amp; Safe Inputs</span>
+                        </div>
+                        
+                        {ipmGuidance.chemicalGuidance?.recommended_actives?.length > 0 && (
+                          <div className="pt-2.5">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800">
+                              Approved Active Ingredients:
+                            </span>
+                            <ul className="space-y-1 text-amber-900 mt-1">
+                              {ipmGuidance.chemicalGuidance.recommended_actives.map((active, idx) => (
+                                <li key={idx} className="flex items-start gap-1.5 font-medium">
+                                  <span className="text-amber-700 font-bold leading-none mt-0.5">✓</span>
+                                  <span>{active}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {ipmGuidance.chemicalGuidance?.safety_precautions?.length > 0 && (
+                          <div className="pt-2.5">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800">
+                              Safe Handling &amp; PHI:
+                            </span>
+                            <ul className="space-y-1 text-amber-800 mt-1 text-[11px]">
+                              {ipmGuidance.chemicalGuidance.safety_precautions.map((safe, idx) => (
+                                <li key={idx} className="flex items-start gap-1.5">
+                                  <span className="text-amber-600 font-bold">•</span>
+                                  <span>{safe}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+
+                      {ipmGuidance.chemicalGuidance?.disclaimer && (
+                        <div className="pt-2.5 mt-3 border-t border-amber-200/60 text-[10px] text-amber-800/90 leading-tight">
+                          ⚠️ {ipmGuidance.chemicalGuidance.disclaimer}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* ── RECOMMENDED ACTION PLAN (Agronomist Memo Style) ── */}
               <div className="bg-white border border-[#DCE8DF] rounded-2xl p-6 shadow-editorial space-y-4">

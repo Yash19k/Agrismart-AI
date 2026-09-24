@@ -27,4 +27,5 @@ urlpatterns = [
     path('api/expert/', include('expert.urls')),
     path('api/followups/', include('followups.urls')),
     path('api/feedback/', include('feedback.urls')),
+    path('api/alerts/', include('alerts.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

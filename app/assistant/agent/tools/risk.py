@@ -1,9 +1,21 @@
 """
-Tool 3: calculate_disease_risk
-Deterministic agronomic risk calculation combining pathogen biology with live meteorological telemetry.
-No hallucinated numbers — pure rule-based logic.
+DEPRECATED — This module is superseded by risk.engine.calculate_risk().
+
+The comprehensive risk engine in risk/engine.py considers 8 factors
+(disease confidence, severity, humidity, temperature, rainfall, crop stage,
+pest pressure, local incidence) instead of the 3 factors here.
+
+This file is retained only for backward compatibility with the AI assistant agent.
+All new code should import from risk.engine directly.
 """
+import warnings
 from typing import Dict, Any, List
+
+warnings.warn(
+    "assistant.agent.tools.risk is deprecated. Use risk.engine.calculate_risk() instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 
 def calculate_disease_risk(

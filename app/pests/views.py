@@ -1,6 +1,6 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.db.models import Sum, Count, Avg
 from django.utils import timezone
@@ -12,14 +12,22 @@ from .serializers import PestObservationSerializer
 
 
 @api_view(['GET', 'POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def pest_observation_list_create_view(request):
     """
     GET: List pest observations with optional farm_id filter.
     POST: Record a new pest trap observation with count & image.
+    Scoped by role: farmers see only their own observations.
     """
+    user = request.user
+    user_role = getattr(user, 'role', 'farmer')
+
     if request.method == 'GET':
-        qs = PestObservation.objects.all()
+        if user_role == 'farmer':
+            qs = PestObservation.objects.filter(farm__user=user)
+        else:
+            qs = PestObservation.objects.all()
+
         farm_id = request.query_params.get('farm_id')
         pest_type = request.query_params.get('pest_type')
         threshold = request.query_params.get('threshold_level')
@@ -43,13 +51,21 @@ def pest_observation_list_create_view(request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def pest_summary_view(request, farm_id=None):
     """
     GET /api/pests/summary/ or /api/pests/summary/<farm_id>/
     Returns aggregated pest pressure metrics and breakdown by species.
+    Scoped by role: farmers see only their own data.
     """
-    qs = PestObservation.objects.all()
+    user = request.user
+    user_role = getattr(user, 'role', 'farmer')
+
+    if user_role == 'farmer':
+        qs = PestObservation.objects.filter(farm__user=user)
+    else:
+        qs = PestObservation.objects.all()
+
     if farm_id:
         qs = qs.filter(farm_id=farm_id)
 
@@ -85,10 +101,17 @@ def pest_summary_view(request, farm_id=None):
 
 
 @api_view(['DELETE'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def pest_observation_delete_view(request, pk):
-    """Delete a pest trap observation."""
-    obs = PestObservation.objects.filter(pk=pk).first()
+    """Delete a pest trap observation (farmer: own only; expert/officer: any)."""
+    user = request.user
+    user_role = getattr(user, 'role', 'farmer')
+
+    if user_role == 'farmer':
+        obs = PestObservation.objects.filter(pk=pk, farm__user=user).first()
+    else:
+        obs = PestObservation.objects.filter(pk=pk).first()
+
     if not obs:
         return Response({'detail': 'Observation not found.'}, status=status.HTTP_404_NOT_FOUND)
     obs.delete()

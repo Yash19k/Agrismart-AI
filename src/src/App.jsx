@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { GoogleTranslateProvider } from './components/common/GoogleTranslate';
 import { LanguageProvider } from './context/LanguageContext';
+import RoleProtectedRoute from './components/common/RoleProtectedRoute';
 
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
@@ -45,21 +46,73 @@ export function App() {
             <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
             <Route path="/signup" element={<PublicOnlyRoute><SignupPage /></PublicOnlyRoute>} />
 
-            {/* Protected routes */}
+            {/* Dashboard — all authenticated users */}
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/weather" element={<ProtectedRoute><WeatherPage /></ProtectedRoute>} />
-            <Route path="/disease" element={<ProtectedRoute><DiseaseDetectionPage /></ProtectedRoute>} />
-            <Route path="/crop" element={<ProtectedRoute><CropRecommendationPage /></ProtectedRoute>} />
-            <Route path="/crop-recommendation" element={<ProtectedRoute><CropRecommendationPage /></ProtectedRoute>} />
-            <Route path="/irrigation" element={<ProtectedRoute><IrrigationPage /></ProtectedRoute>} />
-            <Route path="/assistant" element={<ProtectedRoute><AssistantPage /></ProtectedRoute>} />
-            <Route path="/sustainability" element={<ProtectedRoute><SustainabilityPage /></ProtectedRoute>} />
-            <Route path="/pests" element={<ProtectedRoute><PestTrapPage /></ProtectedRoute>} />
+
+            {/* Farmer-only routes */}
+            <Route path="/disease" element={
+              <RoleProtectedRoute allow={['farmer']}>
+                <DiseaseDetectionPage />
+              </RoleProtectedRoute>
+            } />
+            <Route path="/pests" element={
+              <RoleProtectedRoute allow={['farmer']}>
+                <PestTrapPage />
+              </RoleProtectedRoute>
+            } />
+            <Route path="/followups" element={
+              <RoleProtectedRoute allow={['farmer']}>
+                <FollowUpPage />
+              </RoleProtectedRoute>
+            } />
+            <Route path="/irrigation" element={
+              <RoleProtectedRoute allow={['farmer']}>
+                <IrrigationPage />
+              </RoleProtectedRoute>
+            } />
+            <Route path="/crop" element={
+              <RoleProtectedRoute allow={['farmer']}>
+                <CropRecommendationPage />
+              </RoleProtectedRoute>
+            } />
+            <Route path="/crop-recommendation" element={
+              <RoleProtectedRoute allow={['farmer']}>
+                <CropRecommendationPage />
+              </RoleProtectedRoute>
+            } />
+            <Route path="/sustainability" element={
+              <RoleProtectedRoute allow={['farmer']}>
+                <SustainabilityPage />
+              </RoleProtectedRoute>
+            } />
+            <Route path="/assistant" element={
+              <RoleProtectedRoute allow={['farmer']}>
+                <AssistantPage />
+              </RoleProtectedRoute>
+            } />
+
+            {/* All roles can see hotspots (component handles role-based API scoping) */}
             <Route path="/hotspots" element={<ProtectedRoute><HotspotMapPage /></ProtectedRoute>} />
-            <Route path="/expert" element={<ProtectedRoute><ExpertReviewPage /></ProtectedRoute>} />
-            <Route path="/followups" element={<ProtectedRoute><FollowUpPage /></ProtectedRoute>} />
-            <Route path="/feedback" element={<ProtectedRoute><FeedbackDatasetPage /></ProtectedRoute>} />
-            <Route path="/regional-monitoring" element={<ProtectedRoute><RegionalMonitoringPage /></ProtectedRoute>} />
+
+            {/* Expert / Officer only */}
+            <Route path="/expert" element={
+              <RoleProtectedRoute allow={['expert', 'officer']}>
+                <ExpertReviewPage />
+              </RoleProtectedRoute>
+            } />
+
+            {/* Officer only */}
+            <Route path="/feedback" element={
+              <RoleProtectedRoute allow={['officer']}>
+                <FeedbackDatasetPage />
+              </RoleProtectedRoute>
+            } />
+            <Route path="/regional-monitoring" element={
+              <RoleProtectedRoute allow={['officer']}>
+                <RegionalMonitoringPage />
+              </RoleProtectedRoute>
+            } />
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />

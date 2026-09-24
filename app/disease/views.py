@@ -1,8 +1,11 @@
 import os
 import logging
+from datetime import timedelta
+
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.views import APIView
@@ -12,7 +15,8 @@ from .models import DiseaseScan
 from .serializers import DiseaseScanSerializer, DiseasePredictSerializer
 from .model_service import get_disease_model_service
 from assistant.agent.tools.weather import get_current_weather
-from assistant.agent.tools.risk import calculate_disease_risk
+from risk.engine import calculate_risk
+from risk.ipm import get_ipm_guidance
 from risk.forecast import generate_7day_forecast
 
 logger = logging.getLogger("disease.views")
@@ -22,11 +26,16 @@ class DiseasePredictView(APIView):
     """
     POST /api/disease/predict/
 
-    Accepts a crop leaf image via multipart/form-data.
-    Runs ConvNeXt-Tiny deep learning inference (agrismart_convnext_tiny_final.pth).
-    Saves the analyzed scan and returns structured diagnostic, weather, and risk intelligence.
+    Full pipeline endpoint:
+    1. ConvNeXt-Tiny inference
+    2. Multi-factor risk engine (weather + crop stage + pest history + local incidence)
+    3. IPM guidance (cultural → biological → chemical)
+    4. Auto-flag to expert queue if high risk / low confidence
+    5. Auto-schedule follow-up if diseased
+    6. Referral trigger if critical / ambiguous
+    7. Expert/officer notification for flagged scans
     """
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request):
@@ -38,18 +47,12 @@ class DiseasePredictView(APIView):
         farm_id = ser.validated_data.get('farm_id')
         image = ser.validated_data.get('image')
 
-        user = request.user if request.user and request.user.is_authenticated else None
+        user = request.user
         farm = None
-        if user and farm_id:
+        if farm_id:
             farm = Farm.objects.filter(id=farm_id, user=user).first()
-        elif user:
+        if not farm:
             farm = Farm.objects.filter(user=user).first()
-
-        # If user is not authenticated, check if a demo user exists
-        if not user:
-            from django.contrib.auth import get_user_model
-            User = get_user_model()
-            user = User.objects.filter(email='farmer@agrismart.ai').first() or User.objects.first()
 
         # Save initial scan record
         scan = DiseaseScan.objects.create(
@@ -60,7 +63,7 @@ class DiseasePredictView(APIView):
             model_status='pending',
         )
 
-        # Run ConvNeXt-Tiny Model Inference
+        # ── 1. ConvNeXt-Tiny Model Inference ──────────────────────────────────
         try:
             model_service = get_disease_model_service()
             pred_res = model_service.predict(scan.image.path)
@@ -87,22 +90,52 @@ class DiseasePredictView(APIView):
         scan.plant_name = pred_res["crop_name"]
         scan.disease_name = pred_res["disease_name"]
         scan.model_status = 'ready'
-        scan.save()
 
-        # Fetch environmental telemetry & calculate deterministic spread risk
+        # ── 2. Multi-Factor Risk Engine ───────────────────────────────────────
         weather_ctx = get_current_weather(farm)
-        disease_ctx = {
-            "available": True,
-            "crop": pred_res["crop_name"],
-            "disease": pred_res["disease_name"],
-            "confidence": pred_res["confidence"],
-            "confidence_percentage": round(pred_res["confidence"] * 100, 1),
-            "severity": pred_res["severity_level"],
-            "is_healthy": pred_res["is_healthy"],
-        }
-        risk_ctx = calculate_disease_risk(disease_ctx, weather_ctx)
 
-        # Build full agronomic payload matching frontend mapDiseaseApiResponse
+        # Gather additional inputs for comprehensive risk scoring
+        crop_stage = getattr(farm, 'crop_stage', 'vegetative') if farm else 'vegetative'
+
+        # Pest count from latest observation
+        pest_count = 0
+        try:
+            from pests.models import PestObservation
+            latest_pest = PestObservation.objects.filter(farm=farm).order_by('-observed_at').first() if farm else None
+            if latest_pest:
+                pest_count = latest_pest.pest_count or 0
+        except Exception:
+            pass
+
+        # Local incidence from hotspot services
+        local_incidence_count = 0
+        try:
+            if farm and farm.latitude and farm.longitude:
+                from hotspots.services import get_local_incidence
+                local_incidence_count = get_local_incidence(farm.latitude, farm.longitude)
+        except Exception:
+            pass
+
+        # Call the comprehensive risk engine (replaces old assistant.agent.tools.risk)
+        risk_ctx = calculate_risk(
+            crop_stage=crop_stage,
+            humidity=weather_ctx.get('humidity', 60.0),
+            temperature=weather_ctx.get('temperature', 25.0),
+            rainfall_prob=weather_ctx.get('rain_probability', 20.0),
+            disease_confidence=pred_res["confidence"] if not pred_res["is_healthy"] else 0.0,
+            disease_severity=pred_res["severity_level"].lower() if not pred_res["is_healthy"] else 'none',
+            is_healthy=pred_res["is_healthy"],
+            pest_count=pest_count,
+            local_incidence_count=local_incidence_count,
+        )
+
+        # ── 3. IPM Guidance ───────────────────────────────────────────────────
+        ipm_guidance = get_ipm_guidance(
+            disease_name=pred_res["disease_name"],
+            risk_level=risk_ctx["level"],
+        )
+
+        # ── Build response payload ────────────────────────────────────────────
         image_url = request.build_absolute_uri(scan.image.url) if scan.image else None
         file_size_kb = f"{scan.image.size / 1024:.1f} KB" if scan.image else "Unknown"
 
@@ -115,8 +148,7 @@ class DiseasePredictView(APIView):
             "nextWeek": ["Reassess crop foliage and monitor canopy regeneration."],
         }
 
-        # 7-Day dynamic progression forecast based on multi-factor engine
-        crop_stage = getattr(farm, 'crop_stage', 'vegetative') if farm else 'vegetative'
+        # 7-Day dynamic progression forecast
         daily_weather_forecast = []
         try:
             from weather.services import WeatherService
@@ -135,6 +167,107 @@ class DiseasePredictView(APIView):
             current_weather=weather_ctx,
         )
 
+        # ── 4. Pipeline Orchestration (auto-flag, follow-up, referral, notify) ─
+
+        # 4a. Auto-flag to expert queue
+        try:
+            if not pred_res["is_healthy"]:
+                if risk_ctx["level"] in ("high", "critical") or pred_res["confidence"] < 0.6:
+                    scan.needs_expert_review = True
+                    scan.priority = 'urgent' if risk_ctx["level"] == "critical" else 'normal'
+        except Exception:
+            pass
+
+        # 4b. Auto-schedule follow-up
+        followup_data = None
+        try:
+            if not pred_res["is_healthy"] and farm:
+                from followups.models import FollowUp
+                days_until = 5 if risk_ctx["level"] == "critical" else 7
+                followup = FollowUp.objects.create(
+                    original_scan=scan,
+                    farm=farm,
+                    user=user,
+                    scheduled_date=timezone.now().date() + timedelta(days=days_until),
+                )
+                followup_data = {
+                    'id': followup.id,
+                    'scheduled_date': followup.scheduled_date.isoformat(),
+                    'days_until': days_until,
+                }
+        except Exception as e:
+            logger.warning("Auto follow-up creation failed: %s", e)
+
+        # 4c. Referral trigger
+        referral_data = None
+        try:
+            if risk_ctx["level"] == "critical" or pred_res["confidence"] < 0.4:
+                scan.referral_recommended = True
+                from referral.kvk_directory import lookup_nearest_kvk
+                kvk = lookup_nearest_kvk(
+                    district=getattr(farm, 'location_name', '') if farm else '',
+                    latitude=farm.latitude if farm else None,
+                    longitude=farm.longitude if farm else None,
+                )
+                reason = (
+                    "Critical risk level — immediate agronomist consultation recommended."
+                    if risk_ctx["level"] == "critical"
+                    else "Low model confidence — visual diagnosis inconclusive, laboratory verification advised."
+                )
+                referral_data = {
+                    'recommended': True,
+                    'reason': reason,
+                    'contact_type': 'KVK',
+                    'kvk_name': kvk.get('name', ''),
+                    'kvk_contact': kvk.get('contact', ''),
+                    'kvk_district': kvk.get('district', ''),
+                    'kvk_note': kvk.get('note', ''),
+                }
+        except Exception as e:
+            logger.warning("Referral lookup failed: %s", e)
+
+        # Save scan with all orchestration flags
+        scan.save()
+
+        # 4d. Notify assigned expert/officer for flagged scans
+        try:
+            if scan.needs_expert_review:
+                from alerts.models import Alert
+                from accounts.models import User as AuthUser
+                from hotspots.services import haversine_km
+
+                # Find experts/officers assigned to this region
+                staff_users = AuthUser.objects.filter(
+                    role__in=['expert', 'officer'],
+                    assigned_region_lat__isnull=False,
+                    assigned_region_lon__isnull=False,
+                )
+                for staff in staff_users:
+                    if farm and farm.latitude and farm.longitude:
+                        dist = haversine_km(
+                            staff.assigned_region_lat, staff.assigned_region_lon,
+                            farm.latitude, farm.longitude
+                        )
+                        radius = staff.assigned_region_radius_km or 50.0
+                        if dist <= radius:
+                            Alert.objects.create(
+                                recipient=staff,
+                                alert_type='expert_review_needed',
+                                related_scan=scan,
+                                message=f"New scan flagged for review: {pred_res['disease_name']} on {pred_res['crop_name']} ({pred_res['confidence_percent']} confidence, {risk_ctx['level_display']} risk). Farm: {farm.farm_name if farm else 'Unknown'}.",
+                            )
+                    else:
+                        # No farm coordinates — notify all staff
+                        Alert.objects.create(
+                            recipient=staff,
+                            alert_type='expert_review_needed',
+                            related_scan=scan,
+                            message=f"New scan flagged for review: {pred_res['disease_name']} on {pred_res['crop_name']} ({pred_res['confidence_percent']} confidence, {risk_ctx['level_display']} risk).",
+                        )
+        except Exception as e:
+            logger.warning("Expert notification failed: %s", e)
+
+        # ── Build full response ───────────────────────────────────────────────
         response_data = {
             "id": scan.id,
             "image_url": image_url,
@@ -174,14 +307,23 @@ class DiseasePredictView(APIView):
             "symptoms": pred_res["symptoms"],
             "possible_causes": pred_res["possible_causes"],
 
-            # Spread Risk & Environmental Context
-            "spread_risk_level": risk_ctx["level"],
+            # Spread Risk — from comprehensive engine (replaces old narrow risk)
+            "spread_risk_level": risk_ctx["level_display"],
             "spread_risk_score": risk_ctx["score"],
-            "spread_risk_explanation": " ".join(risk_ctx.get("reasons", [])),
-            "spread_risk_factors": risk_ctx.get("reasons", []),
+            "spread_risk_explanation": risk_ctx["summary"],
+            "spread_risk_factors": [
+                f"{k}: {v['input']} (score {v['score']}/{v['max']})"
+                for k, v in risk_ctx.get("breakdown", {}).items()
+                if v.get('score', 0) > 0
+            ],
+            "risk_breakdown": risk_ctx.get("breakdown", {}),
+            "risk_disclaimer": risk_ctx.get("disclaimer", ""),
             "weather": weather_ctx,
 
-            # Irrigation Advice & Timeline
+            # IPM Guidance (cultural → biological → chemical)
+            "ipm_guidance": ipm_guidance,
+
+            # Disease Forecast & Irrigation
             "disease_forecast": disease_forecast,
             "irrigation": {
                 "recommendation": "Root-Zone Drip Watering" if not pred_res["is_healthy"] else "Regular Irrigation",
@@ -193,11 +335,17 @@ class DiseasePredictView(APIView):
             },
             "action_timeline": action_timeline,
 
+            # Pipeline status
+            "needs_expert_review": scan.needs_expert_review,
+            "priority": scan.priority,
+            "followup": followup_data,
+            "referral": referral_data,
+
             # Summary for Agronomist
             "summary": {
                 "headline": f"{pred_res['crop_name']} — {pred_res['disease_name']}",
-                "text": f"Diagnosis confirmed {pred_res['disease_name']} at {pred_res['confidence_percent']} confidence. Review recommended treatment actions.",
-                "priority": "High Priority" if risk_ctx["level"] == "High" else "Normal Priority",
+                "text": f"Diagnosis confirmed {pred_res['disease_name']} at {pred_res['confidence_percent']} confidence. Combined risk score: {risk_ctx['score']}/100 ({risk_ctx['level_display']}). Review recommended treatment actions.",
+                "priority": "High Priority" if risk_ctx["level"] in ("high", "critical") else "Normal Priority",
                 "recommendations": pred_res.get("recommendations", []),
                 "expert_note": "Agronomic advice based on ICAR and state agricultural university crop protection guidelines.",
             },
@@ -222,17 +370,18 @@ class DiseasePredictView(APIView):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def disease_history(request):
     """GET /api/disease/history/?farm_id=<id>"""
     farm_id = request.query_params.get('farm_id')
-    user = request.user if request.user and request.user.is_authenticated else None
-    if not user:
-        from django.contrib.auth import get_user_model
-        User = get_user_model()
-        user = User.objects.filter(email='farmer@agrismart.ai').first() or User.objects.first()
+    user = request.user
+    user_role = getattr(user, 'role', 'farmer')
 
-    qs = DiseaseScan.objects.filter(user=user)
+    if user_role == 'farmer':
+        qs = DiseaseScan.objects.filter(user=user)
+    else:
+        qs = DiseaseScan.objects.all()
+
     if farm_id:
         qs = qs.filter(farm_id=farm_id)
     ser = DiseaseScanSerializer(qs, many=True, context={'request': request})

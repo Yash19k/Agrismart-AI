@@ -1,24 +1,33 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from accounts.permissions import IsExpertOrOfficer
 from disease.models import DiseaseScan
 from .models import ExpertReview
 from .serializers import ExpertReviewSerializer
 
 
 @api_view(['GET', 'POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def expert_review_list_create_view(request):
     """
     GET: List expert reviews.
-    POST: Submit an agronomist review for a scan.
+      - Farmers: only reviews for their own scans
+      - Experts/Officers: all reviews (optionally filtered)
+    POST: Submit an agronomist review for a scan (expert/officer only).
     """
     if request.method == 'GET':
         qs = ExpertReview.objects.all()
         scan_id = request.query_params.get('scan_id')
         status_param = request.query_params.get('status')
+
+        # Farmers can only see reviews for their own scans
+        user_role = getattr(request.user, 'role', 'farmer')
+        if user_role == 'farmer':
+            qs = qs.filter(scan__user=request.user)
+
         if scan_id:
             qs = qs.filter(scan_id=scan_id)
         if status_param:
@@ -28,6 +37,14 @@ def expert_review_list_create_view(request):
         return Response(serializer.data)
 
     elif request.method == 'POST':
+        # Only experts/officers can submit reviews
+        user_role = getattr(request.user, 'role', 'farmer')
+        if user_role not in ('expert', 'officer'):
+            return Response(
+                {'detail': 'Only verified experts and officers can submit reviews.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         scan_id = request.data.get('scan')
         scan = DiseaseScan.objects.filter(id=scan_id).first()
         if not scan:
@@ -45,6 +62,21 @@ def expert_review_list_create_view(request):
                 except Exception:
                     pass
 
+            # Send alert back to the farmer whose scan was reviewed
+            try:
+                from alerts.models import Alert
+                farmer = scan.user
+                if farmer and farmer != request.user:
+                    expert_name = request.user.get_full_name() or request.user.username
+                    Alert.objects.create(
+                        recipient=farmer,
+                        alert_type='expert_review_completed',
+                        related_scan=scan,
+                        message=f'Your scan for {scan.disease_name or scan.crop_type} has been reviewed by {expert_name}. Status: {review.get_status_display()}.',
+                    )
+            except Exception:
+                pass
+
             return Response(
                 ExpertReviewSerializer(review, context={'request': request}).data,
                 status=status.HTTP_201_CREATED
@@ -53,11 +85,13 @@ def expert_review_list_create_view(request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsExpertOrOfficer])
 def unreviewed_queue_view(request):
     """
     GET /api/expert/queue/
     Returns disease scans awaiting expert verification.
+    Scoped to the expert/officer's assigned region.
+    Sorted by priority (urgent first) then recency.
     """
     # Scans that do not have a confirmed or corrected review
     reviewed_scan_ids = ExpertReview.objects.filter(
@@ -66,7 +100,28 @@ def unreviewed_queue_view(request):
 
     unreviewed_scans = DiseaseScan.objects.exclude(
         id__in=reviewed_scan_ids
-    ).order_by('-created_at')[:30]
+    ).select_related('farm', 'user')
+
+    # Region scoping: filter by expert/officer's assigned region
+    user = request.user
+    if user.assigned_region_lat and user.assigned_region_lon and user.assigned_region_radius_km:
+        from hotspots.services import haversine_km
+        radius = user.assigned_region_radius_km or 50.0
+        filtered_ids = []
+        for s in unreviewed_scans:
+            if s.farm and s.farm.latitude and s.farm.longitude:
+                dist = haversine_km(
+                    user.assigned_region_lat, user.assigned_region_lon,
+                    s.farm.latitude, s.farm.longitude
+                )
+                if dist <= radius:
+                    filtered_ids.append(s.id)
+        unreviewed_scans = unreviewed_scans.filter(id__in=filtered_ids)
+
+    # Sort: urgent priority first, then by recency
+    unreviewed_scans = unreviewed_scans.order_by(
+        '-needs_expert_review', '-priority', '-created_at'
+    )[:30]
 
     results = []
     for s in unreviewed_scans:
@@ -78,9 +133,11 @@ def unreviewed_queue_view(request):
             'crop_name': s.crop_type or 'Unknown',
             'predicted_disease': s.disease_name or s.predicted_class,
             'confidence': s.confidence,
-            'confidence_percent': f"{round(s.confidence * 100, 1)}%",
+            'confidence_percent': f"{round(s.confidence * 100, 1)}%" if s.confidence else '0%',
             'severity': s.severity,
             'is_healthy': s.is_healthy,
+            'needs_expert_review': getattr(s, 'needs_expert_review', False),
+            'priority': getattr(s, 'priority', 'normal'),
             'image_url': image_url,
             'created_at': s.created_at.strftime('%Y-%m-%d %H:%M'),
         })
@@ -89,7 +146,7 @@ def unreviewed_queue_view(request):
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
-@permission_classes([AllowAny])
+@permission_classes([IsExpertOrOfficer])
 def expert_review_detail_view(request, pk):
     """Detail, edit or remove an expert review."""
     review = ExpertReview.objects.filter(pk=pk).first()

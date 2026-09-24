@@ -5,10 +5,12 @@ from .models import User
 
 
 class RegisterSerializer(serializers.Serializer):
+    """Public registration — always creates a farmer account."""
     name = serializers.CharField()
     email = serializers.CharField()
     password = serializers.CharField(write_only=True, min_length=6)
 
+    # Accept role field from frontend but silently force it to 'farmer'
     role = serializers.CharField(required=False, default='farmer')
 
     def validate_email(self, value):
@@ -21,11 +23,14 @@ class RegisterSerializer(serializers.Serializer):
                 raise serializers.ValidationError("An account with this mobile number already exists.")
         return val
 
+    def validate_role(self, value):
+        # Public signup is ALWAYS farmer — prevent privilege escalation
+        return 'farmer'
+
     def create(self, validated_data):
         name = validated_data.pop('name', '')
         identifier = validated_data['email'].strip()
         password = validated_data['password']
-        role = validated_data.get('role', 'farmer')
         parts = name.strip().split(' ', 1)
         first = parts[0]
         last = parts[1] if len(parts) > 1 else ''
@@ -40,7 +45,71 @@ class RegisterSerializer(serializers.Serializer):
             first_name=first,
             last_name=last,
             phone=phone,
+            role='farmer',  # Always farmer for public signup
+        )
+        return user
+
+
+class StaffRegisterSerializer(serializers.Serializer):
+    """
+    Invite-only registration for expert / officer accounts.
+    Requires an existing officer's JWT token and a valid invite code.
+    """
+    name = serializers.CharField()
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True, min_length=6)
+    role = serializers.ChoiceField(choices=['expert', 'officer'])
+    invite_code = serializers.CharField()
+
+    # Expert-specific fields
+    credentials_note = serializers.CharField(required=False, default='', allow_blank=True)
+    is_verified_expert = serializers.BooleanField(required=False, default=False)
+
+    # Region assignment
+    assigned_region = serializers.CharField(required=False, default='', allow_blank=True)
+    assigned_region_lat = serializers.FloatField(required=False, allow_null=True, default=None)
+    assigned_region_lon = serializers.FloatField(required=False, allow_null=True, default=None)
+    assigned_region_radius_km = serializers.FloatField(required=False, default=50.0)
+
+    def validate_email(self, value):
+        val = value.strip().lower()
+        if User.objects.filter(email__iexact=val).exists():
+            raise serializers.ValidationError("An account with this email already exists.")
+        return val
+
+    def validate_invite_code(self, value):
+        # For hackathon scope: accept a known invite code
+        # In production this would be a single-use DB token
+        import os
+        valid_code = os.environ.get('STAFF_INVITE_CODE', 'AGRISMART-STAFF-2024')
+        if value.strip() != valid_code:
+            raise serializers.ValidationError("Invalid invite code.")
+        return value
+
+    def create(self, validated_data):
+        name = validated_data.pop('name', '')
+        validated_data.pop('invite_code', None)
+        email = validated_data.pop('email').strip().lower()
+        password = validated_data.pop('password')
+        role = validated_data.pop('role')
+
+        parts = name.strip().split(' ', 1)
+        first = parts[0]
+        last = parts[1] if len(parts) > 1 else ''
+
+        user = User.objects.create_user(
+            username=email,
+            email=email,
+            password=password,
+            first_name=first,
+            last_name=last,
             role=role,
+            is_verified_expert=validated_data.get('is_verified_expert', role == 'expert'),
+            credentials_note=validated_data.get('credentials_note', ''),
+            assigned_region=validated_data.get('assigned_region', ''),
+            assigned_region_lat=validated_data.get('assigned_region_lat'),
+            assigned_region_lon=validated_data.get('assigned_region_lon'),
+            assigned_region_radius_km=validated_data.get('assigned_region_radius_km', 50.0),
         )
         return user
 
@@ -81,7 +150,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'name', 'email', 'phone', 'preferred_language', 'role')
+        fields = (
+            'id', 'name', 'email', 'phone', 'preferred_language', 'role',
+            'is_verified_expert', 'credentials_note',
+            'assigned_region', 'assigned_region_lat', 'assigned_region_lon',
+            'assigned_region_radius_km',
+        )
 
     def get_name(self, obj):
         return obj.get_full_name() or obj.username

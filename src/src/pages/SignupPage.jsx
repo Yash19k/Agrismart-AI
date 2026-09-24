@@ -259,6 +259,17 @@ export const SignupPage = () => {
                 </Link>
               </p>
             </div>
+
+            {/* Extension / Officer Account Info */}
+            <div className="mt-4 pt-3 border-t border-slate-100 text-center">
+              <p className="text-[11.5px] text-slate-500 leading-relaxed">
+                🏛️ <strong>Agricultural Officer or Extension Specialist?</strong><br />
+                Staff accounts are verified and credentialed by the Department of Agriculture. Please{' '}
+                <Link to="/login" className="text-[#1b4d3e] font-semibold underline underline-offset-2">
+                  sign in with your staff credentials
+                </Link>.
+              </p>
+            </div>
           </section>
         </div>
       </main>
