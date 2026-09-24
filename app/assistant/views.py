@@ -8,7 +8,7 @@ GET  /api/assistant/suggested/
 """
 import logging
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -28,7 +28,7 @@ def get_agent() -> AgriSmartAgronomistAgent:
 
 
 @api_view(["POST"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def chat_view(request):
     """
     POST /api/assistant/chat/
@@ -82,7 +82,7 @@ def chat_view(request):
 
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def context_view(request):
     """
     GET /api/assistant/context/?session_id=...
@@ -100,7 +100,7 @@ def context_view(request):
 
 
 @api_view(["POST"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def clear_context_view(request):
     """
     POST /api/assistant/clear-context/
@@ -119,7 +119,7 @@ def clear_context_view(request):
 
 
 @api_view(["POST"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def farm_brief_view(request):
     """
     POST /api/assistant/brief/
@@ -148,7 +148,7 @@ def farm_brief_view(request):
 
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def suggested_questions_view(request):
     """
     GET /api/assistant/suggested/?crop=Tomato&disease=Early+Blight&risk=High&lang=en

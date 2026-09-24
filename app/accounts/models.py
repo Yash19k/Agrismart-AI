@@ -13,6 +13,10 @@ class User(AbstractUser):
     phone = models.CharField(max_length=15, blank=True, null=True)
     preferred_language = models.CharField(max_length=10, default='en')
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='farmer')
+    is_demo = models.BooleanField(
+        default=False,
+        help_text='True if this account is a demonstration profile'
+    )
 
     # Expert verification (set by officer/admin when creating expert accounts)
     is_verified_expert = models.BooleanField(

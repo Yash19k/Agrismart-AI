@@ -2,7 +2,7 @@ import logging
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from farms.models import Farm
@@ -16,19 +16,8 @@ logger = logging.getLogger("crops.views")
 class CropPredictView(APIView):
     """
     POST /api/crops/predict/
-    Accepts:
-    {
-        "N": 90.0,
-        "P": 42.0,
-        "K": 43.0,
-        "temperature": 20.88,
-        "humidity": 82.00,
-        "ph": 6.50,
-        "rainfall": 202.94,
-        "farm_id": 1  # optional
-    }
     """
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         serializer = CropPredictInputSerializer(data=request.data)
@@ -46,17 +35,12 @@ class CropPredictView(APIView):
         farm_id = data.get("farm_id")
 
         # Resolve user & farm
-        user = request.user if request.user and request.user.is_authenticated else None
+        user = request.user
         farm = None
-        if user and farm_id:
+        if farm_id:
             farm = Farm.objects.filter(id=farm_id, user=user).first()
-        elif user:
+        if not farm:
             farm = Farm.objects.filter(user=user).first()
-
-        if not user:
-            from django.contrib.auth import get_user_model
-            User = get_user_model()
-            user = User.objects.filter(email='farmer@agrismart.ai').first() or User.objects.first()
 
         try:
             service = get_crop_recommendation_service()
@@ -103,22 +87,17 @@ class CropPredictView(APIView):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def crop_presets(request):
     """GET /api/crops/presets/"""
     return Response(REGIONAL_PRESETS)
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def crop_history(request):
     """GET /api/crops/history/"""
-    user = request.user if request.user and request.user.is_authenticated else None
-    if not user:
-        from django.contrib.auth import get_user_model
-        User = get_user_model()
-        user = User.objects.filter(email='farmer@agrismart.ai').first() or User.objects.first()
-
+    user = request.user
     farm_id = request.query_params.get('farm_id')
     qs = CropPredictionRecord.objects.filter(user=user)
     if farm_id:
@@ -129,7 +108,7 @@ def crop_history(request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def crop_catalog(request):
     """GET /api/crops/catalog/"""
     service = get_crop_recommendation_service()

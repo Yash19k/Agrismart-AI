@@ -64,6 +64,8 @@ INSTALLED_APPS = [
     'followups',
     'feedback',
     'alerts',
+    'sensors',
+    'referral',
 ]
 
 MIDDLEWARE = [

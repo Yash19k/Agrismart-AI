@@ -28,4 +28,6 @@ urlpatterns = [
     path('api/followups/', include('followups.urls')),
     path('api/feedback/', include('feedback.urls')),
     path('api/alerts/', include('alerts.urls')),
+    path('api/sensors/', include('sensors.urls')),
+    path('api/referrals/', include('referral.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

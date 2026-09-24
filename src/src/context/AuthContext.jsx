@@ -10,7 +10,7 @@ const DEFAULT_FARM = {
   village: 'Mogri',
   farmSize: '4.5',
   sizeUnit: 'Acres',
-  mainCrop: 'Tomato & Cotton',
+  mainCrop: 'Tomato',
   prefLang: 'en',
   smsAlerts: true,
 };
@@ -40,13 +40,53 @@ export const AuthProvider = ({ children }) => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [initializing, setInitializing] = useState(() => !!token);
 
-  // Sync token to Axios header
+  // Sync token to Axios header and verify against /api/auth/me/ on startup
   useEffect(() => {
-    if (token) {
-      setAuthToken(token);
-    }
-  }, [token]);
+    let isMounted = true;
+
+    const verifySession = async () => {
+      if (!token) {
+        if (isMounted) setInitializing(false);
+        return;
+      }
+
+      try {
+        setAuthToken(token);
+        const me = await authService.getCurrentUser();
+        if (isMounted) {
+          const mergedUser = {
+            ...(user || {}),
+            ...me,
+            id: me.id || user?.id,
+            name: me.name || user?.name || 'User',
+            email: me.email || user?.email,
+            role: me.role || user?.role || 'farmer',
+            is_demo: !!me.is_demo,
+            farm: user?.farm || DEFAULT_FARM,
+          };
+          setUser(mergedUser);
+          sessionStorage.setItem('agrishield_user', JSON.stringify(mergedUser));
+          localStorage.setItem('agrishield_user', JSON.stringify(mergedUser));
+        }
+      } catch (err) {
+        if (isMounted) {
+          console.warn('Session verification failed, clearing expired credentials.', err);
+          logout();
+        }
+      } finally {
+        if (isMounted) {
+          setInitializing(false);
+        }
+      }
+    };
+
+    verifySession();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const login = async (email, password) => {
     setLoading(true);
@@ -62,17 +102,17 @@ export const AuthProvider = ({ children }) => {
         name: email.split('@')[0] || 'Farmer Friend',
         email: email.trim(),
         role: 'farmer',
-        isOnboarded: true,
+        is_demo: false,
         farm: DEFAULT_FARM,
       };
 
-      // Ensure role is always present
       if (!userData.role) {
         userData.role = 'farmer';
       }
 
-      // SYNCHRONOUSLY store token in Axios defaults and storage BEFORE navigation
       setAuthToken(accessToken);
+      sessionStorage.setItem('agrishield_token', accessToken);
+      localStorage.setItem('agrishield_token', accessToken);
       sessionStorage.setItem('agrishield_user', JSON.stringify(userData));
       localStorage.setItem('agrishield_user', JSON.stringify(userData));
 
@@ -81,19 +121,13 @@ export const AuthProvider = ({ children }) => {
       return { success: true, user: userData };
     } catch (error) {
       console.error('API login failed:', error);
-      setAuthToken(null);
-      sessionStorage.removeItem('agrishield_user');
-      localStorage.removeItem('agrishield_user');
-      setToken(null);
-      setUser(null);
-      // Explicitly throw so LoginPage displays the real error to the user
+      logout();
       throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  // Registration does NOT auto-login, allowing redirection to login page
   const register = async (name, email, password) => {
     setLoading(true);
     try {
@@ -109,6 +143,8 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     setAuthToken(null);
+    sessionStorage.removeItem('agrishield_token');
+    localStorage.removeItem('agrishield_token');
     sessionStorage.removeItem('agrishield_user');
     localStorage.removeItem('agrishield_user');
     setToken(null);
@@ -122,11 +158,12 @@ export const AuthProvider = ({ children }) => {
         token,
         isAuthenticated: !!token && !!user,
         loading,
+        initializing,
         login,
         register,
         logout,
-        /** Helper: returns the user's role string ('farmer', 'expert', 'officer') */
         userRole: user?.role || 'farmer',
+        isDemoUser: !!user?.is_demo,
       }}
     >
       {children}

@@ -60,7 +60,7 @@ def weather_view(request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def location_search(request):
     """GET /api/weather/location/search/?q=<city> — geocoding proxy."""
     q = request.query_params.get('q', '').strip()
@@ -95,7 +95,7 @@ def health_check(request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def weather_context_view(request):
     """
     GET /api/weather/context/?lat=23.0225&lon=72.5714
@@ -126,7 +126,7 @@ def weather_context_view(request):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def weather_analyze_view(request):
     """
     POST /api/weather/analyze/
@@ -164,7 +164,7 @@ def weather_analyze_view(request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def crop_context_view(request):
     """
     GET /api/weather/crop-context/?lat=23.0225&lon=72.5714
@@ -186,7 +186,7 @@ def crop_context_view(request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def irrigation_context_view(request):
     """
     GET /api/weather/irrigation-context/?lat=23.0225&lon=72.5714

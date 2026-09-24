@@ -22,6 +22,7 @@ def _user_payload(user):
         'preferred_language': getattr(user, 'preferred_language', 'en'),
         'is_verified_expert': getattr(user, 'is_verified_expert', False),
         'assigned_region': getattr(user, 'assigned_region', ''),
+        'is_demo': getattr(user, 'is_demo', False),
         'isOnboarded': True,
         'farm': {},
     }

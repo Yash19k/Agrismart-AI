@@ -154,7 +154,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'id', 'name', 'email', 'phone', 'preferred_language', 'role',
             'is_verified_expert', 'credentials_note',
             'assigned_region', 'assigned_region_lat', 'assigned_region_lon',
-            'assigned_region_radius_km',
+            'assigned_region_radius_km', 'is_demo',
         )
 
     def get_name(self, obj):

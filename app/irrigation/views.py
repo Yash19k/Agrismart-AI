@@ -52,7 +52,7 @@ def health_check(request):
 # ---------------------------------------------------------------------------
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def get_meta(request):
     """Returns metadata: supported crops, soil types, growth stages, class definitions."""
     return Response(get_metadata(), status=status.HTTP_200_OK)
@@ -63,7 +63,7 @@ def get_meta(request):
 # ---------------------------------------------------------------------------
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def get_insights_view(request):
     """Returns dataset metrics, champion XGBoost feature importance, and benchmarks."""
     return Response(get_insights(), status=status.HTTP_200_OK)
@@ -74,10 +74,10 @@ def get_insights_view(request):
 # ---------------------------------------------------------------------------
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def get_live_weather(request):
     """
-    Fetch live weather data from WeatherAPI (key: 093b53ee057a4907ab9104918261209).
+    Fetch live weather data from WeatherAPI or Open-Meteo.
     Query params:
         farm_id: optional Farm ID
         lat, lon: optional latitude and longitude coordinates
@@ -87,12 +87,14 @@ def get_live_weather(request):
     lon = request.query_params.get("lon")
 
     try:
-        user = request.user if request.user and request.user.is_authenticated else None
+        user = request.user
         farm = None
         if farm_id:
-            if user:
+            if getattr(user, 'role', 'farmer') == 'farmer':
                 farm = Farm.objects.filter(id=farm_id, user=user).first()
-            if not farm:
+                if not farm:
+                    return Response({'detail': 'Farm not found or inaccessible.'}, status=status.HTTP_404_NOT_FOUND)
+            else:
                 farm = Farm.objects.filter(id=farm_id).first()
 
         if farm:
@@ -178,11 +180,9 @@ def get_live_weather(request):
 # ---------------------------------------------------------------------------
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def get_history(request):
     """Returns the user's latest 20 smart irrigation recommendations."""
-    if not (request.user and request.user.is_authenticated):
-        return Response([], status=status.HTTP_200_OK)
     records = SmartIrrigationRecord.objects.filter(user=request.user)[:20]
     data = []
     for r in records:
@@ -212,7 +212,7 @@ def get_history(request):
 # ---------------------------------------------------------------------------
 
 @api_view(["POST"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def predict(request):
     """
     Run the irrigation ML model (trained XGBoost champion pipeline) and return an agronomic recommendation.

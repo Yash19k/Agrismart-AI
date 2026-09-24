@@ -196,12 +196,28 @@ class TestCacheAndValidation(TestCase):
 # =====================================================================
 
 class TestWeatherAPIEndpoints(APITestCase):
+    def setUp(self):
+        from accounts.models import User
+        self.user = User.objects.create_user(
+            username='weather_tester',
+            email='weather_tester@example.com',
+            password='testpassword123',
+            role='farmer'
+        )
+        self.client.force_authenticate(user=self.user)
+
     def test_health_check_endpoint(self):
+        self.client.force_authenticate(user=None)
         response = self.client.get('/api/weather/health/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('status', response.data)
         self.assertEqual(response.data['status'], 'ok')
         self.assertEqual(response.data['provider'], 'WeatherAPI')
+
+    def test_weather_context_unauthenticated(self):
+        self.client.force_authenticate(user=None)
+        response = self.client.get('/api/weather/context/?lat=23.0225&lon=72.5714')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_weather_context_missing_params(self):
         response = self.client.get('/api/weather/context/')
