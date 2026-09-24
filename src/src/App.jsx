@@ -14,6 +14,12 @@ import SustainabilityPage from './pages/SustainabilityPage';
 import AssistantPage from './pages/AssistantPage';
 import CropRecommendationPage from './pages/CropRecommendationPage';
 import WeatherPage from './pages/WeatherPage';
+import PestTrapPage from './pages/PestTrapPage';
+import HotspotMapPage from './pages/HotspotMapPage';
+import ExpertReviewPage from './pages/ExpertReviewPage';
+import FollowUpPage from './pages/FollowUpPage';
+import FeedbackDatasetPage from './pages/FeedbackDatasetPage';
+import RegionalMonitoringPage from './pages/RegionalMonitoringPage';
 
 // Protected route: redirect to login if not authenticated
 const ProtectedRoute = ({ children }) => {
@@ -48,6 +54,12 @@ export function App() {
             <Route path="/irrigation" element={<ProtectedRoute><IrrigationPage /></ProtectedRoute>} />
             <Route path="/assistant" element={<ProtectedRoute><AssistantPage /></ProtectedRoute>} />
             <Route path="/sustainability" element={<ProtectedRoute><SustainabilityPage /></ProtectedRoute>} />
+            <Route path="/pests" element={<ProtectedRoute><PestTrapPage /></ProtectedRoute>} />
+            <Route path="/hotspots" element={<ProtectedRoute><HotspotMapPage /></ProtectedRoute>} />
+            <Route path="/expert" element={<ProtectedRoute><ExpertReviewPage /></ProtectedRoute>} />
+            <Route path="/followups" element={<ProtectedRoute><FollowUpPage /></ProtectedRoute>} />
+            <Route path="/feedback" element={<ProtectedRoute><FeedbackDatasetPage /></ProtectedRoute>} />
+            <Route path="/regional-monitoring" element={<ProtectedRoute><RegionalMonitoringPage /></ProtectedRoute>} />
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />

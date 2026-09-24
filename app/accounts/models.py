@@ -4,8 +4,15 @@ from django.db import models
 
 
 class User(AbstractUser):
+    ROLE_CHOICES = [
+        ('farmer', 'Farmer'),
+        ('expert', 'Agronomist / Expert'),
+        ('officer', 'Agricultural Officer'),
+    ]
+
     phone = models.CharField(max_length=15, blank=True, null=True)
     preferred_language = models.CharField(max_length=10, default='en')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='farmer')
 
     class Meta:
         verbose_name = 'user'

@@ -56,6 +56,13 @@ INSTALLED_APPS = [
     'assistant',
     'irrigation',
     'crops',
+    # SIH P0 modules
+    'risk',
+    'pests',
+    'hotspots',
+    'expert',
+    'followups',
+    'feedback',
 ]
 
 MIDDLEWARE = [

@@ -31,7 +31,12 @@ import {
   Bot,
   ExternalLink,
   ChevronRight,
-  Droplet
+  Droplet,
+  Bug,
+  Flame,
+  UserCheck,
+  CalendarCheck,
+  Database
 } from 'lucide-react';
 
 import '../styles/disease.css';
@@ -945,6 +950,114 @@ export default function Dashboard() {
                   </div>
                   <div className="mt-4 pt-2 flex items-center gap-1 text-[#2fa874] text-xs font-semibold group-hover:translate-x-1 transition-transform">
                     <span>Plan Next Season</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
+                </div>
+
+                {/* Tool 5: Pest Trap Surveillance */}
+                <div
+                  onClick={() => navigate('/pests')}
+                  className="group p-5 rounded-2xl bg-white hover:bg-[#ecfef3] transition-all duration-200 shadow-editorial border border-[#DCE8DF] flex flex-col justify-between cursor-pointer"
+                >
+                  <div className="space-y-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#ecfef3] border border-[#d2f4e0] flex items-center justify-center text-[#1b4d3e] group-hover:bg-[#1b4d3e] group-hover:text-white transition-colors">
+                      <Bug className="w-5 h-5" />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1.5">
+                        <h3 className="font-bold text-sm text-[#16352D]">Pest Traps &amp; Vectors</h3>
+                        <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
+                          IPM
+                        </span>
+                      </div>
+                      <p className="text-xs text-[#527d6a] line-clamp-2 leading-relaxed">
+                        Log sticky trap counts, monitor Economic Injury Levels &amp; vector pressure.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-2 flex items-center gap-1 text-[#2fa874] text-xs font-semibold group-hover:translate-x-1 transition-transform">
+                    <span>Inspect Traps</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
+                </div>
+
+                {/* Tool 6: Outbreak Hotspots GIS */}
+                <div
+                  onClick={() => navigate('/hotspots')}
+                  className="group p-5 rounded-2xl bg-white hover:bg-[#ecfef3] transition-all duration-200 shadow-editorial border border-[#DCE8DF] flex flex-col justify-between cursor-pointer"
+                >
+                  <div className="space-y-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#ecfef3] border border-[#d2f4e0] flex items-center justify-center text-[#1b4d3e] group-hover:bg-[#1b4d3e] group-hover:text-white transition-colors">
+                      <Flame className="w-5 h-5 text-orange-600" />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1.5">
+                        <h3 className="font-bold text-sm text-[#16352D]">Outbreak Hotspots</h3>
+                        <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-50 text-orange-800 border border-orange-200">
+                          GIS
+                        </span>
+                      </div>
+                      <p className="text-xs text-[#527d6a] line-clamp-2 leading-relaxed">
+                        Haversine proximity clustering across Gujarat agricultural surveillance belts.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-2 flex items-center gap-1 text-[#2fa874] text-xs font-semibold group-hover:translate-x-1 transition-transform">
+                    <span>View Cluster Map</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
+                </div>
+
+                {/* Tool 7: Expert Validation */}
+                <div
+                  onClick={() => navigate('/expert')}
+                  className="group p-5 rounded-2xl bg-white hover:bg-[#ecfef3] transition-all duration-200 shadow-editorial border border-[#DCE8DF] flex flex-col justify-between cursor-pointer"
+                >
+                  <div className="space-y-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#ecfef3] border border-[#d2f4e0] flex items-center justify-center text-[#1b4d3e] group-hover:bg-[#1b4d3e] group-hover:text-white transition-colors">
+                      <UserCheck className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1.5">
+                        <h3 className="font-bold text-sm text-[#16352D]">Agronomist Validation</h3>
+                        <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-purple-50 text-purple-800 border border-purple-200">
+                          KVK
+                        </span>
+                      </div>
+                      <p className="text-xs text-[#527d6a] line-clamp-2 leading-relaxed">
+                        Clinical verification queue auditing AI inferences and generating ground truth.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-2 flex items-center gap-1 text-[#2fa874] text-xs font-semibold group-hover:translate-x-1 transition-transform">
+                    <span>Review Queue</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
+                </div>
+
+                {/* Tool 8: Follow-ups & Recheck */}
+                <div
+                  onClick={() => navigate('/followups')}
+                  className="group p-5 rounded-2xl bg-white hover:bg-[#ecfef3] transition-all duration-200 shadow-editorial border border-[#DCE8DF] flex flex-col justify-between cursor-pointer"
+                >
+                  <div className="space-y-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#ecfef3] border border-[#d2f4e0] flex items-center justify-center text-[#1b4d3e] group-hover:bg-[#1b4d3e] group-hover:text-white transition-colors">
+                      <CalendarCheck className="w-5 h-5 text-teal-600" />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1.5">
+                        <h3 className="font-bold text-sm text-[#16352D]">Treatment Follow-up</h3>
+                        <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-teal-50 text-teal-800 border border-teal-200">
+                          Recovery
+                        </span>
+                      </div>
+                      <p className="text-xs text-[#527d6a] line-clamp-2 leading-relaxed">
+                        Track 5-7 day recheck outcomes, intervention efficacy &amp; recovery %.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-2 flex items-center gap-1 text-[#2fa874] text-xs font-semibold group-hover:translate-x-1 transition-transform">
+                    <span>Track Recovery</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </div>
                 </div>
