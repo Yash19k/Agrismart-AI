@@ -28,6 +28,7 @@ import { generateDiseasePdfReport } from '../services/reportGenerator';
 import ImageUpload from '../components/disease/ImageUpload';
 import ImagePreview from '../components/disease/ImagePreview';
 import AnalysisLoader from '../components/disease/AnalysisLoader';
+import DiseaseForecast from '../components/disease/DiseaseForecast';
 
 // Botanical helper for scientific names
 function getScientificCrop(crop) {
@@ -608,6 +609,11 @@ export default function DiseaseDetectionPage() {
                     <span className="text-[10px] text-[#527d6a]">Accumulated</span>
                   </div>
                 </div>
+              </div>
+
+              {/* ── 7-DAY DYNAMIC SPREAD FORECAST (Multi-Factor Engine) ── */}
+              <div className="w-full">
+                <DiseaseForecast forecast={analysisResult?.diseaseForecast} />
               </div>
 
               {/* ── DISEASE INFORMATION & DIAGNOSTIC MARKERS ── */}

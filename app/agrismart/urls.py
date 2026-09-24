@@ -21,4 +21,10 @@ urlpatterns = [
     path('api/irrigation/', include('irrigation.urls')),
     path('api/crops/', include('crops.urls')),
     path('api/sustainability/', include('sustainability.urls')),
+    path('api/risk/', include('risk.urls')),
+    path('api/pests/', include('pests.urls')),
+    path('api/hotspots/', include('hotspots.urls')),
+    path('api/expert/', include('expert.urls')),
+    path('api/followups/', include('followups.urls')),
+    path('api/feedback/', include('feedback.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

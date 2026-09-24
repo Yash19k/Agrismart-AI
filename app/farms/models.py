@@ -18,6 +18,14 @@ class Farm(models.Model):
         ('clayey', 'Clayey Soil'),
         ('loamy', 'Loamy Soil'),
     ]
+    CROP_STAGE_CHOICES = [
+        ('seedling', 'Seedling'),
+        ('vegetative', 'Vegetative'),
+        ('flowering', 'Flowering'),
+        ('fruiting', 'Fruiting'),
+        ('maturity', 'Maturity / Ripening'),
+        ('harvest', 'Harvest'),
+    ]
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='farms'
@@ -28,6 +36,10 @@ class Farm(models.Model):
     location_name = models.CharField(max_length=200, blank=True)
     crop = models.CharField(max_length=100, blank=True,
                             help_text='Primary crop grown on this farm')
+    crop_stage = models.CharField(
+        max_length=30, choices=CROP_STAGE_CHOICES, default='vegetative', blank=True,
+        help_text='Current growth stage of primary crop'
+    )
     soil_type = models.CharField(max_length=50, choices=SOIL_CHOICES, blank=True)
     farm_size = models.FloatField(null=True, blank=True, help_text='Size in acres')
     irrigation_type = models.CharField(

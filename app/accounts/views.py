@@ -17,6 +17,8 @@ def _user_payload(user):
         'id': user.id,
         'name': user.get_full_name() or user.username,
         'email': user.email,
+        'role': getattr(user, 'role', 'farmer'),
+        'preferred_language': getattr(user, 'preferred_language', 'en'),
         'isOnboarded': True,
         'farm': {},
     }

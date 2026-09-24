@@ -1,4 +1,4 @@
-﻿{
+{
   "nav": {
     "brand": "AgriSmart",
     "home": "Home",
@@ -206,6 +206,14 @@
     "analyzing": "Checking your crop with AI...",
     "analyzingDesc": "Analyzing leaf patterns, discoloration, and disease signatures...",
     "readAloud": "🔊 Listen in Your Language",
-    "stopAudio": "⏹️ Stop Audio"
+    "stopAudio": "⏹️ Stop Audio",
+    "pestsTitle": "Pest Traps & Vector Surveillance",
+    "hotspotsTitle": "Geospatial Outbreak Hotspots",
+    "expertTitle": "Agronomist Expert Validation",
+    "followupsTitle": "Follow-up & Treatment Recheck",
+    "feedbackTitle": "Model Retraining Feedback Dataset",
+    "regionalTitle": "Regional Agricultural Surveillance",
+    "riskEngineLabel": "Prototype Risk Engine",
+    "cropStage": "Crop Growth Stage"
   }
 }

@@ -12,16 +12,45 @@ import { TrendingUp, Info } from 'lucide-react';
  * - X-axis: Day 1 through Day 7
  * - Bottom note callout: "This forecast is an estimate based on current disease patterns and weather conditions."
  */
-export default function DiseaseForecast() {
-  const points = [
-    { day: 'Day 1', label: 'Low', x: 60, y: 110, dotColor: '#3b82f6' },
-    { day: 'Day 2', label: 'Low', x: 120, y: 110, dotColor: '#3b82f6' },
-    { day: 'Day 3', label: 'Medium', x: 180, y: 70, dotColor: '#f59e0b' },
+export default function DiseaseForecast({ forecast }) {
+  const defaultPoints = [
+    { day: 'Day 1', label: 'Low', x: 60, y: 110, dotColor: '#10b981' },
+    { day: 'Day 2', label: 'Low', x: 120, y: 105, dotColor: '#10b981' },
+    { day: 'Day 3', label: 'Medium', x: 180, y: 75, dotColor: '#f59e0b' },
     { day: 'Day 4', label: 'Medium', x: 240, y: 70, dotColor: '#f59e0b' },
-    { day: 'Day 5', label: 'High', x: 300, y: 28, dotColor: '#ef4444' },
-    { day: 'Day 6', label: 'High', x: 360, y: 25, dotColor: '#ef4444' },
+    { day: 'Day 5', label: 'High', x: 300, y: 35, dotColor: '#ef4444' },
+    { day: 'Day 6', label: 'High', x: 360, y: 30, dotColor: '#ef4444' },
     { day: 'Day 7', label: 'High', x: 420, y: 25, dotColor: '#ef4444' },
   ];
+
+  const points = (forecast && forecast.length > 0)
+    ? forecast.slice(0, 7).map((item, i) => {
+        const val = typeof item.value === 'number' ? item.value : 30;
+        // Y mapping: val 0 -> y=125, val 100 -> y=25
+        const y = Math.round(125 - (val / 100) * 100);
+        const x = 55 + i * 60;
+        let dotColor = '#10b981';
+        let label = item.risk || 'Low';
+        if (val >= 70 || label.toLowerCase() === 'high' || label.toLowerCase() === 'critical') {
+          dotColor = '#ef4444';
+          label = 'High';
+        } else if (val >= 35 || label.toLowerCase() === 'moderate' || label.toLowerCase() === 'medium') {
+          dotColor = '#f59e0b';
+          label = 'Medium';
+        } else {
+          label = 'Low';
+        }
+
+        return {
+          day: item.weekday || item.day || `Day ${i + 1}`,
+          label,
+          value: Math.round(val),
+          x,
+          y,
+          dotColor,
+        };
+      })
+    : defaultPoints;
 
   // Path generation
   const pathD = `M ${points[0].x} ${points[0].y} ` + points.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ');
@@ -36,9 +65,12 @@ export default function DiseaseForecast() {
           <h3 className="text-sm font-extrabold text-gray-900">
             7-Day Disease Progression Forecast
           </h3>
+          <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
+            Prototype Engine
+          </span>
         </div>
         <p className="text-xs text-gray-400 font-normal mt-0.5">
-          Estimated disease progression if no action is taken.
+          Estimated disease progression if no protective action is taken.
         </p>
       </div>
 

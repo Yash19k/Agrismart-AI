@@ -13,6 +13,7 @@ from .serializers import DiseaseScanSerializer, DiseasePredictSerializer
 from .model_service import get_disease_model_service
 from assistant.agent.tools.weather import get_current_weather
 from assistant.agent.tools.risk import calculate_disease_risk
+from risk.forecast import generate_7day_forecast
 
 logger = logging.getLogger("disease.views")
 
@@ -114,17 +115,25 @@ class DiseasePredictView(APIView):
             "nextWeek": ["Reassess crop foliage and monitor canopy regeneration."],
         }
 
-        # 7-Day progression forecast
-        base_val = risk_ctx["score"]
-        disease_forecast = [
-            {"day": "Day 1", "risk": risk_ctx["level"], "value": base_val},
-            {"day": "Day 2", "risk": risk_ctx["level"], "value": min(100, max(10, base_val + 5))},
-            {"day": "Day 3", "risk": "Moderate" if base_val > 50 else "Low", "value": min(100, max(10, base_val + 2))},
-            {"day": "Day 4", "risk": "Moderate" if base_val > 50 else "Low", "value": min(100, max(10, base_val - 3))},
-            {"day": "Day 5", "risk": "Low" if base_val < 60 else "Moderate", "value": min(100, max(10, base_val - 8))},
-            {"day": "Day 6", "risk": "Low", "value": min(100, max(10, base_val - 12))},
-            {"day": "Day 7", "risk": "Low", "value": min(100, max(10, base_val - 15))},
-        ]
+        # 7-Day dynamic progression forecast based on multi-factor engine
+        crop_stage = getattr(farm, 'crop_stage', 'vegetative') if farm else 'vegetative'
+        daily_weather_forecast = []
+        try:
+            from weather.services import WeatherService
+            if farm:
+                w_full = WeatherService.fetch_farm_weather(farm)
+                daily_weather_forecast = w_full.get('daily', [])
+        except Exception:
+            pass
+
+        disease_forecast = generate_7day_forecast(
+            base_crop_stage=crop_stage,
+            disease_confidence=pred_res["confidence"] if not pred_res["is_healthy"] else 0.0,
+            disease_severity=pred_res["severity_level"].lower() if not pred_res["is_healthy"] else 'none',
+            is_healthy=pred_res["is_healthy"],
+            daily_weather_forecast=daily_weather_forecast,
+            current_weather=weather_ctx,
+        )
 
         response_data = {
             "id": scan.id,

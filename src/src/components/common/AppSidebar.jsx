@@ -11,12 +11,24 @@ import {
   Bot,
   MapPin,
   LogOut,
-  X
+  X,
+  Bug,
+  Flame,
+  UserCheck,
+  CalendarCheck,
+  Database,
+  Activity
 } from 'lucide-react';
 
 export const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'disease', label: 'Disease Detection', icon: ShieldAlert },
+  { id: 'pests', label: 'Pest Traps', icon: Bug },
+  { id: 'hotspots', label: 'Outbreak Hotspots', icon: Flame },
+  { id: 'expert', label: 'Expert Review', icon: UserCheck },
+  { id: 'followups', label: 'Follow-ups & Recheck', icon: CalendarCheck },
+  { id: 'regional', label: 'Regional Dashboard', icon: Activity },
+  { id: 'feedback', label: 'Retraining Dataset', icon: Database },
   { id: 'assistant', label: 'AI Agronomist', icon: Bot, badge: 'Groq' },
   { id: 'weather', label: 'Weather & Advisory', icon: CloudSun },
   { id: 'irrigation', label: 'Irrigation', icon: Droplets },
@@ -55,6 +67,12 @@ export default function AppSidebar({
     } else {
       if (id === 'dashboard') navigate('/dashboard');
       if (id === 'disease') navigate('/disease');
+      if (id === 'pests') navigate('/pests');
+      if (id === 'hotspots') navigate('/hotspots');
+      if (id === 'expert') navigate('/expert');
+      if (id === 'followups') navigate('/followups');
+      if (id === 'regional') navigate('/regional-monitoring');
+      if (id === 'feedback') navigate('/feedback');
       if (id === 'assistant') navigate('/assistant');
       if (id === 'irrigation') navigate('/irrigation');
       if (id === 'sustainability') navigate('/sustainability');
