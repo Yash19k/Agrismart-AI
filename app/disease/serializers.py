@@ -28,7 +28,7 @@ class DiseaseScanSerializer(serializers.ModelSerializer):
 
 
 class DiseasePredictSerializer(serializers.Serializer):
-    image        = serializers.ImageField(required=True)
+    image        = serializers.FileField(required=True)
     crop_type    = serializers.CharField(required=False, default='Unknown', allow_blank=True)
     farm_id      = serializers.IntegerField(required=False, allow_null=True)
     leaf_extent  = serializers.ChoiceField(

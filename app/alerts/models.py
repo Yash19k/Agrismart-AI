@@ -16,6 +16,8 @@ class Alert(models.Model):
         ('hotspot_dispatch', 'Hotspot Advisory Dispatch'),
         ('followup_due', 'Follow-up Due'),
         ('referral_recommended', 'Referral Recommended'),
+        ('high_risk_forecast', 'High Risk Forecast Alert'),
+        ('pest_threshold_exceeded', 'Pest Threshold Exceeded'),
     ]
 
     recipient = models.ForeignKey(

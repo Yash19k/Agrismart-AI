@@ -1,6 +1,6 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from farms.models import Farm
@@ -15,11 +15,12 @@ from .ipm import get_ipm_guidance
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def calculate_risk_view(request):
     """
     POST /api/risk/calculate/
     Computes deterministic multi-factor risk, 7-day forecast, and IPM advice.
+    Enforces authentication and farm ownership.
     """
     serializer = RiskCalculationInputSerializer(data=request.data)
     if not serializer.is_valid():
@@ -27,11 +28,25 @@ def calculate_risk_view(request):
 
     data = serializer.validated_data
     farm_id = data.get('farm_id')
-    farm = Farm.objects.filter(id=farm_id).first() if farm_id else None
+    user = request.user
+    farm = None
+
+    if farm_id:
+        if getattr(user, 'role', 'farmer') == 'farmer':
+            farm = Farm.objects.filter(id=farm_id, user=user).first()
+            if not farm:
+                return Response(
+                    {'detail': 'Farm not found or you do not have permission to access it.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        else:
+            farm = Farm.objects.filter(id=farm_id).first()
+
+    crop_stage = data.get('crop_stage') or getattr(farm, 'crop_stage', 'vegetative')
 
     # Compute risk
     risk_result = calculate_risk(
-        crop_stage=data.get('crop_stage', getattr(farm, 'crop_stage', 'vegetative')),
+        crop_stage=crop_stage,
         humidity=data['humidity'],
         temperature=data['temperature'],
         rainfall_prob=data['rainfall_prob'],
@@ -49,7 +64,7 @@ def calculate_risk_view(request):
         'precipitation': data['rainfall_prob'],
     }
     forecast_data = generate_7day_forecast(
-        base_crop_stage=data.get('crop_stage', getattr(farm, 'crop_stage', 'vegetative')),
+        base_crop_stage=crop_stage,
         disease_confidence=data['disease_confidence'],
         disease_severity=data['disease_severity'],
         is_healthy=data['is_healthy'],
@@ -58,31 +73,43 @@ def calculate_risk_view(request):
         current_weather=current_weather,
     )
 
-    # IPM Advice
+    # IPM Advice (Safety gate: authenticated farmer advice)
+    safety_gate_passed = data['is_healthy'] or data['disease_confidence'] >= 0.80
     ipm_guidance = get_ipm_guidance(
         disease_name=data.get('disease_name', ''),
-        risk_level=risk_result['level']
+        risk_level=risk_result['level'],
+        safety_gate_passed=safety_gate_passed,
     )
 
     return Response({
         **risk_result,
         'forecast': forecast_data,
         'ipm_actions': ipm_guidance,
-        'crop_stage': data.get('crop_stage', getattr(farm, 'crop_stage', 'vegetative')),
+        'crop_stage': crop_stage,
     })
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def farm_risk_view(request, farm_id):
     """
     GET /api/risk/farm/<farm_id>/
     Computes full risk profile for a specific farm using its stage, latest scan,
     current weather, and local incidence.
+    Enforces farm ownership for farmers.
     """
-    farm = Farm.objects.filter(id=farm_id).first()
-    if not farm:
-        return Response({'detail': 'Farm not found.'}, status=status.HTTP_404_NOT_FOUND)
+    user = request.user
+    if getattr(user, 'role', 'farmer') == 'farmer':
+        farm = Farm.objects.filter(id=farm_id, user=user).first()
+        if not farm:
+            return Response(
+                {'detail': 'Farm not found or you do not have permission to view it.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+    else:
+        farm = Farm.objects.filter(id=farm_id).first()
+        if not farm:
+            return Response({'detail': 'Farm not found.'}, status=status.HTTP_404_NOT_FOUND)
 
     # Fetch real weather or fallback
     weather_data = {}
@@ -99,12 +126,34 @@ def farm_risk_view(request, farm_id):
     except Exception:
         weather_data = {'temperature': 28.0, 'humidity': 65.0, 'rainfall_prob': 15.0}
 
+    # Sensor reading integration (overrides weather API if fresh <24h)
+    sensor_source = None
+    soil_moisture = getattr(farm, 'soil_moisture_pct', None)
+    soil_ph = getattr(farm, 'soil_ph', None)
+    try:
+        from sensors.models import SensorReading
+        cutoff_24h = timezone.now() - timedelta(hours=24)
+        latest_sensor = SensorReading.objects.filter(farm=farm, recorded_at__gte=cutoff_24h).order_by('-recorded_at').first()
+        if latest_sensor:
+            sensor_source = f"{latest_sensor.get_source_display()} sensor"
+            if latest_sensor.humidity is not None:
+                weather_data['humidity'] = latest_sensor.humidity
+            if latest_sensor.temperature is not None:
+                weather_data['temperature'] = latest_sensor.temperature
+            if latest_sensor.soil_moisture is not None:
+                soil_moisture = latest_sensor.soil_moisture
+            if latest_sensor.ph is not None:
+                soil_ph = latest_sensor.ph
+    except Exception:
+        pass
+
     # Latest disease scan for this farm
     latest_scan = DiseaseScan.objects.filter(farm=farm).order_by('-created_at').first()
     is_healthy = latest_scan.is_healthy if latest_scan else True
     confidence = latest_scan.confidence if (latest_scan and not is_healthy) else 0.0
     severity = latest_scan.severity if (latest_scan and not is_healthy) else 'none'
     disease_name = latest_scan.disease_name if latest_scan else ''
+    farmer_extent = getattr(latest_scan, 'farmer_leaf_extent', 'unknown')
 
     # Recent pest trap observations for this farm
     pest_count = 0
@@ -115,11 +164,14 @@ def farm_risk_view(request, farm_id):
     except Exception:
         pass
 
-    # Local incidence around farm (10 km)
+    # Local incidence around farm (10 km, past 30 days) with verified breakdown
     local_incidence = 0
+    incidence_data = {'total': 0, 'verified': 0, 'unverified': 0, 'pest_alerts': 0}
     try:
-        from hotspots.services import get_local_incidence
-        local_incidence = get_local_incidence(farm.latitude, farm.longitude, radius_km=10.0)
+        from hotspots.services import get_local_incidence_breakdown
+        if farm.latitude and farm.longitude:
+            incidence_data = get_local_incidence_breakdown(farm.latitude, farm.longitude, radius_km=10.0, days=30)
+            local_incidence = incidence_data['total']
     except Exception:
         pass
 
@@ -134,6 +186,12 @@ def farm_risk_view(request, farm_id):
         is_healthy=is_healthy,
         pest_count=pest_count,
         local_incidence_count=local_incidence,
+        farmer_leaf_extent=farmer_extent,
+        crop_name=farm.crop or '',
+        crop_variety=farm.crop_variety or '',
+        soil_moisture=soil_moisture,
+        soil_ph=soil_ph,
+        sensor_source=sensor_source,
     )
 
     forecast_data = generate_7day_forecast(
@@ -147,9 +205,66 @@ def farm_risk_view(request, farm_id):
         current_weather=weather_data,
     )
 
-    ipm = get_ipm_guidance(disease_name=disease_name, risk_level=risk_result['level'])
+    # Safety Gate 2.1 & Review status check
+    is_expert_confirmed = latest_scan.is_verified if latest_scan else False
+    crop_mismatch = False
+    unsupported_crop = False
+    if farm.crop:
+        fc = farm.crop.lower().strip()
+        from disease.views import SUPPORTED_MODEL_CROPS
+        if not any(sup in fc for sup in SUPPORTED_MODEL_CROPS):
+            unsupported_crop = True
+        elif latest_scan and latest_scan.crop_type:
+            pred_c = latest_scan.crop_type.lower().strip()
+            if fc not in pred_c and pred_c not in fc:
+                crop_mismatch = True
 
-    # Log/Save assessment
+    safety_gate_passed = is_healthy or (confidence >= 0.80 and not crop_mismatch and not unsupported_crop)
+    ipm = get_ipm_guidance(
+        disease_name=disease_name,
+        risk_level=risk_result['level'],
+        safety_gate_passed=safety_gate_passed,
+        is_expert_confirmed=is_expert_confirmed,
+        crop_mismatch=crop_mismatch,
+        unsupported_crop=unsupported_crop,
+    )
+
+    # Persist Actionable Alert rows when level >= high or pest threshold exceeded (de-duplicated per day)
+    try:
+        from alerts.models import Alert
+        today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        if risk_result['level'] in ['high', 'critical']:
+            already_alerted = Alert.objects.filter(
+                recipient=farm.user,
+                alert_type='high_risk_forecast',
+                created_at__gte=today_start,
+                message__contains=farm.farm_name
+            ).exists()
+            if not already_alerted:
+                Alert.objects.create(
+                    recipient=farm.user,
+                    alert_type='high_risk_forecast',
+                    related_scan=latest_scan,
+                    message=f"Risk Alert: {farm.farm_name} is forecast at {risk_result['level_display']} risk ({risk_result['score']}/100). {risk_result['summary']}"
+                )
+        if pest_count >= 50:
+            already_pest_alerted = Alert.objects.filter(
+                recipient=farm.user,
+                alert_type='pest_threshold_exceeded',
+                created_at__gte=today_start,
+                message__contains=farm.farm_name
+            ).exists()
+            if not already_pest_alerted:
+                Alert.objects.create(
+                    recipient=farm.user,
+                    alert_type='pest_threshold_exceeded',
+                    related_scan=latest_scan,
+                    message=f"Pest Warning: {farm.farm_name} has high pest pressure ({pest_count} pests observed in scouting)."
+                )
+    except Exception as e:
+        pass
+
+    # Save assessment record
     assessment = RiskAssessment.objects.create(
         farm=farm,
         scan=latest_scan,
@@ -167,8 +282,11 @@ def farm_risk_view(request, farm_id):
         'farm_id': farm.id,
         'farm_name': farm.farm_name,
         'crop': farm.crop,
+        'crop_variety': farm.crop_variety,
         'crop_stage': crop_stage,
         'weather': weather_data,
+        'sensor_source': sensor_source,
+        'incidence_breakdown': incidence_data,
         **risk_result,
         'forecast': forecast_data,
         'ipm_actions': ipm,
@@ -176,9 +294,13 @@ def farm_risk_view(request, farm_id):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def list_assessments_view(request):
-    """List recent risk assessments."""
-    assessments = RiskAssessment.objects.all().order_by('-created_at')[:30]
+    """List recent risk assessments, scoped to user for farmers."""
+    user = request.user
+    if getattr(user, 'role', 'farmer') == 'farmer':
+        assessments = RiskAssessment.objects.filter(farm__user=user).order_by('-created_at')[:30]
+    else:
+        assessments = RiskAssessment.objects.all().order_by('-created_at')[:30]
     serializer = RiskAssessmentSerializer(assessments, many=True)
     return Response(serializer.data)

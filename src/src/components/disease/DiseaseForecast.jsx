@@ -4,53 +4,71 @@ import { TrendingUp, Info } from 'lucide-react';
 /**
  * DiseaseForecast Component
  *
- * Matching the exact visual layout from the mockup:
- * - Title: 7-Day Disease Progression Forecast with red trend icon
- * - Subtitle: Estimated disease progression if no action is taken.
- * - Y-axis: Risk Level (High, Medium, Low) with light grid lines
- * - Line chart with dots and labels (Low, Medium, High)
- * - X-axis: Day 1 through Day 7
- * - Bottom note callout: "This forecast is an estimate based on current disease patterns and weather conditions."
+ * Renders 7-Day Disease Progression Forecast:
+ * - When forecast is provided: displays dynamic SVG curve with Day 1–7 points.
+ * - When forecast is empty/missing: displays an honest empty state (NO fake fallback curves).
  */
 export default function DiseaseForecast({ forecast }) {
-  const defaultPoints = [
-    { day: 'Day 1', label: 'Low', x: 60, y: 110, dotColor: '#10b981' },
-    { day: 'Day 2', label: 'Low', x: 120, y: 105, dotColor: '#10b981' },
-    { day: 'Day 3', label: 'Medium', x: 180, y: 75, dotColor: '#f59e0b' },
-    { day: 'Day 4', label: 'Medium', x: 240, y: 70, dotColor: '#f59e0b' },
-    { day: 'Day 5', label: 'High', x: 300, y: 35, dotColor: '#ef4444' },
-    { day: 'Day 6', label: 'High', x: 360, y: 30, dotColor: '#ef4444' },
-    { day: 'Day 7', label: 'High', x: 420, y: 25, dotColor: '#ef4444' },
-  ];
+  if (!forecast || forecast.length === 0) {
+    return (
+      <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex flex-col justify-between h-full">
+        <div>
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+            <h3 className="text-sm font-extrabold text-gray-900">
+              7-Day Disease Progression Forecast
+            </h3>
+            <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-gray-100 text-gray-700">
+              Decision Support
+            </span>
+          </div>
+          <p className="text-xs text-gray-400 font-normal mt-0.5">
+            Weather-based risk forecast requires an active scan or farm weather data.
+          </p>
+        </div>
 
-  const points = (forecast && forecast.length > 0)
-    ? forecast.slice(0, 7).map((item, i) => {
-        const val = typeof item.value === 'number' ? item.value : 30;
-        // Y mapping: val 0 -> y=125, val 100 -> y=25
-        const y = Math.round(125 - (val / 100) * 100);
-        const x = 55 + i * 60;
-        let dotColor = '#10b981';
-        let label = item.risk || 'Low';
-        if (val >= 70 || label.toLowerCase() === 'high' || label.toLowerCase() === 'critical') {
-          dotColor = '#ef4444';
-          label = 'High';
-        } else if (val >= 35 || label.toLowerCase() === 'moderate' || label.toLowerCase() === 'medium') {
-          dotColor = '#f59e0b';
-          label = 'Medium';
-        } else {
-          label = 'Low';
-        }
+        <div className="my-8 text-center py-6 px-4 bg-gray-50/60 rounded-xl border border-dashed border-gray-200">
+          <Info className="w-6 h-6 text-gray-400 mx-auto mb-2" />
+          <p className="text-xs font-semibold text-gray-600">No progression forecast generated</p>
+          <p className="text-[11px] text-gray-400 mt-1 max-w-sm mx-auto">
+            Run a leaf diagnosis or configure farm weather inputs to compute 7-day disease risk projection.
+          </p>
+        </div>
 
-        return {
-          day: item.weekday || item.day || `Day ${i + 1}`,
-          label,
-          value: Math.round(val),
-          x,
-          y,
-          dotColor,
-        };
-      })
-    : defaultPoints;
+        <div className="flex items-center gap-2 text-[10px] text-gray-500 pt-2 border-t border-gray-50">
+          <Info className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+          <span>Decision-support estimate only. Generated dynamically from Open-Meteo weather parameters.</span>
+        </div>
+      </div>
+    );
+  }
+
+  const points = forecast.slice(0, 7).map((item, i) => {
+    const val = typeof item.value === 'number' ? item.value : 30;
+    // Y mapping: val 0 -> y=125, val 100 -> y=25
+    const y = Math.round(125 - (val / 100) * 100);
+    const x = 55 + i * 60;
+    let dotColor = '#10b981';
+    let label = item.risk || 'Low';
+    if (val >= 70 || label.toLowerCase() === 'high' || label.toLowerCase() === 'critical') {
+      dotColor = '#ef4444';
+      label = 'High';
+    } else if (val >= 35 || label.toLowerCase() === 'moderate' || label.toLowerCase() === 'medium') {
+      dotColor = '#f59e0b';
+      label = 'Medium';
+    } else {
+      label = 'Low';
+    }
+
+    return {
+      day: item.weekday || item.day || `Day ${i + 1}`,
+      label,
+      value: Math.round(val),
+      x,
+      y,
+      dotColor,
+    };
+  });
 
   // Path generation
   const pathD = `M ${points[0].x} ${points[0].y} ` + points.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ');
@@ -66,7 +84,7 @@ export default function DiseaseForecast({ forecast }) {
             7-Day Disease Progression Forecast
           </h3>
           <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
-            Prototype Engine
+            Decision Support
           </span>
         </div>
         <p className="text-xs text-gray-400 font-normal mt-0.5">
@@ -113,7 +131,6 @@ export default function DiseaseForecast({ forecast }) {
           {/* Points, Day labels, Risk labels */}
           {points.map((p, i) => (
             <g key={i}>
-              {/* Risk text above dot */}
               <text
                 x={p.x}
                 y={p.y - 8}
@@ -124,11 +141,7 @@ export default function DiseaseForecast({ forecast }) {
               >
                 {p.label}
               </text>
-
-              {/* Point dot */}
               <circle cx={p.x} cy={p.y} r="4" fill="#ffffff" stroke={p.dotColor} strokeWidth="2" />
-
-              {/* X-axis day text */}
               <text
                 x={p.x}
                 y="152"
@@ -147,7 +160,7 @@ export default function DiseaseForecast({ forecast }) {
       {/* Bottom disclaimer note */}
       <div className="flex items-center gap-2 text-[10px] text-gray-500 mt-2 pt-2 border-t border-gray-50">
         <Info className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-        <span>This forecast is an estimate based on current disease patterns and weather conditions.</span>
+        <span>Decision-support estimate only. Generated dynamically from Open-Meteo weather parameters.</span>
       </div>
     </div>
   );

@@ -68,7 +68,7 @@ class DiseasePredictView(APIView):
             max_mb = MAX_IMAGE_SIZE_BYTES // (1024 * 1024)
             return Response(
                 {
-                    "error": "FILE_TOO_LARGE",
+                    "error": "IMAGE_TOO_LARGE",
                     "message": f"Image file size ({image.size / (1024*1024):.1f} MB) exceeds maximum allowed size of {max_mb} MB.",
                 },
                 status=status.HTTP_400_BAD_REQUEST,
@@ -309,29 +309,60 @@ class DiseasePredictView(APIView):
         except Exception as e:
             logger.warning("Auto follow-up creation failed: %s", e)
 
-        # Referral trigger (recommended if critical risk, low confidence, or crop mismatch)
+        # Referral trigger (persisted Referral record if critical risk, low confidence, or crop mismatch)
         referral_data = None
         if needs_review or risk_ctx["level"] == "critical":
             scan.referral_recommended = True
+            if farm:
+                try:
+                    from referral.kvk_directory import lookup_nearest_kvk
+                    from referral.models import Referral
+                    kvk = lookup_nearest_kvk(
+                        district=getattr(farm, 'location_name', '') if farm else '',
+                        latitude=farm.latitude if farm else None,
+                        longitude=farm.longitude if farm else None,
+                    )
+                    reason_str = uncertainty_reason or "Elevated risk profile; agronomist consultation advised."
+                    ref_obj, _ = Referral.objects.get_or_create(
+                        scan=scan,
+                        farm=farm,
+                        defaults={
+                            'type': 'kvk',
+                            'reason': reason_str,
+                            'status': 'recommended',
+                            'requested_by': user,
+                            'directory_entry': kvk,
+                        }
+                    )
+                    referral_data = {
+                        'id': ref_obj.id,
+                        'recommended': True,
+                        'status': ref_obj.status,
+                        'reason': ref_obj.reason,
+                        'contact_type': 'KVK',
+                        'kvk_name': kvk.get('name', ''),
+                        'kvk_contact': kvk.get('contact', ''),
+                        'kvk_district': kvk.get('district', ''),
+                        'kvk_note': kvk.get('note', ''),
+                        'directory_notice': "Demo/static directory, verify contact before use.",
+                    }
+                except Exception as e:
+                    logger.warning("Referral auto-creation failed: %s", e)
+
+        # Auto-create pending ExpertReview record if flagged
+        if scan.needs_expert_review:
             try:
-                from referral.kvk_directory import lookup_nearest_kvk
-                kvk = lookup_nearest_kvk(
-                    district=getattr(farm, 'location_name', '') if farm else '',
-                    latitude=farm.latitude if farm else None,
-                    longitude=farm.longitude if farm else None,
+                from expert.models import ExpertReview
+                ExpertReview.objects.get_or_create(
+                    scan=scan,
+                    defaults={
+                        'status': 'pending',
+                        'ai_predicted_class': scan.predicted_class or scan.disease_name or 'Unknown',
+                        'ai_confidence': scan.confidence or 0.0,
+                    }
                 )
-                referral_data = {
-                    'recommended': True,
-                    'reason': uncertainty_reason or "Elevated risk profile; agronomist consultation advised.",
-                    'contact_type': 'KVK',
-                    'kvk_name': kvk.get('name', ''),
-                    'kvk_contact': kvk.get('contact', ''),
-                    'kvk_district': kvk.get('district', ''),
-                    'kvk_note': kvk.get('note', ''),
-                    'directory_notice': "Demo/static directory, verify contact before use.",
-                }
             except Exception as e:
-                logger.warning("Referral lookup failed: %s", e)
+                logger.warning("Pending ExpertReview creation failed: %s", e)
 
         scan.save()
 
