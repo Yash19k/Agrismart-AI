@@ -48,6 +48,7 @@ venv.bak/
 
 # Datasets and Large Files
 /data/
+!data/variety_susceptibility.json
 !src/src/data/
 *.zip
 *.tar.gz

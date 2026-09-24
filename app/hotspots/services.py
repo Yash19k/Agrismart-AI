@@ -23,26 +23,42 @@ def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     return r * c
 
 
-def get_local_incidence(lat: float, lon: float, radius_km: float = 10.0, days: int = 14) -> int:
+def get_local_incidence_breakdown(
+    lat: float,
+    lon: float,
+    radius_km: float = 10.0,
+    days: int = 30
+) -> dict:
     """
-    Counts active disease outbreaks or threshold-exceeding pest incidents
-    within `radius_km` of (lat, lon) in the past `days`.
+    Computes local incidence history from the database within `radius_km` and `days`:
+    - expert-confirmed/corrected disease scans
+    - unverified AI disease scans
+    - pest threshold alerts (action_required or alert)
+    Reports verified counts separately per Phase 4.2.
     """
+    if lat is None or lon is None:
+        return {'total': 0, 'verified': 0, 'unverified': 0, 'pest_alerts': 0}
+
     cutoff = timezone.now() - timedelta(days=days)
-    count = 0
+    verified_count = 0
+    unverified_count = 0
+    pest_count = 0
 
     # 1. Nearby diseased scans
     scans = DiseaseScan.objects.filter(
         created_at__gte=cutoff,
         is_healthy=False,
         farm__isnull=False
-    ).select_related('farm')
+    ).select_related('farm').prefetch_related('expert_reviews')
 
     for scan in scans:
-        if scan.farm and scan.farm.latitude and scan.farm.longitude:
+        if scan.farm and scan.farm.latitude is not None and scan.farm.longitude is not None:
             dist = haversine_km(lat, lon, scan.farm.latitude, scan.farm.longitude)
             if dist <= radius_km:
-                count += 1
+                if scan.is_verified:
+                    verified_count += 1
+                else:
+                    unverified_count += 1
 
     # 2. Nearby pest alerts/actions
     pests = PestObservation.objects.filter(
@@ -52,12 +68,29 @@ def get_local_incidence(lat: float, lon: float, radius_km: float = 10.0, days: i
     ).select_related('farm')
 
     for obs in pests:
-        if obs.farm and obs.farm.latitude and obs.farm.longitude:
+        if obs.farm and obs.farm.latitude is not None and obs.farm.longitude is not None:
             dist = haversine_km(lat, lon, obs.farm.latitude, obs.farm.longitude)
             if dist <= radius_km:
-                count += 1
+                pest_count += 1
 
-    return count
+    total = verified_count + unverified_count + pest_count
+    return {
+        'total': total,
+        'verified': verified_count,
+        'unverified': unverified_count,
+        'pest_alerts': pest_count,
+        'radius_km': radius_km,
+        'days': days,
+    }
+
+
+def get_local_incidence(lat: float, lon: float, radius_km: float = 10.0, days: int = 30) -> int:
+    """
+    Counts total active disease outbreaks and pest incidents within radius_km in past days.
+    Maintains backward compatibility returning total integer.
+    """
+    breakdown = get_local_incidence_breakdown(lat, lon, radius_km=radius_km, days=days)
+    return breakdown['total']
 
 
 def cluster_hotspots(days: int = 21, cluster_radius_km: float = 25.0) -> list:

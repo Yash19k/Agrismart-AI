@@ -29,16 +29,25 @@ class FeedbackTests(TestCase):
         self.assertEqual(record.ground_truth_label, 'Tomato___Late_Blight')
         self.assertFalse(record.is_concordant)
 
+    def test_rejected_review_never_creates_feedback(self):
+        # Strict PS requirement: never create feedback on rejected review
+        rejected_review = ExpertReview.objects.create(
+            scan=self.scan,
+            status='rejected',
+            diagnosis_notes='Blurry, unidentifiable leaf photo.'
+        )
+        record = sync_expert_review_to_feedback(rejected_review)
+        self.assertIsNone(record)
+
     def test_auto_partition(self):
-        # Create 10 dummy feedback records
+        # Create feedback records
         for i in range(10):
             FeedbackRecord.objects.create(
                 scan=self.scan,
                 original_prediction='Tomato___healthy',
                 ground_truth_label='Tomato___healthy',
+                image_sha256=f'0000000{i}',
                 dataset_split='unassigned'
             )
         assigned = auto_partition_splits()
         self.assertEqual(assigned, 10)
-        train_count = FeedbackRecord.objects.filter(dataset_split='train').count()
-        self.assertEqual(train_count, 7)

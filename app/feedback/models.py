@@ -1,12 +1,13 @@
+from django.conf import settings
 from django.db import models
 
 
 class FeedbackRecord(models.Model):
     SPLIT_CHOICES = [
         ('unassigned', 'Unassigned'),
-        ('train', 'Training Set (70%)'),
-        ('val', 'Validation Set (15%)'),
-        ('test', 'Test Set (15%)'),
+        ('train', 'Training Set (80%)'),
+        ('val', 'Validation Set (10%)'),
+        ('test', 'Test Set (10%)'),
     ]
 
     SOURCE_CHOICES = [
@@ -22,7 +23,15 @@ class FeedbackRecord(models.Model):
         'expert.ExpertReview', on_delete=models.SET_NULL, null=True, blank=True,
         related_name='feedback_records'
     )
+    reviewer = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='feedback_reviewed'
+    )
     image_path = models.CharField(max_length=500, blank=True)
+    image_sha256 = models.CharField(max_length=64, blank=True, db_index=True)
+    crop = models.CharField(max_length=100, blank=True)
+    region = models.CharField(max_length=150, blank=True)
+    is_demo = models.BooleanField(default=False, help_text='Excluded from training exports by default')
     original_prediction = models.CharField(max_length=200, help_text='Original ConvNeXt class')
     original_confidence = models.FloatField(default=0.0)
     ground_truth_label = models.CharField(max_length=200, help_text='Expert-verified ground truth class')

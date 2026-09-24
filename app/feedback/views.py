@@ -99,28 +99,39 @@ def feedback_export_csv_view(request):
     """
     GET /api/feedback/export/csv/
     Streams CSV format dataset manifest for model training.
+    Excludes demo records and records without images by default.
     """
+    include_demo = request.query_params.get('include_demo', '').lower() == 'true'
+    qs = FeedbackRecord.objects.all()
+    if not include_demo:
+        qs = qs.filter(is_demo=False)
+    qs = qs.exclude(image_path='')
+
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="agrismart_retraining_dataset.csv"'
+    response['Content-Disposition'] = 'attachment; filename="agrismart_feedback_manifest.csv"'
 
     writer = csv.writer(response)
     writer.writerow([
-        'record_id', 'scan_id', 'image_path', 'original_prediction',
-        'original_confidence', 'ground_truth_label', 'is_concordant',
-        'dataset_split', 'validation_source', 'created_at'
+        'record_id', 'scan_id', 'image_path', 'image_sha256', 'crop', 'region',
+        'original_prediction', 'original_confidence', 'ground_truth_label',
+        'is_concordant', 'dataset_split', 'validation_source', 'is_demo', 'created_at'
     ])
 
-    for r in FeedbackRecord.objects.all():
+    for r in qs:
         writer.writerow([
             r.id,
             r.scan_id,
             r.image_path,
+            r.image_sha256,
+            r.crop,
+            r.region,
             r.original_prediction,
             r.original_confidence,
             r.ground_truth_label,
             r.is_concordant,
             r.dataset_split,
             r.validation_source,
+            r.is_demo,
             r.created_at.strftime('%Y-%m-%d %H:%M:%S'),
         ])
 
@@ -133,24 +144,98 @@ def feedback_export_json_view(request):
     """
     GET /api/feedback/export/json/
     Returns full JSON manifest for PyTorch / TensorFlow DataLoader pipelines.
+    Excludes demo records and records without images by default.
     """
+    include_demo = request.query_params.get('include_demo', '').lower() == 'true'
+    qs = FeedbackRecord.objects.all()
+    if not include_demo:
+        qs = qs.filter(is_demo=False)
+    qs = qs.exclude(image_path='')
+
     records = []
-    for r in FeedbackRecord.objects.all():
+    for r in qs:
         records.append({
             'id': r.id,
             'scan_id': r.scan_id,
             'image_file': r.image_path,
+            'image_sha256': r.image_sha256,
+            'crop': r.crop,
+            'region': r.region,
             'ai_prediction': r.original_prediction,
             'ai_confidence': r.original_confidence,
             'ground_truth': r.ground_truth_label,
             'is_concordant': r.is_concordant,
             'split': r.dataset_split,
             'source': r.validation_source,
+            'is_demo': r.is_demo,
             'notes': r.notes,
             'created_at': r.created_at.isoformat(),
         })
 
-    return JsonResponse({'dataset': 'AgriSmart Retraining Manifest', 'count': len(records), 'samples': records})
+    return JsonResponse({
+        'dataset': 'AgriSmart Retraining Manifest',
+        'count': len(records),
+        'demo_excluded': not include_demo,
+        'samples': records
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsOfficer])
+def feedback_export_zip_view(request):
+    """
+    GET /api/feedback/export/zip/
+    Packages dataset as ImageFolder structure:
+      <split>/<ground_truth_label>/<sha256_filename>.jpg
+    plus manifest.csv.
+    Excludes demo records and records without valid image by default.
+    """
+    import io
+    import os
+    import zipfile
+    from django.conf import settings
+
+    include_demo = request.query_params.get('include_demo', '').lower() == 'true'
+    qs = FeedbackRecord.objects.select_related('scan').all()
+    if not include_demo:
+        qs = qs.filter(is_demo=False)
+    qs = qs.exclude(image_path='')
+
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+        manifest_rows = [
+            ['record_id', 'scan_id', 'archive_path', 'image_sha256', 'ground_truth_label', 'dataset_split', 'is_concordant']
+        ]
+
+        for r in qs:
+            if not r.scan or not r.scan.image:
+                continue
+            try:
+                full_path = r.scan.image.path
+                if not os.path.exists(full_path):
+                    continue
+                split = r.dataset_split if r.dataset_split in ['train', 'val', 'test'] else 'train'
+                label = r.ground_truth_label or 'Unclassified'
+                ext = os.path.splitext(full_path)[1] or '.jpg'
+                fname = f"scan_{r.scan_id}_{r.image_sha256[:12] if r.image_sha256 else r.id}{ext}"
+                archive_path = f"{split}/{label}/{fname}"
+                zf.write(full_path, archive_path)
+                manifest_rows.append([
+                    r.id, r.scan_id, archive_path, r.image_sha256, label, split, r.is_concordant
+                ])
+            except Exception:
+                continue
+
+        # Add manifest CSV to zip
+        csv_buffer = io.StringIO()
+        writer = csv.writer(csv_buffer)
+        writer.writerows(manifest_rows)
+        zf.writestr('manifest.csv', csv_buffer.getvalue())
+
+    buffer.seek(0)
+    response = HttpResponse(buffer.getvalue(), content_type='application/zip')
+    response['Content-Disposition'] = 'attachment; filename="agrismart_feedback_dataset.zip"'
+    return response
 
 
 @api_view(['PATCH'])
@@ -167,3 +252,4 @@ def feedback_update_split_view(request, pk):
         rec.save()
         return Response(FeedbackRecordSerializer(rec, context={'request': request}).data)
     return Response({'detail': 'Invalid split choice.'}, status=status.HTTP_400_BAD_REQUEST)
+

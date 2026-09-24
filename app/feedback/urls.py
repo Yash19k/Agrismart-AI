@@ -8,4 +8,5 @@ urlpatterns = [
     path('partition/', views.feedback_auto_split_view, name='feedback-partition'),
     path('export/csv/', views.feedback_export_csv_view, name='feedback-export-csv'),
     path('export/json/', views.feedback_export_json_view, name='feedback-export-json'),
+    path('export/zip/', views.feedback_export_zip_view, name='feedback-export-zip'),
 ]

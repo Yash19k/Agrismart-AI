@@ -21,6 +21,9 @@ import ExpertReviewPage from './pages/ExpertReviewPage';
 import FollowUpPage from './pages/FollowUpPage';
 import FeedbackDatasetPage from './pages/FeedbackDatasetPage';
 import RegionalMonitoringPage from './pages/RegionalMonitoringPage';
+import FarmPage from './pages/FarmPage';
+import RiskForecastPage from './pages/RiskForecastPage';
+import ReferralPage from './pages/ReferralPage';
 
 // Protected route: redirect to login if not authenticated
 const ProtectedRoute = ({ children }) => {
@@ -46,36 +49,60 @@ export function App() {
             <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
             <Route path="/signup" element={<PublicOnlyRoute><SignupPage /></PublicOnlyRoute>} />
 
-            {/* Dashboard — all authenticated users */}
+            {/* Dashboard & Weather — all authenticated users */}
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/weather" element={<ProtectedRoute><WeatherPage /></ProtectedRoute>} />
 
-            {/* Farmer-only routes */}
+            {/* Canonical Workflow Stage 0: Farm Context */}
+            <Route path="/farm" element={
+              <RoleProtectedRoute allow={['farmer']}>
+                <FarmPage />
+              </RoleProtectedRoute>
+            } />
+            <Route path="/myfarm" element={<Navigate to="/farm" replace />} />
+
+            {/* Canonical Workflow Stage 1a: Disease Detection */}
             <Route path="/disease" element={
               <RoleProtectedRoute allow={['farmer']}>
                 <DiseaseDetectionPage />
               </RoleProtectedRoute>
             } />
+
+            {/* Canonical Workflow Stage 1b: Pest & Sensor */}
             <Route path="/pests" element={
               <RoleProtectedRoute allow={['farmer']}>
                 <PestTrapPage />
               </RoleProtectedRoute>
             } />
+
+            {/* Canonical Workflow Stage 2: Risk Forecast */}
+            <Route path="/risk" element={
+              <RoleProtectedRoute allow={['farmer']}>
+                <RiskForecastPage />
+              </RoleProtectedRoute>
+            } />
+
+            {/* Canonical Workflow Stage 6: Referrals */}
+            <Route path="/referrals" element={
+              <RoleProtectedRoute allow={['farmer', 'expert', 'officer']}>
+                <ReferralPage />
+              </RoleProtectedRoute>
+            } />
+
+            {/* Canonical Workflow Stage 7: Follow-ups */}
             <Route path="/followups" element={
               <RoleProtectedRoute allow={['farmer']}>
                 <FollowUpPage />
               </RoleProtectedRoute>
             } />
+
+            {/* Secondary Tools: Irrigation, Crop Recommendation, Sustainability, Assistant */}
             <Route path="/irrigation" element={
               <RoleProtectedRoute allow={['farmer']}>
                 <IrrigationPage />
               </RoleProtectedRoute>
             } />
-            <Route path="/crop" element={
-              <RoleProtectedRoute allow={['farmer']}>
-                <CropRecommendationPage />
-              </RoleProtectedRoute>
-            } />
+            <Route path="/crop" element={<Navigate to="/crop-recommendation" replace />} />
             <Route path="/crop-recommendation" element={
               <RoleProtectedRoute allow={['farmer']}>
                 <CropRecommendationPage />
@@ -92,27 +119,30 @@ export function App() {
               </RoleProtectedRoute>
             } />
 
-            {/* All roles can see hotspots (component handles role-based API scoping) */}
+            {/* Canonical Workflow Stage 9: Hotspots & Surveillance */}
             <Route path="/hotspots" element={<ProtectedRoute><HotspotMapPage /></ProtectedRoute>} />
 
-            {/* Expert / Officer only */}
+            {/* Canonical Workflow Stage 5: Expert Review Queue */}
             <Route path="/expert" element={
               <RoleProtectedRoute allow={['expert', 'officer']}>
                 <ExpertReviewPage />
               </RoleProtectedRoute>
             } />
 
-            {/* Officer only */}
+            {/* Canonical Workflow Stage 8: Feedback Dataset */}
             <Route path="/feedback" element={
               <RoleProtectedRoute allow={['officer']}>
                 <FeedbackDatasetPage />
               </RoleProtectedRoute>
             } />
+
+            {/* Canonical Workflow Stage 9: Regional Monitoring */}
             <Route path="/regional-monitoring" element={
               <RoleProtectedRoute allow={['officer']}>
                 <RegionalMonitoringPage />
               </RoleProtectedRoute>
             } />
+            <Route path="/regional" element={<Navigate to="/regional-monitoring" replace />} />
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />
