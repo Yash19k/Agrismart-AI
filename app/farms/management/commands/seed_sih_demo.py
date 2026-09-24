@@ -26,26 +26,29 @@ class Command(BaseCommand):
         # 1. Users
         farmer, _ = User.objects.get_or_create(
             username='farmer_demo',
-            defaults={'email': 'farmer@agrismart.ai', 'first_name': 'Ramesh', 'last_name': 'Patel', 'phone': '9876543210', 'role': 'farmer'}
+            defaults={'email': 'farmer@agrismart.ai', 'first_name': 'Ramesh', 'last_name': 'Patel', 'phone': '9876543210', 'role': 'farmer', 'is_demo': True}
         )
         farmer.set_password('farmer123')
         farmer.role = 'farmer'
+        farmer.is_demo = True
         farmer.save()
 
         expert, _ = User.objects.get_or_create(
             username='expert_demo',
-            defaults={'email': 'expert@agrismart.ai', 'first_name': 'Dr. Sunita', 'last_name': 'Sharma', 'phone': '9811122233', 'role': 'expert'}
+            defaults={'email': 'expert@agrismart.ai', 'first_name': 'Dr. Sunita', 'last_name': 'Sharma', 'phone': '9811122233', 'role': 'expert', 'is_demo': True}
         )
         expert.set_password('expert123')
         expert.role = 'expert'
+        expert.is_demo = True
         expert.save()
 
         officer, _ = User.objects.get_or_create(
             username='officer_demo',
-            defaults={'email': 'officer@agrismart.ai', 'first_name': 'Rajesh', 'last_name': 'Varma', 'phone': '9844455566', 'role': 'officer'}
+            defaults={'email': 'officer@agrismart.ai', 'first_name': 'Rajesh', 'last_name': 'Varma', 'phone': '9844455566', 'role': 'officer', 'is_demo': True}
         )
         officer.set_password('officer123')
         officer.role = 'officer'
+        officer.is_demo = True
         officer.save()
 
         # 2. 25 Gujarat Farms across 5 clusters
@@ -87,6 +90,18 @@ class Command(BaseCommand):
         ]
 
         farms = []
+        varieties = {
+            "Tomato": "Abhinav (F1)",
+            "Chilli": "G-4 Bhagya",
+            "Potato": "Kufri Jyoti",
+            "Cotton": "BT-II Hybrid",
+            "Wheat": "GW-496",
+            "Groundnut": "GG-20",
+            "Okra": "Gujarat Anand Okra-5",
+            "Sugarcane": "Co-86032",
+            "Maize": "HQPM-1",
+        }
+
         for name, lat, lon, loc, crop, stage, size, irrig, soil in farm_specs:
             f, _ = Farm.objects.get_or_create(
                 farm_name=name,
@@ -96,19 +111,41 @@ class Command(BaseCommand):
                     'longitude': lon,
                     'location_name': loc,
                     'crop': crop,
+                    'crop_variety': varieties.get(crop, "Improved Local Selection"),
                     'crop_stage': stage,
                     'farm_size': size,
                     'irrigation_type': irrig,
                     'soil_type': soil,
+                    'soil_ph': 6.8,
+                    'soil_moisture_pct': 34.0,
                 }
             )
-            # Ensure crop_stage updated
+            # Ensure crop_stage and context updated
             f.crop_stage = stage
             f.crop = crop
+            f.crop_variety = varieties.get(crop, "Improved Local Selection")
+            f.soil_ph = 6.8
+            f.soil_moisture_pct = 34.0
             f.save()
             farms.append(f)
 
-        self.stdout.write(self.style.SUCCESS(f'Created/updated {len(farms)} demo farms.'))
+        self.stdout.write(self.style.SUCCESS(f'Created/updated {len(farms)} demo farms with context.'))
+
+        # Seed simulated sensor readings for each farm
+        from sensors.models import SensorReading
+        now = timezone.now()
+        for f in farms:
+            SensorReading.objects.get_or_create(
+                farm=f,
+                recorded_at=now - timedelta(hours=2),
+                defaults={
+                    'soil_moisture': 34.0,
+                    'temperature': 27.5,
+                    'humidity': 64.0,
+                    'ph': 6.8,
+                    'source': 'simulated',
+                }
+            )
 
         # 3. 40 Disease Scans
         disease_catalog = [
@@ -123,7 +160,6 @@ class Command(BaseCommand):
         ]
 
         scans = []
-        now = timezone.now()
         for idx in range(40):
             farm = farms[idx % len(farms)]
             cat = disease_catalog[idx % len(disease_catalog)]
@@ -143,6 +179,9 @@ class Command(BaseCommand):
                 severity=cat[4],
                 confidence=cat[5],
                 model_status='ready',
+                needs_expert_review=not cat[3] and (cat[5] < 0.80 or cat[4] == 'high' or idx < 8),
+                priority='urgent' if cat[4] == 'high' else 'normal',
+                farmer_leaf_extent='>30%' if cat[4] == 'high' else ('10-30%' if cat[4] == 'medium' else '<10%'),
             )
             scan.created_at = scan_date
             scan.save()
@@ -173,7 +212,7 @@ class Command(BaseCommand):
                 pest_type=spec[0],
                 trap_type=spec[1],
                 pest_count=spec[2] + (p_idx % 5),
-                notes=f"Periodic trap count checked at {farm.farm_name}.",
+                notes=f"Periodic scouting trap count checked at {farm.farm_name}.",
                 observed_at=now - timedelta(days=p_idx // 3, hours=p_idx % 8)
             )
 
@@ -220,12 +259,17 @@ class Command(BaseCommand):
                 }
             )
 
-            # Auto create feedback record
+            # Auto create feedback record with is_demo=True
             FeedbackRecord.objects.get_or_create(
                 scan=scan,
                 defaults={
                     'review': review,
+                    'reviewer': expert,
+                    'is_demo': True,
                     'image_path': scan.image.name if scan.image else f"scans/{scan.id}.jpg",
+                    'image_sha256': f"demo_sha256_scan_{scan.id}",
+                    'crop': exp_crop,
+                    'region': scan.farm.location_name if scan.farm else '',
                     'original_prediction': scan.predicted_class,
                     'original_confidence': scan.confidence,
                     'ground_truth_label': f"{exp_crop}___{exp_disease.replace(' ', '_')}",
@@ -235,7 +279,29 @@ class Command(BaseCommand):
                 }
             )
 
-        self.stdout.write(self.style.SUCCESS('Created 15 expert reviews and feedback dataset entries.'))
+        self.stdout.write(self.style.SUCCESS('Created 15 expert reviews and demo feedback records.'))
+
+        # Seed 8 Referrals
+        from referral.models import Referral
+        from referral.kvk_directory import lookup_nearest_kvk
+        for ref_idx in range(8):
+            s = scans[ref_idx]
+            kvk_entry = lookup_nearest_kvk(s.farm.location_name, s.farm.latitude, s.farm.longitude)
+            status_val = 'completed' if ref_idx < 3 else ('requested' if ref_idx < 6 else 'recommended')
+            Referral.objects.get_or_create(
+                scan=s,
+                farm=s.farm,
+                defaults={
+                    'type': 'kvk',
+                    'reason': 'Automated referral triggered by elevated foliar pathogen pressure.',
+                    'status': status_val,
+                    'requested_by': farmer,
+                    'directory_entry': kvk_entry,
+                    'notes': 'Resolved with certified KVK agronomist advisory.' if status_val == 'completed' else '',
+                }
+            )
+
+        self.stdout.write(self.style.SUCCESS('Created 8 referral records.'))
 
         # 6. 10 Follow-ups
         for fu_idx in range(10):

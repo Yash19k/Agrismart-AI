@@ -1,97 +1,91 @@
-# AgriSmart-AI: 5-Minute SIH Prototype Demo Script
+# AgriSmart-AI: Demonstration Script (Problem Statement Workflow)
 
-This guide outlines a high-impact, stage-by-stage presentation flow tailored for Smart India Hackathon (SIH) judges and agricultural domain experts.
-
----
-
-## Demo Overview & Value Proposition (0:00 – 0:45)
-- **Problem**: Traditional AI leaf scanners only output a static disease label without considering crop phenology, vector pressure, or neighborhood outbreaks. Farmers receive generic chemical advice with arbitrary dosages that violate safety intervals.
-- **AgriSmart Solution**: An end-to-end, multi-factor crop protection platform integrating:
-  1. Deep learning vision diagnosis (ConvNeXt-Tiny)
-  2. Crop-growth-stage-aware risk forecasting
-  3. Physical pest trap surveillance & vector thresholds
-  4. Regional geospatial hotspot clustering
-  5. Agronomist human-in-the-loop clinical verification
-  6. Post-treatment recovery recheck logging
-  7. Continuous learning dataset curation
+This guide outlines a stage-by-stage presentation flow matching the 10-stage Problem Statement (PS) workflow for Smart India Hackathon (SIH) evaluators and agricultural domain experts.
 
 ---
 
-## Act 1: The Farmer Flow & Dynamic Risk Forecasting (0:45 – 1:45)
+## Architecture & Workflow Overview (0:00 – 0:45)
+- **Problem**: Farmers often recognize diseases only after visible foliar symptoms spread. Sensor readings, weather forecasts, crop stage, and local pest history are rarely combined into actionable farm-level alerts. Inaccurate diagnosis triggers inappropriate chemical spraying and yield loss.
+- **AgriSmart Solution**: An end-to-end, multi-factor crop protection platform structured stage-by-stage:
+  - **Stage 0**: Farm Context (crop, variety, growth stage, soil type, pH, moisture, GPS location)
+  - **Stage 1**: Detection (1a: ConvNeXt-Tiny leaf symptom classification; 1b: Manual pest scouting observations & field sensor telemetry)
+  - **Stage 2**: Weather-Driven Risk Engine (7-day forecast, local disease history, soil & stage drivers)
+  - **Stage 3**: Multilingual IPM Advisory & Safety Gate 2.1 (monitoring → cultural → mechanical → biological → restricted chemical)
+  - **Stage 4**: Farm-Level Actionable Alerts
+  - **Stage 5**: Expert Human-in-the-Loop Validation (immutable AI prediction baseline)
+  - **Stage 6**: Formal Referral Records (Extension, KVK, Diagnostic Lab)
+  - **Stage 7**: Follow-up Monitoring Loop (due/overdue tracking & outcome recording)
+  - **Stage 8**: Learning Loop (offline feedback dataset curation & hash-split manifest, no auto-retraining)
+  - **Stage 9**: Agriculture Officials Surveillance (geospatial hotspot clusters, 7-day preventive planning, platform outcome metrics)
+
+---
+
+## Act 1: Farm Context & Disease Detection (Stages 0, 1a, 2, 3) (0:45 – 2:00)
 1. **Login as Farmer**:
    - URL: `http://localhost:5173/login`
    - Credentials: `farmer_demo` / `farmer123`
-2. **Dashboard Overview**:
-   - Highlight the operational engines cards and live microclimate telemetry for Anand, Gujarat.
-   - Point to the **Crop Growth Stage**: The tomato crop is currently at **Flowering** stage (high vulnerability window).
-3. **Disease Detection & Dynamic 7-Day Forecast**:
-   - Navigate to `/disease`.
-   - Upload any leaf photo (or select a pre-tested sample).
-   - Show diagnosis: ConvNeXt-Tiny infers **Early Blight (Alternaria solani)** with confidence score.
-   - **Key Innovation — 7-Day Progression Forecast**:
-     - Scroll to the dynamic forecast chart.
-     - Explain to judges: *"Notice this isn't a hardcoded line. The backend risk engine combines the model confidence (22.5 pts) + high humidity (15 pts) + flowering crop stage (10 pts) + local neighborhood disease pressure to calculate daily progression."*
-     - Point out the **Prototype Risk Engine** label and CIBRC chemical disclaimer: *"We never generate arbitrary chemical dosages; all chemical guidance requires CIBRC-registered label approvals."*
+2. **Stage 0 — Farm Context**:
+   - Navigate to **My Farm (Context)** (`/farm`).
+   - Review parcel `Patel Organic Farms`: Crop (`Tomato`), Variety (`Abhinav F1`), Stage (`flowering`), Soil (`loamy`, pH `6.8`, moisture `33%`).
+3. **Stage 1a — Leaf Symptom Detection**:
+   - Navigate to **Scan Crop Leaf** (`/disease`).
+   - Upload a leaf image (e.g. `src/public/sample_leaves/sample_early_blight.JPG`).
+   - Select leaf damage extent: `10–30% of leaves affected`.
+   - Click **Run Model Diagnosis**.
+   - Model outputs: `Tomato___Early_blight` with **uncalibrated model confidence**, top-3 class probabilities, and reference typical severity.
+4. **Stage 2 — 7-Day Risk Projection**:
+   - Show dynamic 7-day forecast curve driven by live/forecast weather, crop stage, and local neighborhood incidence.
+   - Transparent driver breakdown: air temperature, high humidity, flowering stage vulnerability.
+5. **Stage 3 — IPM Advisory & Safety Gate 2.1**:
+   - Point out ordered IPM tiers: Monitoring → Cultural → Mechanical → Biological → Chemical (Restricted Caveat) → Follow-up.
+   - Point out Safety Gate: If confidence < 0.80 or crop mismatch, chemical advice is strictly blocked with *"Diagnosis uncertain. Do not spray. Get an expert review."*
 
 ---
 
-## Act 2: Pest Trap Surveillance & Vector Alerts (1:45 – 2:30)
-1. **Navigate to Pest Traps** (`/pests`):
-   - Explain: *"Diseases like leaf curl and bacterial wilt are spread by insect vectors. Our IPM module tracks sticky and pheromone traps."*
-   - Show the summary cards: Total Pests Counted, Action Required Traps, Scouting Alerts.
-2. **Record a Trap Count**:
-   - Click **Record Trap Count**.
-   - Select parcel: `Patel Organic Farms`.
-   - Trap Mechanism: `Yellow Sticky Trap`.
-   - Pest Vector: `Whitefly`.
-   - Count: `35`.
-   - Click **Save Observation**: Notice the threshold instantly flags **Action Required (EIL Exceeded)** because count &ge; 30.
-   - Explain how vector counts automatically feed into the farm's disease risk score.
+## Act 2: Pest Scouting & Sensor Surveillance (Stage 1b) (2:00 – 2:45)
+1. **Navigate to Pest & Sensor** (`/pests`):
+   - Review **Pest Scouting Tab**: Shows sticky card and lure observations labeled explicitly as **Manual scouting observation**.
+   - Click **Record Scouting Count**: Log Whitefly count &ge; 35 &rarr; flags **Action Required (EIL Exceeded)**.
+2. **Sensor Readings Tab**:
+   - View latest parcel sensor telemetry: Soil moisture, temperature, humidity, pH.
+   - Demonstrates **Manual entry** vs **Simulated sensor data** (labeled transparently; no false claims of IoT hardware).
 
 ---
 
-## Act 3: Outbreak Hotspots & Regional Surveillance (2:30 – 3:30)
-1. **Navigate to Outbreak Hotspots** (`/hotspots`):
-   - Show the interactive Leaflet map centered on Gujarat agricultural belts.
-   - Point out the **Red and Orange Hotspot Circles**:
-     - Explain: *"Using pure Python Haversine geodesic clustering (no heavy PostGIS required), the system scans all recent disease scans and pest alerts within a 25 km radius."*
-   - Click on the **Anand Cluster**:
-     - The map smoothly zooms to Anand.
-     - Popup displays active incident count, affected farm parcels, and primary threats (`Early Blight`, `Whitefly`).
-2. **Regional Surveillance Command** (`/regional-monitoring`):
-   - Show the District Agricultural Officer (DAO) dashboard.
-   - Demonstrates monitored acreage, dominant pathogens, and cluster summary table across Ahmedabad, Anand, Vadodara, and Surat.
+## Act 3: Alerts, Referrals & Follow-ups (Stages 4, 6, 7) (2:45 – 3:30)
+1. **Stage 4 — Actionable Alerts**:
+   - Review farm alerts generated automatically when high risk or pest damage thresholds are exceeded.
+2. **Stage 6 — Extension Referrals**:
+   - Navigate to **Extension Referrals** (`/referrals`).
+   - View formal referral record (Type: `KVK`, Reason: `High risk early blight with vector pressure`, Status: `requested`).
+   - Static directory contacts labeled as demo/directory entries.
+3. **Stage 7 — Follow-up Monitoring**:
+   - Navigate to **Follow-ups** (`/followups`).
+   - View scheduled 5–7 day recheck with overdue calculation.
+   - Complete follow-up with real outcome (`improved` / `recovered`) linked to original scan.
 
 ---
 
-## Act 4: Human-in-the-Loop Expert Validation & Provenance (3:30 – 4:15)
-1. **Login as Agronomist / Expert**:
-   - Log out or open in incognito window: `http://localhost:5173/login`
-   - Credentials: `expert_demo` / `expert123` (Dr. Sunita Sharma, KVK Agronomist).
-2. **Navigate to Expert Review** (`/expert`):
-   - Show the **Pending Verification Queue**: Disease scans submitted by farmers awaiting clinical sign-off.
-   - Click **Perform Expert Review** on a scan:
-     - Notice the **Immutable AI Prediction Baseline** banner: The original ConvNeXt prediction and confidence are preserved for scientific provenance.
-     - Select **Correct Diagnosis**: Enter verified diagnosis `Late Blight` with morphological notes (`Water-soaked lesions on leaf margins without concentric rings`).
-     - Click **Commit Verification**.
-     - Review is saved, and provenance remains untampered!
+## Act 4: Expert Validation (Stage 5) (3:30 – 4:15)
+1. **Login as Expert / Agronomist**:
+   - Credentials: `expert_demo` / `expert123`
+2. **Navigate to Review Queue** (`/expert`):
+   - View scans auto-routed for review (low confidence, crop mismatch, or critical risk).
+   - Inspect scan: Note **Immutable AI Prediction Baseline** banner. The original ConvNeXt prediction is preserved for scientific integrity.
+   - Confirm or correct diagnosis with field agronomic notes.
 
 ---
 
-## Act 5: Treatment Follow-ups & Continuous Learning Retraining Dataset (4:15 – 5:00)
-1. **Treatment Follow-up & Recovery** (`/followups`):
-   - Show the 5-7 day recheck timeline: Compares Day 0 diagnosis vs Day 5 post-treatment recovery.
-   - Demonstrates canopy recovery percentages (e.g. 90% recovery after bio-fungicide spray).
-2. **Model Retraining Dataset Manager** (`/feedback`):
-   - Navigate to `/feedback`.
-   - Show how the expert review completed in Act 4 was automatically indexed as a **ground-truth retraining sample**!
-   - Highlight:
-     - Model baseline accuracy vs expert ground truth (concordance tracking).
-     - **Auto Split (70/15/15)**: Splits samples into PyTorch train, val, and test partitions.
-     - Click **Export CSV**: Downloads formatted manifest ready for `torchvision.datasets`.
-     - Click **JSON**: Displays schema-compliant JSON manifest.
-
----
-
-## Concluding Statement for Judges
-> *"AgriSmart-AI bridges the gap between deep learning computer vision and real-world farm management. By pairing ConvNeXt-Tiny with phenological risk modeling, IPM vector monitoring, spatial epidemic clustering, and expert human-in-the-loop retraining, we have built a complete, resilient, and field-ready agricultural intelligence platform."*
+## Act 5: Officials Dashboard & Learning Loop (Stages 8, 9) (4:15 – 5:00)
+1. **Login as Agriculture Officer**:
+   - Credentials: `officer_demo` / `officer123`
+2. **Stage 9 — Regional Surveillance & Preventive Planning**:
+   - Navigate to **Regional Monitoring** (`/regional-monitoring`): View active disease clusters, dominant pathogens, and monitored acreage.
+   - **Preventive Planning View**: Table of farms and districts forecast at high risk over the next 7 days to enable proactive preventive interventions.
+   - **Outcome Metrics Panel**: Metrics calculated from operational platform records (% auto-flagged, median review time, referral completion rate, follow-up recovery rate, non-chemical first-line rate). No fabricated "crop loss saved" numbers.
+   - Navigate to **Outbreak Hotspots** (`/hotspots`): Interactive Leaflet map with Haversine geodesic epidemic clusters.
+3. **Stage 8 — Feedback Dataset & Offline Model Registry**:
+   - Navigate to **Feedback Dataset** (`/feedback`).
+   - Shows expert-validated records with deterministic 80/10/10 image-hash split.
+   - Export manifest via CSV or ZIP (demo records excluded by default).
+   - Demonstrates `model/finetune_from_feedback.py` manual offline retraining script with registry logging (production model is never auto-retrained).
