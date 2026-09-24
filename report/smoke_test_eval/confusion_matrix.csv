@@ -1,0 +1,4 @@
+True_Class,Grape___Black_rot,Potato___Early_blight,Tomato___Septoria_leaf_spot
+Grape___Black_rot,1,0,0
+Potato___Early_blight,0,1,0
+Tomato___Septoria_leaf_spot,0,0,1

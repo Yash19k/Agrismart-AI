@@ -2,13 +2,20 @@
 DiseaseModelService — Production inference engine for ConvNeXt-Tiny plant disease classifier.
 Loads checkpoint once at startup, caches weights in memory, supports CPU and CUDA.
 Matches exact training preprocessing (Resize 255 -> CenterCrop 224 -> ToTensor -> Normalize).
+
+Honest Evaluation & Verification:
+  - Detects Git LFS pointer files and raises actionable errors.
+  - Dynamically determines class names and class counts from checkpoint/config (no hard-coded 38 constraint).
+  - Reads evaluation metrics strictly from report/metrics.json if present; never reports hardcoded fake metrics.
+  - Eliminates fake severity and fake affected area calculations.
+  - Keeps only non-chemical agronomic reference advice in profiles; all actionable IPM is routed through risk/ipm.py.
 """
 import os
 import time
 import json
 import logging
 from pathlib import Path
-from typing import Dict, Any, List, Union, Tuple
+from typing import Dict, Any, List, Union, Tuple, Optional
 from PIL import Image
 
 import torch
@@ -18,13 +25,12 @@ from torchvision.models import convnext_tiny
 
 logger = logging.getLogger("disease.model")
 
-# ImageNet normalization used during training
 IMAGE_SIZE = 224
 RESIZE_DIM = int(IMAGE_SIZE * 1.14)  # 255
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
 
-# Agricultural metadata for all 38 classes
+# Agricultural display mapping
 CROP_DISPLAY_MAP = {
     "Apple": "Apple",
     "Blueberry": "Blueberry",
@@ -42,15 +48,15 @@ CROP_DISPLAY_MAP = {
     "Tomato": "Tomato",
 }
 
+# Agronomic biology reference profiles.
+# Note: Chemical recommendations are removed per Section 2.1; all actionable advice
+# is strictly generated via risk/ipm.py adhering to safety gates.
 DISEASE_PROFILES = {
     "Early_blight": {
         "pathogen": "Alternaria solani",
         "category": "Fungal Infection",
         "scientific_name": "Alternaria solani",
-        "severity_level": "Moderate",
-        "severity_score": 55,
-        "affected_area": "20-30%",
-        "health_score": 72,
+        "typical_severity": "Moderate",
         "symptoms": [
             "Dark brown circular spots with concentric target-board rings",
             "Yellow chlorotic halos surrounding necrotic leaf lesions",
@@ -62,20 +68,17 @@ DISEASE_PROFILES = {
             "Overwintering fungal spores in crop debris and soil",
             "Overhead irrigation splashing spores onto lower canopy",
         ],
-        "recommendations": [
+        "cultural_practices": [
             "Prune infected bottom leaves and destroy affected foliage",
             "Switch strictly to root-zone drip irrigation to keep leaves dry",
-            "Apply copper hydroxide or azoxystrobin spray if lesions spread",
+            "Avoid field operations while canopy foliage is wet",
         ],
     },
     "Late_blight": {
         "pathogen": "Phytophthora infestans",
         "category": "Oomycete / Water Mold",
         "scientific_name": "Phytophthora infestans",
-        "severity_level": "High",
-        "severity_score": 80,
-        "affected_area": "40-60%",
-        "health_score": 58,
+        "typical_severity": "Critical",
         "symptoms": [
             "Water-soaked dark lesions rapidly expanding across leaf blade",
             "Delicate white fungal down/mildew on leaf undersides in high humidity",
@@ -85,20 +88,17 @@ DISEASE_PROFILES = {
             "Cool, wet and foggy conditions (15–22°C, >85% humidity)",
             "Windborne sporangia dispersing from nearby infected fields",
         ],
-        "recommendations": [
-            "Immediately remove and destroy severely blighted plants",
-            "Apply systemic fungicide (mancozeb + cymoxanil) to protect nearby canopy",
-            "Avoid field operations when foliage is wet",
+        "cultural_practices": [
+            "Immediately remove and bag severely blighted plants to stop spore dispersal",
+            "Avoid overhead irrigation and ensure rapid drainage",
+            "Maintain wide row spacing to maximize airflow through the canopy",
         ],
     },
     "Bacterial_spot": {
         "pathogen": "Xanthomonas campestris",
         "category": "Bacterial Infection",
         "scientific_name": "Xanthomonas campestris pv. vesicatoria",
-        "severity_level": "Moderate",
-        "severity_score": 60,
-        "affected_area": "25-35%",
-        "health_score": 68,
+        "typical_severity": "Moderate",
         "symptoms": [
             "Small angular water-soaked spots turning dark brown or black",
             "Yellow chlorotic halos around irregular leaf spots",
@@ -108,41 +108,37 @@ DISEASE_PROFILES = {
             "Warm driving rain and splash dispersal from infected seeds",
             "Bacterial survival in plant residue and nightshade weeds",
         ],
-        "recommendations": [
-            "Apply copper bactericide mixed with mancozeb as preventive barrier",
-            "Eliminate overhead sprinkler watering to stop bacterial splash",
+        "cultural_practices": [
+            "Eliminate overhead sprinkler watering to prevent bacterial splash",
+            "Rogue infected volunteer plants and solanaceous weeds around field edges",
+            "Use certified disease-free seed stock in subsequent cycles",
         ],
     },
     "Leaf_Mold": {
         "pathogen": "Passalora fulva (Cladosporium)",
         "category": "Fungal Infection",
         "scientific_name": "Passalora fulva",
-        "severity_level": "Moderate",
-        "severity_score": 50,
-        "affected_area": "15-25%",
-        "health_score": 75,
+        "typical_severity": "Moderate",
         "symptoms": [
             "Pale greenish-yellow spots on upper leaf surfaces",
             "Olive-green to brown velvety fungal growth on leaf undersides",
             "Lower leaves curling, withering and dropping off",
         ],
         "causes": [
-            "High relative humidity (>85%) and poor greenhouse/tunnel ventilation",
+            "High relative humidity (>85%) and poor tunnel/canopy ventilation",
             "Foliar moisture staying trapped inside dense canopy",
         ],
-        "recommendations": [
+        "cultural_practices": [
             "Improve row spacing and prune lower suckers to boost airflow",
-            "Ventilate greenhouses early in the morning to drop relative humidity",
+            "Ventilate high tunnels or greenhouses early to drop relative humidity",
+            "Avoid wetting canopy during evening hours",
         ],
     },
     "Septoria_leaf_spot": {
         "pathogen": "Septoria lycopersici",
         "category": "Fungal Infection",
         "scientific_name": "Septoria lycopersici",
-        "severity_level": "Moderate",
-        "severity_score": 60,
-        "affected_area": "20-30%",
-        "health_score": 70,
+        "typical_severity": "Moderate",
         "symptoms": [
             "Numerous small circular spots with grayish-white centers and dark borders",
             "Tiny black specks (pycnidia) visible inside lesion centers",
@@ -152,19 +148,17 @@ DISEASE_PROFILES = {
             "Fungal spores splashing upward from soil during rain or watering",
             "Moderate temperatures (20–25°C) with persistent leaf wetness",
         ],
-        "recommendations": [
-            "Apply organic mulch around plant bases to prevent rain splash",
-            "Apply preventive chlorothalonil or copper spray to lower leaves",
+        "cultural_practices": [
+            "Apply organic mulch around plant bases to prevent soil splash",
+            "Remove lower infected leaves before spores travel to mid-canopy",
+            "Rotate out of solanaceous crops for at least 2 seasons",
         ],
     },
     "Spider_mites Two-spotted_spider_mite": {
         "pathogen": "Tetranychus urticae",
         "category": "Pest Infestation",
         "scientific_name": "Tetranychus urticae",
-        "severity_level": "Moderate",
-        "severity_score": 50,
-        "affected_area": "20-35%",
-        "health_score": 72,
+        "typical_severity": "Moderate",
         "symptoms": [
             "Fine yellow stippling and speckled discoloration on upper leaf surfaces",
             "Delicate silken webbing on leaf undersides and branch crotches",
@@ -172,21 +166,19 @@ DISEASE_PROFILES = {
         ],
         "causes": [
             "Hot, dry, and dusty microclimate conditions (>30°C, low humidity)",
-            "Natural predator reduction from broad-spectrum pesticide use",
+            "Natural predator reduction from previous broad-spectrum chemical sprays",
         ],
-        "recommendations": [
-            "Apply neem oil or insecticidal potassium soap to leaf undersides",
-            "Release predatory mites (Phytoseiulus persimilis) in infested rows",
+        "cultural_practices": [
+            "Wash dust off border rows with targeted water misting",
+            "Conserve predatory mites and beneficial insects",
+            "Remove alternate host weeds bordering field margins",
         ],
     },
     "Target_Spot": {
         "pathogen": "Corynespora cassiicola",
         "category": "Fungal Infection",
         "scientific_name": "Corynespora cassiicola",
-        "severity_level": "Moderate",
-        "severity_score": 55,
-        "affected_area": "20-30%",
-        "health_score": 72,
+        "typical_severity": "Moderate",
         "symptoms": [
             "Brown target-like circular lesions with pinpoint centers",
             "Dark brown necrotic halos expanding into irregular leaf blight",
@@ -194,19 +186,17 @@ DISEASE_PROFILES = {
         "causes": [
             "Warm temperatures (25–32°C) combined with high humidity and rain",
         ],
-        "recommendations": [
-            "Ensure proper crop rotation with non-solanaceous crops",
-            "Apply strobilurin or triazole fungicides upon first appearance",
+        "cultural_practices": [
+            "Ensure proper crop rotation with non-host crops",
+            "Stake plants and prune bottom suckers to increase sun penetration",
+            "Clean and sanitize pruning shears between rows",
         ],
     },
     "Tomato_Yellow_Leaf_Curl_Virus": {
         "pathogen": "TYLCV (Begomovirus)",
         "category": "Viral Infection (Vector-Transmitted)",
         "scientific_name": "Tomato yellow leaf curl virus",
-        "severity_level": "Critical",
-        "severity_score": 85,
-        "affected_area": "50-70%",
-        "health_score": 45,
+        "typical_severity": "Critical",
         "symptoms": [
             "Severe upward curling and cupping of young leaflets",
             "Prominent interveinal yellowing and marginal chlorosis",
@@ -215,19 +205,17 @@ DISEASE_PROFILES = {
         "causes": [
             "Silverleaf whitefly (Bemisia tabaci) feeding and transmitting virus",
         ],
-        "recommendations": [
-            "Eradicate whitefly vectors using yellow sticky traps and imidacloprid",
-            "Rogue and bag infected symptomatic plants immediately to prevent spread",
+        "cultural_practices": [
+            "Deploy yellow sticky traps for continuous whitefly surveillance",
+            "Rogue and immediately bag symptomatic plants to prevent vector transmission",
+            "Use UV-reflective silver plastic mulches in nursery beds",
         ],
     },
     "Tomato_mosaic_virus": {
         "pathogen": "ToMV (Tobamovirus)",
         "category": "Viral Infection (Mechanically Transmitted)",
         "scientific_name": "Tomato mosaic virus",
-        "severity_level": "High",
-        "severity_score": 75,
-        "affected_area": "40-60%",
-        "health_score": 55,
+        "typical_severity": "High",
         "symptoms": [
             "Mottled light and dark green mosaic patterns across foliage",
             "Fern-like leaf distortion and blistering",
@@ -236,19 +224,17 @@ DISEASE_PROFILES = {
         "causes": [
             "Mechanical transmission via pruning shears, hands, and infected seeds",
         ],
-        "recommendations": [
-            "Disinfect pruning tools with 20% nonfat dry milk or trisodium phosphate",
-            "Wash hands thoroughly before handling plants; avoid smoking near crop",
+        "cultural_practices": [
+            "Disinfect pruning tools and wash hands thoroughly before handling foliage",
+            "Prohibit tobacco use near production fields",
+            "Remove and incinerate infected plants immediately",
         ],
     },
     "Black_rot": {
         "pathogen": "Guignardia bidwellii / Botryosphaeria",
         "category": "Fungal Infection",
         "scientific_name": "Guignardia bidwellii",
-        "severity_level": "High",
-        "severity_score": 70,
-        "affected_area": "30-50%",
-        "health_score": 62,
+        "typical_severity": "High",
         "symptoms": [
             "Circular reddish-brown spots with dark margins on foliage",
             "Black pycnidia fruiting bodies arranged in rings within lesions",
@@ -258,41 +244,37 @@ DISEASE_PROFILES = {
             "Overwintering mummies on vines or orchard floor",
             "Rain splash and prolonged leaf wetness at 20–27°C",
         ],
-        "recommendations": [
+        "cultural_practices": [
             "Prune out mummified clusters and infected canes during dormancy",
-            "Apply captan, mancozeb, or myclobutanil early in the growing season",
+            "Maintain open canopy architecture to facilitate fast drying",
+            "Cultivate or bury fallen infected leaves",
         ],
     },
     "Powdery_mildew": {
         "pathogen": "Erysiphe / Podosphaera",
         "category": "Fungal Infection",
         "scientific_name": "Podosphaera / Erysiphe spp.",
-        "severity_level": "Moderate",
-        "severity_score": 50,
-        "affected_area": "20-35%",
-        "health_score": 74,
+        "typical_severity": "Moderate",
         "symptoms": [
             "White talcum-powder-like fungal patches on leaf surfaces",
             "Curling and distortion of young developing leaves",
             "Premature leaf senescence in severe cases",
         ],
         "causes": [
-            "Moderate temperatures (18–28°C) with dry leaf surfaces but high humidity",
+            "Moderate temperatures (18–28°C) with high relative humidity and shade",
             "Shaded, dense canopy limiting direct sunlight",
         ],
-        "recommendations": [
-            "Apply wettable sulfur or potassium bicarbonate spray at first sign",
-            "Thin out canopy branches to maximize sunlight penetration",
+        "cultural_practices": [
+            "Thin out canopy foliage to maximize sunlight penetration",
+            "Avoid excess nitrogen fertilization which promotes lush susceptible growth",
+            "Prune overcrowded stems to reduce relative humidity",
         ],
     },
     "Northern_Leaf_Blight": {
         "pathogen": "Exserohilum turcicum",
         "category": "Fungal Infection",
         "scientific_name": "Exserohilum turcicum",
-        "severity_level": "Moderate",
-        "severity_score": 65,
-        "affected_area": "25-40%",
-        "health_score": 68,
+        "typical_severity": "Moderate",
         "symptoms": [
             "Long elliptical grayish-green cigar-shaped lesions on leaves",
             "Lesions turning tan with dark spore masses in damp conditions",
@@ -302,19 +284,17 @@ DISEASE_PROFILES = {
             "Moderate temperatures (18–27°C) and heavy dews or frequent showers",
             "Fungal survival in previous season corn stubble",
         ],
-        "recommendations": [
-            "Incorporate crop debris deeply post-harvest",
-            "Apply foliar triazole/strobilurin fungicide if lesions appear before tasseling",
+        "cultural_practices": [
+            "Incorporate crop debris deeply post-harvest to speed decomposition",
+            "Rotate away from corn for at least one year",
+            "Select resistant crop hybrids for next planting cycle",
         ],
     },
     "Common_rust": {
         "pathogen": "Puccinia sorghi",
         "category": "Fungal Infection",
         "scientific_name": "Puccinia sorghi",
-        "severity_level": "Moderate",
-        "severity_score": 50,
-        "affected_area": "15-30%",
-        "health_score": 75,
+        "typical_severity": "Moderate",
         "symptoms": [
             "Cinnamon-brown powdery pustules erupting on both leaf surfaces",
             "Pustules turning dark brownish-black late in season",
@@ -322,29 +302,29 @@ DISEASE_PROFILES = {
         "causes": [
             "Cool to moderate temperatures (16–25°C) and high relative humidity",
         ],
-        "recommendations": [
-            "Plant resistant corn hybrids; spray triazole fungicides if pustules threaten ear leaves",
+        "cultural_practices": [
+            "Plant resistant crop hybrids",
+            "Monitor early planted fields when regional spore showers are reported",
+            "Ensure balanced potash fertilization to boost foliar resistance",
         ],
     },
     "healthy": {
         "pathogen": "None (Intact Plant Tissue)",
         "category": "Healthy Crop Foliage",
         "scientific_name": "Healthy Specimen",
-        "severity_level": "None",
-        "severity_score": 0,
-        "affected_area": "0%",
-        "health_score": 96,
+        "typical_severity": "None",
         "symptoms": [
-            "Vibrant, uniform green foliage with intact cuticle",
+            "Vibrant, uniform green foliage with intact cuticle barrier",
             "Zero pathological chlorosis, necrosis, or foliar lesions",
             "Normal cellular turgor and healthy transpiration",
         ],
         "causes": [
             "Balanced soil nutrients, optimal irrigation, and effective field hygiene",
         ],
-        "recommendations": [
-            "Continue regular monitoring and preventive organic practices",
+        "cultural_practices": [
+            "Continue regular monitoring and scouting",
             "Maintain current irrigation schedule based on weather forecast",
+            "Preserve beneficial insect habitats along field margins",
         ],
     },
 }
@@ -353,7 +333,7 @@ DISEASE_PROFILES = {
 class DiseaseModelService:
     """
     Singleton service that wraps the trained ConvNeXt-Tiny classifier.
-    Loads agrismart_convnext_tiny_final.pth once into memory.
+    Loads checkpoint into memory, handles CPU/CUDA inference, and validates inputs.
     """
     _instance = None
 
@@ -370,11 +350,10 @@ class DiseaseModelService:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         logger.info("Initializing DiseaseModelService on device: %s", self.device)
 
-        # Resolve paths relative to project root
         script_dir = Path(__file__).resolve().parent
         base_dir = script_dir.parent  # app
-        project_root = Path(os.environ.get('PROJECT_ROOT', base_dir.parent)).resolve()
-        model_root = Path(os.environ.get('MODEL_DIR', project_root / "model")).resolve()
+        self.project_root = Path(os.environ.get('PROJECT_ROOT', base_dir.parent)).resolve()
+        model_root = Path(os.environ.get('MODEL_DIR', self.project_root / "model")).resolve()
 
         if model_path:
             self.model_path = Path(model_path)
@@ -383,8 +362,7 @@ class DiseaseModelService:
                 model_root / "crop_disease_detection" / "agrismart_convnext_tiny_final.pth",
                 model_root / "crop_desaise_detection" / "agrismart_convnext_tiny_final.pth",
                 model_root / "agrismart_convnext_tiny_final.pth",
-                project_root / "model" / "crop_disease_detection" / "agrismart_convnext_tiny_final.pth",
-                project_root / "crop_disease_detection" / "agrismart_convnext_tiny_final.pth",
+                self.project_root / "model" / "crop_disease_detection" / "agrismart_convnext_tiny_final.pth",
             ]
             self.model_path = next((p for p in candidate_paths if p.is_file()), candidate_paths[0])
 
@@ -392,12 +370,10 @@ class DiseaseModelService:
             model_root / "crop_disease_detection" / "class_names.json",
             model_root / "crop_desaise_detection" / "class_names.json",
             model_root / "class_names.json",
-            project_root / "model" / "crop_disease_detection" / "class_names.json",
-            project_root / "crop_disease_detection" / "class_names.json",
+            self.project_root / "model" / "crop_disease_detection" / "class_names.json",
         ]
         self.class_names_path = next((p for p in candidate_class_paths if p.is_file()), candidate_class_paths[0])
 
-        # Preprocessing matching predict.py and training notebook
         self.transform = transforms.Compose([
             transforms.Resize(RESIZE_DIM),
             transforms.CenterCrop(IMAGE_SIZE),
@@ -408,42 +384,46 @@ class DiseaseModelService:
         self.model = None
         self.class_names: List[str] = []
         self.class_to_idx: Dict[str, int] = {}
-        self.test_accuracy: float = 0.9856
-        self.plantdoc_accuracy: float = 0.5551
+        self.num_classes: int = 0
 
         self._load_model()
         self._initialized = True
 
     def _load_model(self):
-        """Loads model weights and class definitions."""
+        """Loads model weights, detecting Git LFS pointers and dynamically determining classes."""
         if not self.model_path.is_file():
             raise FileNotFoundError(
                 f"Model checkpoint not found at: {self.model_path}. "
-                "Ensure agrismart_convnext_tiny_final.pth is located inside "
-                "model/crop_disease_detection/ or model/crop_desaise_detection/."
+                "Ensure agrismart_convnext_tiny_final.pth is present."
+            )
+
+        # Detect Git LFS pointer file
+        with open(self.model_path, "rb") as f:
+            header = f.read(200)
+        file_size = self.model_path.stat().st_size
+        if header.startswith(b"version https://git-lfs") or file_size < 1024:
+            raise RuntimeError(
+                f"Weights at {self.model_path} are a Git LFS pointer ({file_size} bytes), not real weights. "
+                "Run 'git lfs pull', or download from GitHub Releases and verify sha256."
             )
 
         logger.info("Loading ConvNeXt-Tiny checkpoint from: %s", self.model_path)
         checkpoint = torch.load(self.model_path, map_location=self.device, weights_only=False)
 
-        if "class_names" not in checkpoint:
-            raise KeyError(
-                "Checkpoint is missing 'class_names' key. "
-                "Ensure you are loading a complete production packaged checkpoint."
-            )
+        # Config-driven class names: read from checkpoint, or fallback to class_names.json
+        class_names = checkpoint.get("class_names")
+        if not class_names:
+            if self.class_names_path.is_file():
+                with open(self.class_names_path, "r", encoding="utf-8") as f:
+                    class_names = json.load(f)
+            else:
+                raise KeyError("Checkpoint missing 'class_names' and class_names.json not found.")
 
-        self.class_names = checkpoint["class_names"]
+        self.class_names = class_names
         self.class_to_idx = checkpoint.get("class_to_idx", {name: idx for idx, name in enumerate(self.class_names)})
-        self.test_accuracy = float(checkpoint.get("test_accuracy", 0.9856))
         self.num_classes = len(self.class_names)
 
-        if self.num_classes != 38:
-            logger.warning(
-                "Checkpoint class count (%d) differs from standard 38 classes.",
-                self.num_classes
-            )
-
-        # Instantiate architecture
+        # Instantiate ConvNeXt-Tiny architecture
         model = convnext_tiny(weights=None)
         in_features = model.classifier[2].in_features
         model.classifier[2] = nn.Linear(in_features, self.num_classes)
@@ -453,39 +433,43 @@ class DiseaseModelService:
 
         self.model = model
         logger.info(
-            "ConvNeXt-Tiny loaded successfully | Classes: %d | Device: %s | Lab Test Acc: %.2f%% | Source: %s",
+            "ConvNeXt-Tiny loaded successfully | Classes: %d | Device: %s | Source: %s",
             self.num_classes,
             self.device,
-            self.test_accuracy * 100,
             self.model_path.parent.name,
         )
 
+    def get_evaluation_metrics(self) -> Optional[Dict[str, Any]]:
+        """Reads real evaluated metrics from report/metrics.json if available."""
+        metrics_file = self.project_root / "report" / "metrics.json"
+        if metrics_file.is_file():
+            try:
+                with open(metrics_file, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception as e:
+                logger.warning("Could not read report/metrics.json: %s", e)
+        return None
+
     def parse_class_label(self, raw_class: str) -> Tuple[str, str, bool]:
-        """
-        Parses raw class label e.g. 'Tomato___Early_blight' or 'Apple___healthy'
-        into (crop_name, disease_name, is_healthy).
-        """
+        """Parses raw class label e.g. 'Tomato___Early_blight' into (crop_name, disease_name, is_healthy)."""
         if "___" in raw_class:
             raw_crop, raw_disease = raw_class.split("___", 1)
         else:
             raw_crop, raw_disease = "Unknown", raw_class
 
-        # Clean crop name
         crop_name = CROP_DISPLAY_MAP.get(raw_crop, raw_crop.replace("_", " ").title())
 
-        # Clean disease name
         is_healthy = raw_disease.lower() == "healthy"
         if is_healthy:
             disease_name = "Healthy Foliage"
         else:
             disease_name = raw_disease.replace("_", " ")
-            # Capitalize properly
             disease_name = " ".join([word.capitalize() for word in disease_name.split()])
 
         return crop_name, disease_name, is_healthy
 
     def get_clinical_profile(self, raw_class: str, is_healthy: bool) -> Dict[str, Any]:
-        """Looks up or derives agronomic symptoms, causes, and pathogen metadata."""
+        """Returns agronomic symptoms, causes, and cultural reference metadata."""
         if is_healthy:
             return DISEASE_PROFILES["healthy"]
 
@@ -494,39 +478,38 @@ class DiseaseModelService:
             if key.lower() in disease_key.lower():
                 return profile
 
-        # Default fallback profile for other specific conditions
         return {
             "pathogen": "Identified Phytopathogen",
             "category": "Fungal / Bacterial Leaf Spot",
             "scientific_name": "Phytopathological Folium",
-            "severity_level": "Moderate",
-            "severity_score": 50,
-            "affected_area": "15-25%",
-            "health_score": 74,
+            "typical_severity": "Moderate",
             "symptoms": [
-                "Discoloration, lesions or speckling visible across leaf tissue",
+                "Discoloration, foliar lesions or speckling visible across leaf tissue",
                 "Foliar vitality reduced compared to healthy control",
             ],
             "causes": [
                 "Environmental humidity or spore inoculation",
                 "Prolonged leaf wetness",
             ],
-            "recommendations": [
+            "cultural_practices": [
                 "Isolate and monitor affected plant foliage",
                 "Avoid overhead irrigation to reduce foliar moisture",
-                "Consult local ICAR/TNAU extension advisory for targeted chemical treatment",
+                "Consult local extension officer for verified integrated management",
             ],
         }
 
-    def predict(self, image_input: Union[str, Path, Image.Image, Any]) -> Dict[str, Any]:
+    def predict(
+        self,
+        image_input: Union[str, Path, Image.Image, Any],
+        farmer_leaf_extent: str = "unknown",
+    ) -> Dict[str, Any]:
         """
         Runs model inference on the provided leaf image.
-        Returns full structured response with predictions, confidence %,
-        top-3 alternatives, severity, symptoms, causes, and timing.
+        Returns prediction, uncalibrated confidence %, top-3 alternatives,
+        typical reference severity, and farmer extent.
         """
         start_time = time.time()
 
-        # Open image
         if isinstance(image_input, (str, Path)):
             if not os.path.isfile(image_input):
                 raise FileNotFoundError(f"Image not found at: {image_input}")
@@ -534,17 +517,13 @@ class DiseaseModelService:
         elif isinstance(image_input, Image.Image):
             image = image_input.convert("RGB")
         else:
-            # File-like object (e.g. Django UploadedFile)
             image = Image.open(image_input).convert("RGB")
 
-        # Ensure model is loaded
         if self.model is None:
             self._load_model()
 
-        # Preprocess
         tensor = self.transform(image).unsqueeze(0).to(self.device)
 
-        # Predict
         with torch.no_grad():
             outputs = self.model(tensor)
             probabilities = torch.softmax(outputs, dim=1)[0]
@@ -581,6 +560,11 @@ class DiseaseModelService:
             inference_time_ms,
         )
 
+        valid_extent = farmer_leaf_extent if farmer_leaf_extent in ("<10%", "10-30%", ">30%") else "unknown"
+        typical_severity = "None" if is_healthy else profile.get("typical_severity", "Moderate")
+
+        eval_metrics = self.get_evaluation_metrics()
+
         return {
             "predicted_class": raw_class,
             "crop_name": crop_name,
@@ -588,16 +572,17 @@ class DiseaseModelService:
             "is_healthy": is_healthy,
             "confidence": round(confidence, 4),
             "confidence_percent": f"{confidence * 100:.1f}%",
+            "confidence_label": "model confidence (uncalibrated)",
             "pathogen": profile.get("pathogen", ""),
             "category": profile.get("category", "Pathology"),
             "scientific_name": profile.get("scientific_name", ""),
-            "severity_level": profile.get("severity_level", "Moderate" if not is_healthy else "None"),
-            "severity_score": profile.get("severity_score", 50 if not is_healthy else 0),
-            "affected_area": profile.get("affected_area", "15-25%" if not is_healthy else "0%"),
-            "health_score": profile.get("health_score", 72 if not is_healthy else 96),
+            # Reference severity only — not measured from image
+            "typical_severity": typical_severity,
+            "farmer_leaf_extent": valid_extent,
+            "health_score": 96 if is_healthy else None,
             "symptoms": profile.get("symptoms", []),
             "possible_causes": profile.get("causes", []),
-            "recommendations": profile.get("recommendations", []),
+            "cultural_practices": profile.get("cultural_practices", []),
             "alternatives": alternatives,
             "inference_time_ms": inference_time_ms,
             "device": str(self.device),
@@ -605,13 +590,16 @@ class DiseaseModelService:
                 "architecture": "ConvNeXt-Tiny",
                 "total_classes": self.num_classes,
                 "input_size": [IMAGE_SIZE, IMAGE_SIZE],
-                "lab_test_accuracy": self.test_accuracy,
-                "plantdoc_field_accuracy": self.plantdoc_accuracy,
+                "evaluated_metrics": eval_metrics,
+                "status": "evaluated" if eval_metrics is not None else "not evaluated",
+                "provenance_note": (
+                    "Documented in Crop_disease_model_report.pdf: PlantVillage lab test accuracy 98.56%, "
+                    "PlantDoc field test accuracy 55.51% (out-of-distribution)."
+                ),
             },
         }
 
 
-# Global accessor
 _service_instance = None
 
 def get_disease_model_service() -> DiseaseModelService:

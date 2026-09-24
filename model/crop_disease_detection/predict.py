@@ -42,15 +42,28 @@ def _load_model(model_path, device):
     if not os.path.isfile(model_path):
         raise FileNotFoundError(f"Model checkpoint not found at: {model_path}")
 
-    checkpoint = torch.load(model_path, map_location=device)
-
-    if "class_names" not in checkpoint:
-        raise KeyError(
-            "Checkpoint does not contain 'class_names'. "
-            "Make sure you are using the FINAL packaged model, not a raw stage checkpoint."
+    with open(model_path, "rb") as f:
+        header = f.read(200)
+    if header.startswith(b"version https://git-lfs") or os.path.getsize(model_path) < 1024:
+        raise RuntimeError(
+            f"Weights not downloaded at {model_path}: file is a Git LFS pointer. "
+            "Run 'git lfs pull', or download from GitHub Releases and verify sha256."
         )
 
-    class_names = checkpoint["class_names"]
+    checkpoint = torch.load(model_path, map_location=device, weights_only=False)
+
+    class_names = checkpoint.get("class_names")
+    if not class_names:
+        class_json_path = os.path.join(os.path.dirname(model_path), "class_names.json")
+        if os.path.isfile(class_json_path):
+            import json
+            with open(class_json_path, "r", encoding="utf-8") as f:
+                class_names = json.load(f)
+        else:
+            raise KeyError(
+                "Checkpoint does not contain 'class_names' and class_names.json was not found."
+            )
+
     num_classes = len(class_names)
 
     model = convnext_tiny(weights=None)
