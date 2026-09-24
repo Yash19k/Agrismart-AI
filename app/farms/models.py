@@ -36,11 +36,15 @@ class Farm(models.Model):
     location_name = models.CharField(max_length=200, blank=True)
     crop = models.CharField(max_length=100, blank=True,
                             help_text='Primary crop grown on this farm')
+    crop_variety = models.CharField(max_length=100, blank=True, default='',
+                                   help_text='Specific crop variety name')
     crop_stage = models.CharField(
         max_length=30, choices=CROP_STAGE_CHOICES, default='vegetative', blank=True,
         help_text='Current growth stage of primary crop'
     )
     soil_type = models.CharField(max_length=50, choices=SOIL_CHOICES, blank=True)
+    soil_ph = models.FloatField(null=True, blank=True, help_text='Soil pH level (0-14)')
+    soil_moisture_pct = models.FloatField(null=True, blank=True, help_text='Soil moisture percentage')
     farm_size = models.FloatField(null=True, blank=True, help_text='Size in acres')
     irrigation_type = models.CharField(
         max_length=50, choices=IRRIGATION_CHOICES, blank=True

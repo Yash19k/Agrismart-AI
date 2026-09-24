@@ -17,7 +17,8 @@ class FarmSerializer(serializers.ModelSerializer):
         model = Farm
         fields = (
             'id', 'farm_name', 'latitude', 'longitude', 'location_name',
-            'location_display', 'crop', 'crop_stage', 'soil_type', 'farm_size',
+            'location_display', 'crop', 'crop_variety', 'crop_stage', 'soil_type',
+            'soil_ph', 'soil_moisture_pct', 'farm_size',
             'irrigation_type', 'crops', 'created_at', 'updated_at',
         )
         read_only_fields = ('id', 'created_at', 'updated_at')
