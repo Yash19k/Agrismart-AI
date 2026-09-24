@@ -1,7 +1,9 @@
+from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from accounts.permissions import IsExpertOrOfficer, IsOfficer
 from farms.models import Farm
 from disease.models import DiseaseScan
 from pests.models import PestObservation
@@ -9,34 +11,45 @@ from .services import cluster_hotspots, get_local_incidence
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def hotspots_map_view(request):
     """
     GET /api/hotspots/map/
     Returns cluster zones and individual geotagged incident points for Leaflet map.
+
+    Role-based scoping:
+    - Farmer: only sees clusters near their own farm(s) within 25km
+    - Expert/Officer: full regional view (optionally filtered by their assigned region)
     """
     days = int(request.query_params.get('days', 30))
     radius_km = float(request.query_params.get('radius', 25.0))
+    user = request.user
+    user_role = getattr(user, 'role', 'farmer')
 
     clusters = cluster_hotspots(days=days, cluster_radius_km=radius_km)
 
     # All active farms with their coordinates and latest status
+    if user_role == 'farmer':
+        farms_qs = Farm.objects.filter(user=user)
+    else:
+        farms_qs = Farm.objects.all()
+
     farms_data = []
-    for f in Farm.objects.all():
+    for f in farms_qs:
         latest_scan = DiseaseScan.objects.filter(farm=f).order_by('-created_at').first()
         latest_pest = PestObservation.objects.filter(farm=f).order_by('-observed_at').first()
 
-        status = 'healthy'
+        farm_status = 'healthy'
         disease_info = 'Healthy Foliage'
         if latest_scan and not latest_scan.is_healthy:
-            status = 'diseased'
+            farm_status = 'diseased'
             disease_info = f"{latest_scan.disease_name} ({latest_scan.severity})"
 
         pest_info = 'Normal'
         if latest_pest and latest_pest.threshold_level in ['alert', 'action_required']:
             pest_info = f"{latest_pest.pest_type}: {latest_pest.pest_count}"
-            if status != 'diseased':
-                status = 'pest_alert'
+            if farm_status != 'diseased':
+                farm_status = 'pest_alert'
 
         farms_data.append({
             'id': f.id,
@@ -47,20 +60,36 @@ def hotspots_map_view(request):
             'crop': f.crop,
             'crop_stage': f.crop_stage,
             'farm_size': f.farm_size,
-            'status': status,
+            'status': farm_status,
             'disease_info': disease_info,
             'pest_info': pest_info,
         })
 
+    # For farmers, filter clusters to only those near their farms
+    if user_role == 'farmer' and farms_data:
+        from .services import haversine_km
+        farmer_clusters = []
+        for cluster in clusters:
+            for fd in farms_data:
+                if fd['latitude'] and fd['longitude']:
+                    dist = haversine_km(
+                        fd['latitude'], fd['longitude'],
+                        cluster['center_latitude'], cluster['center_longitude']
+                    )
+                    if dist <= radius_km:
+                        farmer_clusters.append(cluster)
+                        break
+        clusters = farmer_clusters
+
     return Response({
         'clusters': clusters,
         'farms': farms_data,
-        'center_default': {'lat': 22.5645, 'lng': 72.9289, 'zoom': 8}, # Anand / Central Gujarat
+        'center_default': {'lat': 22.5645, 'lng': 72.9289, 'zoom': 8},  # Anand / Central Gujarat
     })
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsExpertOrOfficer])
 def hotspots_regional_summary_view(request):
     """
     GET /api/hotspots/regional-summary/
@@ -124,4 +153,54 @@ def hotspots_regional_summary_view(request):
             }
             for c in clusters
         ]
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsOfficer])
+def hotspot_dispatch_advisory_view(request, cluster_id):
+    """
+    POST /api/hotspots/<cluster_id>/dispatch/
+    Officer dispatches a broadcast advisory to all farmers in a hotspot cluster's radius.
+    """
+    message = request.data.get('message', '')
+    if not message:
+        return Response({'detail': 'Advisory message is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    clusters = cluster_hotspots(days=30)
+    target_cluster = None
+    for c in clusters:
+        if c['id'] == cluster_id:
+            target_cluster = c
+            break
+
+    if not target_cluster:
+        return Response({'detail': 'Cluster not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    # Find all farmers with farms inside the cluster radius
+    from .services import haversine_km
+    center_lat = target_cluster['center_latitude']
+    center_lon = target_cluster['center_longitude']
+    cluster_radius = target_cluster.get('radius_km', 15.0)
+
+    notified_users = set()
+    for farm in Farm.objects.filter(latitude__isnull=False, longitude__isnull=False).select_related('user'):
+        dist = haversine_km(center_lat, center_lon, farm.latitude, farm.longitude)
+        if dist <= cluster_radius and farm.user_id not in notified_users:
+            notified_users.add(farm.user_id)
+            try:
+                from alerts.models import Alert
+                Alert.objects.create(
+                    recipient=farm.user,
+                    alert_type='hotspot_dispatch',
+                    message=f"🚨 Advisory from Agriculture Office: {message} (Zone: {target_cluster['zone_name']})",
+                )
+            except Exception:
+                pass
+
+    return Response({
+        'status': 'dispatched',
+        'cluster': cluster_id,
+        'zone_name': target_cluster['zone_name'],
+        'farmers_notified': len(notified_users),
     })

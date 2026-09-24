@@ -61,9 +61,15 @@ export const AuthProvider = ({ children }) => {
         id: 'usr_' + Date.now(),
         name: email.split('@')[0] || 'Farmer Friend',
         email: email.trim(),
+        role: 'farmer',
         isOnboarded: true,
         farm: DEFAULT_FARM,
       };
+
+      // Ensure role is always present
+      if (!userData.role) {
+        userData.role = 'farmer';
+      }
 
       // SYNCHRONOUSLY store token in Axios defaults and storage BEFORE navigation
       setAuthToken(accessToken);
@@ -119,6 +125,8 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         logout,
+        /** Helper: returns the user's role string ('farmer', 'expert', 'officer') */
+        userRole: user?.role || 'farmer',
       }}
     >
       {children}
@@ -127,4 +135,3 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
-

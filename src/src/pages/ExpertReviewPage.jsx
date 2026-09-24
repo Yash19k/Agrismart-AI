@@ -208,7 +208,13 @@ export default function ExpertReviewPage() {
                       <div className="space-y-3">
                         <div className="flex items-center justify-between text-xs">
                           <span className="font-extrabold text-gray-900">{item.farm_name}</span>
-                          <span className="text-[10px] text-gray-400">{item.created_at}</span>
+                          {item.priority === 'urgent' ? (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-800 border border-red-200 flex items-center gap-1">
+                              <span>🚨 Urgent Priority</span>
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-gray-400">{item.created_at}</span>
+                          )}
                         </div>
 
                         <div className="h-36 rounded-xl bg-gray-100 overflow-hidden relative border border-gray-100">

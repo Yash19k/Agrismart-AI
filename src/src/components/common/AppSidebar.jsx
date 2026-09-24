@@ -17,35 +17,57 @@ import {
   UserCheck,
   CalendarCheck,
   Database,
-  Activity
+  Activity,
+  Shield
 } from 'lucide-react';
 
-export const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'disease', label: 'Disease Detection', icon: ShieldAlert },
-  { id: 'pests', label: 'Pest Traps', icon: Bug },
-  { id: 'hotspots', label: 'Outbreak Hotspots', icon: Flame },
-  { id: 'expert', label: 'Expert Review', icon: UserCheck },
-  { id: 'followups', label: 'Follow-ups & Recheck', icon: CalendarCheck },
-  { id: 'regional', label: 'Regional Dashboard', icon: Activity },
-  { id: 'feedback', label: 'Retraining Dataset', icon: Database },
-  { id: 'assistant', label: 'AI Agronomist', icon: Bot, badge: 'Groq' },
-  { id: 'weather', label: 'Weather & Advisory', icon: CloudSun },
-  { id: 'irrigation', label: 'Irrigation', icon: Droplets },
-  { id: 'sustainability', label: 'Sustainability Score', icon: Leaf },
-  { id: 'crop', label: 'Crop Recommendation', icon: Sprout },
-  { id: 'myfarm', label: 'My Farm', icon: MapPin },
+/**
+ * Navigation items with role visibility configuration.
+ * Each item has a `roles` array — only users with a matching role see it.
+ * An empty roles array means visible to all authenticated users.
+ */
+const ALL_NAV_ITEMS = [
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: [] },
+  { id: 'disease', label: 'Disease Detection', icon: ShieldAlert, roles: ['farmer'] },
+  { id: 'pests', label: 'Pest Traps', icon: Bug, roles: ['farmer'] },
+  { id: 'hotspots', label: 'Outbreak Hotspots', icon: Flame, roles: [] },
+  { id: 'expert', label: 'Review Queue', icon: UserCheck, roles: ['expert', 'officer'] },
+  { id: 'followups', label: 'Follow-ups & Recheck', icon: CalendarCheck, roles: ['farmer'] },
+  { id: 'regional', label: 'Regional Dashboard', icon: Activity, roles: ['officer'] },
+  { id: 'feedback', label: 'Retraining Dataset', icon: Database, roles: ['officer'] },
+  { id: 'assistant', label: 'AI Agronomist', icon: Bot, badge: 'Groq', roles: ['farmer'] },
+  { id: 'weather', label: 'Weather & Advisory', icon: CloudSun, roles: [] },
+  { id: 'irrigation', label: 'Irrigation', icon: Droplets, roles: ['farmer'] },
+  { id: 'sustainability', label: 'Sustainability Score', icon: Leaf, roles: ['farmer'] },
+  { id: 'crop', label: 'Crop Recommendation', icon: Sprout, roles: ['farmer'] },
+  { id: 'myfarm', label: 'My Farm', icon: MapPin, roles: ['farmer'] },
 ];
 
+// Export filtered items for external use
+export const NAV_ITEMS = ALL_NAV_ITEMS;
+
 /**
- * AppSidebar
+ * Role badge labels for the user profile section
+ */
+const ROLE_LABELS = {
+  farmer: 'Farmer',
+  expert: 'Expert / Extension',
+  officer: 'Agriculture Officer',
+};
+
+const ROLE_COLORS = {
+  farmer: 'bg-emerald-700',
+  expert: 'bg-blue-700',
+  officer: 'bg-purple-700',
+};
+
+/**
+ * AppSidebar — Role-aware navigation
  *
- * Shared across all application pages (Dashboard, Disease Detection, etc.)
- * Matches the user's reference screenshot:
- * - Green square logo with sprout icon
- * - "AgriSmart" & "Farmer-First AI Agriculture"
- * - Consistent navigation list with active soft green pill
- * - Bottom red "Log out" button
+ * Renders nav items conditionally based on user.role:
+ * - Farmers never see "Review Queue", "Regional Dashboard", "Retraining Dataset"
+ * - Experts/Officers never see farmer tools like Disease Detection, Pests, Irrigation
+ * - Shared items (Dashboard, Weather, Hotspots) visible to all
  */
 export default function AppSidebar({
   activeItem = 'dashboard',
@@ -54,7 +76,7 @@ export default function AppSidebar({
   setMobileOpen,
 }) {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, userRole } = useAuth();
 
   const handleLogout = () => {
     logout();
@@ -83,6 +105,15 @@ export default function AppSidebar({
     if (setMobileOpen) setMobileOpen(false);
   };
 
+  // Filter nav items based on current user's role
+  const visibleItems = ALL_NAV_ITEMS.filter(item => {
+    if (item.roles.length === 0) return true; // visible to all
+    return item.roles.includes(userRole);
+  });
+
+  const roleLabel = ROLE_LABELS[userRole] || 'User';
+  const roleBgColor = ROLE_COLORS[userRole] || 'bg-emerald-700';
+
   const sidebarContent = (
     <div className="flex flex-col h-full justify-between bg-white border-r border-gray-100 w-56 flex-shrink-0 select-none">
       <div>
@@ -107,9 +138,9 @@ export default function AppSidebar({
           )}
         </div>
 
-        {/* Navigation list */}
+        {/* Navigation list — filtered by role */}
         <nav className="p-3 space-y-1">
-          {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
+          {visibleItems.map(({ id, label, icon: Icon }) => {
             const isActive = activeItem === id;
             return (
               <button
@@ -139,18 +170,18 @@ export default function AppSidebar({
         </nav>
       </div>
 
-      {/* Logged in Farmer Profile & Logout */}
+      {/* Logged in User Profile & Logout */}
       <div className="p-3 border-t border-gray-100">
         <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl bg-gray-50/90 border border-gray-100 mb-2">
-          <div className="w-8 h-8 rounded-full bg-emerald-700 text-white flex items-center justify-center text-xs font-black shadow-sm flex-shrink-0">
-            {user?.name ? user.name.charAt(0).toUpperCase() : 'F'}
+          <div className={`w-8 h-8 rounded-full ${roleBgColor} text-white flex items-center justify-center text-xs font-black shadow-sm flex-shrink-0`}>
+            {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-extrabold text-gray-900 truncate leading-none">
-              {user?.name || 'Farmer'}
+              {user?.name || 'User'}
             </p>
-            <p className="text-[10px] font-semibold text-gray-400 truncate mt-1">
-              {user?.email || 'Active Account'}
+            <p className="text-[10px] font-semibold text-gray-400 truncate mt-0.5">
+              {roleLabel}
             </p>
           </div>
         </div>

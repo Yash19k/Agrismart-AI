@@ -287,27 +287,36 @@ export const LoginPage = () => {
             {/* Quick Demo Test Accounts Box */}
             <div className="mt-6 pt-5 border-t border-slate-100">
               <div className="bg-[#f7fcf8] border border-[#d6ecdd] rounded-2xl p-3.5 sm:p-4">
-                <div className="flex items-center gap-1.5 mb-2.5">
+                <div className="flex items-center justify-between gap-1.5 mb-2.5">
                   <span className="text-xs font-bold text-[#0b261e] uppercase tracking-wide">
-                    Quick Test Accounts:
+                    Quick Role Logins:
                   </span>
+                  <span className="text-[10px] text-slate-500 font-medium">Click to populate</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <button
                     type="button"
-                    onClick={() => setFormData({ email: 'daksh@gmail.com', password: 'daksh123' })}
-                    className="text-left px-3 py-2 bg-white hover:bg-[#e1f7e9] border border-[#c5eed4] rounded-xl text-xs text-slate-700 hover:text-[#164233] transition-all focus:outline-none focus:ring-2 focus:ring-[#216f4b]/50 flex flex-col cursor-pointer"
+                    onClick={() => setFormData({ email: 'farmer_demo', password: 'farmer123' })}
+                    className="text-left px-3 py-2 bg-white hover:bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-slate-700 hover:text-emerald-900 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/50 flex flex-col cursor-pointer"
                   >
-                    <span className="font-semibold truncate">daksh@gmail.com</span>
-                    <span className="text-[10px] text-[#288b5b] font-medium">(Active Farm)</span>
+                    <span className="font-bold truncate text-emerald-800">🌾 Farmer</span>
+                    <span className="text-[10px] text-slate-500">farmer_demo</span>
                   </button>
                   <button
                     type="button"
-                    onClick={() => setFormData({ email: 'farmer@test.com', password: 'password123' })}
-                    className="text-left px-3 py-2 bg-white hover:bg-[#e1f7e9] border border-[#c5eed4] rounded-xl text-xs text-slate-700 hover:text-[#164233] transition-all focus:outline-none focus:ring-2 focus:ring-[#216f4b]/50 flex flex-col cursor-pointer"
+                    onClick={() => setFormData({ email: 'expert_demo', password: 'expert123' })}
+                    className="text-left px-3 py-2 bg-white hover:bg-purple-50 border border-purple-200 rounded-xl text-xs text-slate-700 hover:text-purple-900 transition-all focus:outline-none focus:ring-2 focus:ring-purple-500/50 flex flex-col cursor-pointer"
                   >
-                    <span className="font-semibold truncate">farmer@test.com</span>
-                    <span className="text-[10px] text-[#288b5b] font-medium">(Specimen Lab)</span>
+                    <span className="font-bold truncate text-purple-800">🔬 Agronomist</span>
+                    <span className="text-[10px] text-slate-500">expert_demo</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ email: 'officer_demo', password: 'officer123' })}
+                    className="text-left px-3 py-2 bg-white hover:bg-red-50 border border-red-200 rounded-xl text-xs text-slate-700 hover:text-red-900 transition-all focus:outline-none focus:ring-2 focus:ring-red-500/50 flex flex-col cursor-pointer"
+                  >
+                    <span className="font-bold truncate text-red-800">🏛️ Officer</span>
+                    <span className="text-[10px] text-slate-500">officer_demo</span>
                   </button>
                 </div>
               </div>

@@ -2,21 +2,22 @@ import csv
 from django.http import HttpResponse, JsonResponse
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from collections import Counter
 
+from accounts.permissions import IsOfficer
 from .models import FeedbackRecord
 from .serializers import FeedbackRecordSerializer
 from .services import auto_partition_splits
 
 
 @api_view(['GET', 'POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsOfficer])
 def feedback_list_view(request):
     """
-    GET: List feedback records for retraining.
-    POST: Create a manual feedback entry.
+    GET: List feedback records for retraining (officer only).
+    POST: Create a manual feedback entry (officer only).
     """
     if request.method == 'GET':
         qs = FeedbackRecord.objects.all()
@@ -39,7 +40,7 @@ def feedback_list_view(request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsOfficer])
 def feedback_stats_view(request):
     """
     GET /api/feedback/stats/
@@ -82,7 +83,7 @@ def feedback_stats_view(request):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsOfficer])
 def feedback_auto_split_view(request):
     """
     POST /api/feedback/partition/
@@ -93,7 +94,7 @@ def feedback_auto_split_view(request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsOfficer])
 def feedback_export_csv_view(request):
     """
     GET /api/feedback/export/csv/
@@ -127,7 +128,7 @@ def feedback_export_csv_view(request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsOfficer])
 def feedback_export_json_view(request):
     """
     GET /api/feedback/export/json/
@@ -153,7 +154,7 @@ def feedback_export_json_view(request):
 
 
 @api_view(['PATCH'])
-@permission_classes([AllowAny])
+@permission_classes([IsOfficer])
 def feedback_update_split_view(request, pk):
     """Update dataset split for a specific record."""
     rec = FeedbackRecord.objects.filter(pk=pk).first()

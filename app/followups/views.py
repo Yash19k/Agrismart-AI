@@ -1,6 +1,6 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.utils import timezone
 
@@ -10,14 +10,22 @@ from .serializers import FollowUpSerializer
 
 
 @api_view(['GET', 'POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def followups_list_create_view(request):
     """
-    GET: List all follow-up reminders.
+    GET: List follow-up reminders.
     POST: Schedule a follow-up for a diseased scan.
+    Scoped by role: farmers see only their own follow-ups.
     """
+    user = request.user
+    user_role = getattr(user, 'role', 'farmer')
+
     if request.method == 'GET':
-        qs = FollowUp.objects.all()
+        if user_role == 'farmer':
+            qs = FollowUp.objects.filter(user=user)
+        else:
+            qs = FollowUp.objects.all()
+
         farm_id = request.query_params.get('farm_id')
         status_filter = request.query_params.get('status')
 
@@ -45,13 +53,20 @@ def followups_list_create_view(request):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def followup_complete_view(request, pk):
     """
     POST /api/followups/<pk>/complete/
     Closes a follow-up record with the results of a re-check scan and farmer treatment report.
     """
-    followup = FollowUp.objects.filter(pk=pk).first()
+    user = request.user
+    user_role = getattr(user, 'role', 'farmer')
+
+    if user_role == 'farmer':
+        followup = FollowUp.objects.filter(pk=pk, user=user).first()
+    else:
+        followup = FollowUp.objects.filter(pk=pk).first()
+
     if not followup:
         return Response({'detail': 'Follow-up not found.'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -78,9 +93,16 @@ def followup_complete_view(request, pk):
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def followup_detail_view(request, pk):
-    followup = FollowUp.objects.filter(pk=pk).first()
+    user = request.user
+    user_role = getattr(user, 'role', 'farmer')
+
+    if user_role == 'farmer':
+        followup = FollowUp.objects.filter(pk=pk, user=user).first()
+    else:
+        followup = FollowUp.objects.filter(pk=pk).first()
+
     if not followup:
         return Response({'detail': 'Follow-up not found.'}, status=status.HTTP_404_NOT_FOUND)
 
