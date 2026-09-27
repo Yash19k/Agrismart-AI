@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { getDashboardPathForRole } from '../../config/navigation';
 import { Loader2 } from 'lucide-react';
 
 /**
@@ -9,7 +10,7 @@ import { Loader2 } from 'lucide-react';
  * Ensures:
  * 1. Waits for /api/auth/me/ session verification before making routing decisions.
  * 2. If unauthenticated: redirects to /login.
- * 3. If role is not allowed: redirects to /dashboard with state containing a notice.
+ * 3. If role is not allowed: redirects to the role's respective dashboard with state containing a notice.
  */
 export default function RoleProtectedRoute({ children, allow = [] }) {
   const { isAuthenticated, userRole, initializing } = useAuth();
@@ -29,9 +30,10 @@ export default function RoleProtectedRoute({ children, allow = [] }) {
   }
 
   if (allow.length > 0 && !allow.includes(userRole)) {
+    const roleDashboard = getDashboardPathForRole(userRole);
     return (
       <Navigate
-        to="/dashboard"
+        to={roleDashboard}
         state={{
           unauthorizedNotice: `Access restricted. That module is not accessible for the '${userRole}' role.`,
         }}

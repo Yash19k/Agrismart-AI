@@ -24,6 +24,7 @@ import RegionalMonitoringPage from './pages/RegionalMonitoringPage';
 import FarmPage from './pages/FarmPage';
 import RiskForecastPage from './pages/RiskForecastPage';
 import ReferralPage from './pages/ReferralPage';
+import { getDashboardPathForRole } from './config/navigation';
 
 // Protected route: redirect to login if not authenticated
 const ProtectedRoute = ({ children }) => {
@@ -31,10 +32,14 @@ const ProtectedRoute = ({ children }) => {
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
 
-// Public-only route: redirect authenticated users to dashboard
+// Public-only route: redirect authenticated users to their respective role dashboard
 const PublicOnlyRoute = ({ children }) => {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
+  const { isAuthenticated, userRole } = useAuth();
+  if (isAuthenticated) {
+    const roleDashboard = getDashboardPathForRole(userRole);
+    return <Navigate to={roleDashboard} replace />;
+  }
+  return children;
 };
 
 export function App() {

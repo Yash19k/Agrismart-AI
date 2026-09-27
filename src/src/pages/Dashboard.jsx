@@ -68,8 +68,17 @@ const POPULAR_CITIES = [
 
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, userRole } = useAuth();
   const navigate = useNavigate();
+
+  // Role redirect: agronomists and officers must be redirected to their respective dashboards
+  useEffect(() => {
+    if (userRole === 'expert') {
+      navigate('/expert', { replace: true });
+    } else if (userRole === 'officer') {
+      navigate('/regional-monitoring', { replace: true });
+    }
+  }, [userRole, navigate]);
 
   const [activeNav, setActiveNav] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -111,6 +120,9 @@ export default function Dashboard() {
 
   // Fetch dashboard data strictly from backend API
   const loadDashboard = async (farmId = null) => {
+    if (userRole === 'expert' || userRole === 'officer') {
+      return;
+    }
     try {
       setLoading(true);
       setError(null);

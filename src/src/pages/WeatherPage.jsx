@@ -10,8 +10,10 @@ import {
 import AppSidebar from '../components/common/AppSidebar';
 import AppHeader from '../components/common/AppHeader';
 import { useAuth } from '../context/AuthContext';
-import { getWeather, analyzeWeather } from '../api/weather';
+import { getWeather, analyzeWeather, getFarmWeather } from '../api/weather';
 import { getFarms } from '../api/farms';
+import ThermalConditionCard from '../components/weather/ThermalConditionCard';
+
 
 // ─── Supported Domain Constants ──────────────────────────────────────────────
 const CROPS = [
@@ -82,24 +84,40 @@ export default function WeatherPage() {
     let isMounted = true;
     async function loadFarms() {
       try {
-        const farmList = await getFarms();
-        if (isMounted && Array.isArray(farmList) && farmList.length > 0) {
-          setFarms(farmList);
-          const defaultFarm = farmList[0];
-          setSelectedFarmId(defaultFarm.id);
-          if (defaultFarm.crop) setCrop(defaultFarm.crop);
-          if (defaultFarm.soil_type) setSoilType(defaultFarm.soil_type.toLowerCase());
+        const res = await getFarms();
+        const farmList = res.results || res || [];
+        if (isMounted) {
+          if (Array.isArray(farmList) && farmList.length > 0) {
+            setFarms(farmList);
+            const defaultFarm = farmList[0];
+            setSelectedFarmId(defaultFarm.id);
+            if (defaultFarm.crop) setCrop(defaultFarm.crop);
+            if (defaultFarm.soil_type) setSoilType(defaultFarm.soil_type.toLowerCase());
+          } else {
+            setFarms([]);
+            setSelectedFarmId(null);
+            setLoading(false);
+          }
         }
       } catch (err) {
         console.error('Failed to load farms:', err);
+        if (isMounted) {
+          setLoading(false);
+          setError('Unable to load your farm profile records.');
+        }
       }
     }
     loadFarms();
     return () => { isMounted = false; };
   }, []);
 
-  // Fetch live weather from WeatherAPI via Django backend
+  // Fetch live weather from Open-Meteo via Django backend using saved farm coordinates
   const fetchWeatherData = useCallback(async (farmId, isSync = false) => {
+    if (!farmId) {
+      setLoading(false);
+      setSyncing(false);
+      return;
+    }
     if (isSync) {
       setSyncing(true);
     } else {
@@ -108,8 +126,8 @@ export default function WeatherPage() {
     setError(null);
 
     try {
-      // First try WeatherAPI explicitly
-      const data = await getWeather(farmId, 'weatherapi');
+      // Automatically fetch Open-Meteo weather for this specific farm
+      const data = await getFarmWeather(farmId);
       setWeatherData(data);
       setLastSyncedTime(new Date());
 
@@ -118,18 +136,12 @@ export default function WeatherPage() {
         setSoilMoisture(data.soil.moisture_percent);
       }
     } catch (err) {
-      console.warn('WeatherAPI call failed, trying default provider:', err);
-      try {
-        const fallbackData = await getWeather(farmId);
-        setWeatherData(fallbackData);
-        setLastSyncedTime(new Date());
-        if (!isCustomContext && fallbackData?.soil?.moisture_percent != null) {
-          setSoilMoisture(fallbackData.soil.moisture_percent);
-        }
-      } catch (secondErr) {
-        console.error('All weather endpoints failed:', secondErr);
-        setError('Unable to fetch meteorological data. Please ensure the AgriSmart backend is online.');
-      }
+      console.error('Failed to fetch Open-Meteo weather for farm:', err);
+      const errorMsg =
+        err.response?.data?.detail ||
+        err.response?.data?.error ||
+        'Unable to fetch Open-Meteo meteorological data for this farm. Please check backend connection.';
+      setError(errorMsg);
     } finally {
       setLoading(false);
       setSyncing(false);
@@ -141,14 +153,14 @@ export default function WeatherPage() {
     if (selectedFarmId) {
       fetchWeatherData(selectedFarmId);
     } else if (farms.length === 0) {
-      fetchWeatherData(null);
+      setLoading(false);
     }
   }, [selectedFarmId, fetchWeatherData, farms.length]);
 
-  // Current active farm object
+  // Current active farm object (from farm list or backend weather response)
   const activeFarm = useMemo(() => {
-    return farms.find((f) => f.id === selectedFarmId) || null;
-  }, [farms, selectedFarmId]);
+    return farms.find((f) => f.id === selectedFarmId) || weatherData?.farm || null;
+  }, [farms, selectedFarmId, weatherData?.farm]);
 
   // When user selects another farm from dropdown
   const handleFarmChange = (farmId) => {
@@ -337,7 +349,7 @@ export default function WeatherPage() {
           title="Weather & Advisory"
           subtitle="Agricultural Interpretation & Daily Farm Operations"
           onMenuClick={() => setMobileOpen(true)}
-          badgeText={meta.provider ? `${meta.provider} Live` : 'WeatherAPI Live'}
+          badgeText="Open-Meteo Live"
           badgeType="emerald"
           rightActions={
             <div className="flex items-center gap-2">
@@ -356,34 +368,52 @@ export default function WeatherPage() {
             {/* ── 1. Editorial Sub-Header & Farm Selector ── */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-stone-200/80">
               <div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="font-serif text-xl sm:text-2xl font-bold tracking-tight text-stone-900">
-                    {activeFarm ? activeFarm.farm_name || activeFarm.name : 'Your Farm'}
+                    Farm: {activeFarm ? (activeFarm.farm_name || activeFarm.name) : 'Your Farm'}
                   </h2>
                   <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-stone-100 text-stone-700 border border-stone-200">
-                    {activeFarm?.location_name || activeFarm?.location_display || 'Anand, Gujarat'}
+                    {activeFarm?.location_name || activeFarm?.location_display || 'Field Location'}
+                  </span>
+                  {activeFarm?.latitude != null && activeFarm?.longitude != null && (
+                    <span className="text-[11px] font-mono font-medium px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">
+                      📍 {Number(activeFarm.latitude).toFixed(4)}°N, {Number(activeFarm.longitude).toFixed(4)}°E
+                    </span>
+                  )}
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 text-blue-800 border border-blue-200">
+                    Open-Meteo Telemetry
                   </span>
                 </div>
                 <p className="text-xs text-stone-600 mt-1">
-                  Live atmospheric telemetry interpreted through AgriSmart soil and microclimate models.
+                  Live atmospheric telemetry automatically fetched from Open-Meteo using the saved farm coordinates.
                 </p>
               </div>
 
               {/* Controls: Farm Selector & Sync Button */}
               <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
-                {farms.length > 1 && (
-                  <select
-                    value={selectedFarmId || ''}
-                    onChange={(e) => handleFarmChange(e.target.value)}
-                    className="text-xs font-semibold bg-white border border-stone-200 rounded-lg px-2.5 py-1.5 text-stone-800 focus:outline-none focus:border-[#1b4332]"
-                  >
-                    {farms.map((f) => (
-                      <option key={f.id} value={f.id}>
-                        🏡 {f.farm_name || f.name} ({f.crop || 'Crop'})
-                      </option>
-                    ))}
-                  </select>
-                )}
+                {farms.length > 1 ? (
+                  <div className="flex items-center gap-1.5">
+                    <label htmlFor="weather-farm-select" className="text-xs font-medium text-stone-500">
+                      Farm:
+                    </label>
+                    <select
+                      id="weather-farm-select"
+                      value={selectedFarmId || ''}
+                      onChange={(e) => handleFarmChange(e.target.value)}
+                      className="text-xs font-semibold bg-white border border-stone-200 rounded-lg px-2.5 py-1.5 text-stone-800 focus:outline-none focus:border-[#1b4332]"
+                    >
+                      {farms.map((f) => (
+                        <option key={f.id} value={f.id}>
+                          🏡 {f.farm_name || f.name} ({f.crop || 'Crop'})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : farms.length === 1 ? (
+                  <span className="text-xs font-bold text-stone-700 bg-stone-100 px-2.5 py-1.5 rounded-lg border border-stone-200">
+                    🏡 {farms[0].farm_name}
+                  </span>
+                ) : null}
 
                 <div className="flex items-center gap-1.5 text-xs text-stone-500 bg-white border border-stone-200/80 rounded-lg px-2.5 py-1.5">
                   <Clock className="w-3.5 h-3.5 text-stone-400" />
@@ -402,6 +432,27 @@ export default function WeatherPage() {
               </div>
             </div>
 
+            {/* Empty state if user has no saved farms */}
+            {!loading && farms.length === 0 && (
+              <div className="bg-white rounded-2xl border border-stone-200 p-8 text-center max-w-xl mx-auto my-6 shadow-xs space-y-4">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-[#1b4332] flex items-center justify-center mx-auto">
+                  <Sprout className="w-7 h-7" />
+                </div>
+                <h3 className="font-serif text-xl font-bold text-stone-900">No Farm Profile Found</h3>
+                <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
+                  AgriSmart automatically fetches Open-Meteo weather for your farm using its stored latitude and longitude coordinates. Please create your farm on the map in My Farm to view live weather telemetry.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigate('/farm')}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#047857] hover:bg-[#065f46] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                >
+                  <span>Go to My Farm</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
             {/* Error notice if API fails */}
             {error && (
               <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center justify-between">
@@ -409,12 +460,14 @@ export default function WeatherPage() {
                   <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
                   <span>{error}</span>
                 </div>
-                <button
-                  onClick={() => fetchWeatherData(selectedFarmId)}
-                  className="font-bold underline ml-3 cursor-pointer hover:text-amber-950"
-                >
-                  Retry
-                </button>
+                {selectedFarmId && (
+                  <button
+                    onClick={() => fetchWeatherData(selectedFarmId)}
+                    className="font-bold underline ml-3 cursor-pointer hover:text-amber-950"
+                  >
+                    Retry
+                  </button>
+                )}
               </div>
             )}
 
@@ -529,7 +582,7 @@ export default function WeatherPage() {
                   </span>
                 </div>
                 <span className="text-[11px] font-semibold text-stone-400">
-                  Data Provider: <strong className="text-stone-600">{meta.provider || 'WeatherAPI'}</strong>
+                  Data Provider: <strong className="text-stone-600">{meta.provider || 'Open-Meteo API'}</strong>
                 </span>
               </div>
 
@@ -598,7 +651,16 @@ export default function WeatherPage() {
               </div>
             </div>
 
+            {/* ── 3B. NASA ECOSTRESS Land Surface Temperature (LST) Observation ── */}
+            {selectedFarmId && (
+              <ThermalConditionCard
+                farmId={selectedFarmId}
+                farmName={activeFarm?.farm_name || activeFarm?.name}
+              />
+            )}
+
             {/* ── 4. Interactive "Your Farm Conditions" Bar ── */}
+
             <div className="bg-white rounded-xl border border-stone-200/80 p-4 shadow-2xs">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-stone-100">
                 <div className="flex items-center gap-2">
@@ -938,7 +1000,7 @@ export default function WeatherPage() {
                   ))
                 ) : (
                   <div className="py-6 text-center text-xs text-stone-500 italic">
-                    Forecast data currently syncing from WeatherAPI gateway...
+                    Forecast data currently syncing from Open-Meteo gateway...
                   </div>
                 )}
               </div>
@@ -981,7 +1043,7 @@ export default function WeatherPage() {
             {/* ── 8. Data Source Transparency & Grounding Note ── */}
             <div className="pt-2 pb-6 text-center text-[11px] text-stone-400 space-y-1">
               <p>
-                <strong>Data Provenance:</strong> Live atmospheric observations and 7-day numerical forecasts powered by <strong>WeatherAPI</strong>.
+                <strong>Data Provenance:</strong> Live atmospheric observations and 7-day numerical forecasts powered by <strong>Open-Meteo API</strong> based on coordinates stored for this farm.
               </p>
               <p>
                 Agricultural interpretations calculated by the <strong>AgriSmart Agronomic Intelligence Engine</strong> using FAO-56 Penman-Monteith crop water balance models and microclimate pathogen thresholds.

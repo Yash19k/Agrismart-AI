@@ -5,13 +5,15 @@ from .models import User
 
 
 class RegisterSerializer(serializers.Serializer):
-    """Public registration — always creates a farmer account."""
+    """Public registration supporting role selection (farmer, expert, officer)."""
     name = serializers.CharField()
     email = serializers.CharField()
     password = serializers.CharField(write_only=True, min_length=6)
-
-    # Accept role field from frontend but silently force it to 'farmer'
-    role = serializers.CharField(required=False, default='farmer')
+    role = serializers.ChoiceField(
+        choices=['farmer', 'expert', 'officer'],
+        required=False,
+        default='farmer'
+    )
 
     def validate_email(self, value):
         val = value.strip()
@@ -24,13 +26,16 @@ class RegisterSerializer(serializers.Serializer):
         return val
 
     def validate_role(self, value):
-        # Public signup is ALWAYS farmer — prevent privilege escalation
-        return 'farmer'
+        val = (value or 'farmer').strip().lower()
+        if val not in ('farmer', 'expert', 'officer'):
+            return 'farmer'
+        return val
 
     def create(self, validated_data):
         name = validated_data.pop('name', '')
         identifier = validated_data['email'].strip()
         password = validated_data['password']
+        role = validated_data.get('role', 'farmer')
         parts = name.strip().split(' ', 1)
         first = parts[0]
         last = parts[1] if len(parts) > 1 else ''
@@ -45,7 +50,8 @@ class RegisterSerializer(serializers.Serializer):
             first_name=first,
             last_name=last,
             phone=phone,
-            role='farmer',  # Always farmer for public signup
+            role=role,
+            is_verified_expert=(role == 'expert'),
         )
         return user
 

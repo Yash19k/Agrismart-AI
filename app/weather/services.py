@@ -83,53 +83,11 @@ class WeatherService:
         return f'agrismart_weather_farm_{farm_id}_{provider}'
 
     @classmethod
-    def fetch_farm_weather(cls, farm, provider: str = None) -> dict:
-        """Return weather data for a farm, served from cache when available."""
-        provider = provider or getattr(settings, 'WEATHER_PROVIDER', 'open-meteo')
-        key = cls.cache_key(farm.id, provider)
-        cached = cache.get(key)
-        if cached:
-            logger.debug('Weather cache HIT for farm %s via %s', farm.id, provider)
-            return cached
-
-        logger.info('Fetching weather via %s for farm %s (%.4f, %.4f)',
-                    provider, farm.id, farm.latitude, farm.longitude)
-        try:
-            data = cls._fetch(farm.latitude, farm.longitude, provider=provider)
-        except httpx.HTTPStatusError as e:
-            raise WeatherServiceError(
-                f'Weather provider ({provider}) API error {e.response.status_code}: {e.response.text[:200]}'
-            ) from e
-        except httpx.RequestError as e:
-            raise WeatherServiceError(f'Could not reach weather service ({provider}): {e}') from e
-
-        cache.set(key, data, CACHE_TTL)
-        return data
-
-    @classmethod
-    def fetch_coordinates(cls, lat: float, lon: float, provider: str = None) -> dict:
-        """Fetch live weather for arbitrary coordinates."""
-        provider = provider or getattr(settings, 'WEATHER_PROVIDER', 'open-meteo')
-        key = f'agrismart_weather_coord_{provider}_{round(lat, 3)}_{round(lon, 3)}'
-        cached = cache.get(key)
-        if cached:
-            return cached
-        data = cls._fetch(lat, lon, provider=provider)
-        cache.set(key, data, CACHE_TTL)
-        return data
-
-    @classmethod
-    def _fetch(cls, lat: float, lon: float, provider: str = None) -> dict:
-        provider = provider or getattr(settings, 'WEATHER_PROVIDER', 'open-meteo')
-        api_key = getattr(settings, 'WEATHER_API_KEY', '093b53ee057a4907ab9104918261209')
-
-        if provider == 'weatherapi' and api_key:
-            try:
-                return cls._fetch_weatherapi(lat, lon, api_key)
-            except Exception as e:
-                logger.warning('WeatherAPI failed (%s), falling back to Open-Meteo', e)
-
-        # Open-Meteo API
+    def fetch_open_meteo(cls, lat: float, lon: float) -> dict:
+        """
+        Dynamically construct Open-Meteo request using farm coordinates.
+        Preserves existing AgriSmart weather variables (CURRENT_VARS, HOURLY_VARS, DAILY_VARS).
+        """
         params = {
             'latitude': lat,
             'longitude': lon,
@@ -145,6 +103,168 @@ class WeatherService:
             raw = r.json()
 
         return cls._parse(raw)
+
+    @classmethod
+    def fetch_farm_weather(cls, farm, provider: str = 'open-meteo') -> dict:
+        """
+        Return Open-Meteo weather data for a farm using its stored latitude and longitude.
+        Results are cached for CACHE_TTL.
+        """
+        if not farm:
+            raise WeatherServiceError("No farm record provided.")
+        if farm.latitude is None or farm.longitude is None:
+            raise WeatherServiceError(f"Farm '{farm.farm_name}' has no saved latitude/longitude coordinates.")
+
+        try:
+            lat = float(farm.latitude)
+            lon = float(farm.longitude)
+        except (ValueError, TypeError):
+            raise WeatherServiceError(
+                f"Coordinates for farm '{farm.farm_name}' are invalid: ({farm.latitude}, {farm.longitude})"
+            )
+
+        if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+            raise WeatherServiceError(
+                f"Coordinates for farm '{farm.farm_name}' are out of range: ({lat}, {lon})"
+            )
+
+        provider = provider or getattr(settings, 'WEATHER_PROVIDER', 'open-meteo')
+        key = cls.cache_key(farm.id, provider)
+        cached = cache.get(key)
+        if cached:
+            logger.debug('Weather cache HIT for farm %s via %s', farm.id, provider)
+            return cached
+
+        logger.info('Fetching Open-Meteo weather for farm %s "%s" (%.6f, %.6f)',
+                    farm.id, farm.farm_name, lat, lon)
+
+        try:
+            if provider == 'open-meteo':
+                data = cls.fetch_open_meteo(lat, lon)
+            else:
+                data = cls._fetch(lat, lon, provider=provider)
+        except httpx.TimeoutException as e:
+            raise WeatherServiceError(
+                f"Open-Meteo request timed out while fetching weather for farm '{farm.farm_name}'."
+            ) from e
+        except httpx.HTTPStatusError as e:
+            raise WeatherServiceError(
+                f"Open-Meteo API returned error {e.response.status_code} for farm '{farm.farm_name}'."
+            ) from e
+        except httpx.RequestError as e:
+            raise WeatherServiceError(
+                f"Network connection failed while contacting Open-Meteo: {e}"
+            ) from e
+        except Exception as e:
+            raise WeatherServiceError(f"Failed to fetch or parse weather data: {e}") from e
+
+        # Firmly attach farm association to the weather data
+        data['farm'] = {
+            'id': farm.id,
+            'farm_name': farm.farm_name,
+            'latitude': lat,
+            'longitude': lon,
+            'location_name': farm.location_name or farm.location_display,
+            'crop': farm.crop,
+            'crop_variety': getattr(farm, 'crop_variety', ''),
+            'crop_stage': farm.crop_stage,
+            'soil_type': farm.soil_type,
+            'farm_area_acres': getattr(farm, 'farm_area_acres', None),
+        }
+        if 'meta' in data:
+            data['meta']['has_farm'] = True
+            data['meta']['farm_id'] = farm.id
+            data['meta']['farm_name'] = farm.farm_name
+            data['meta']['location'] = farm.location_name or farm.location_display
+            data['meta']['coordinates'] = {'latitude': lat, 'longitude': lon}
+            data['meta']['provider'] = 'Open-Meteo'
+
+        # Persist historical weather observation
+        cls.record_farm_weather(farm, data)
+
+        cache.set(key, data, CACHE_TTL)
+        return data
+
+    @classmethod
+    def record_farm_weather(cls, farm, data: dict):
+        """
+        Preserve weather observations as historical time series records.
+        Prevents duplicate entries via unique constraint (farm, observation_datetime, data_source).
+        """
+        try:
+            from farms.models import WeatherObservation
+            from django.utils.dateparse import parse_datetime
+            from django.utils import timezone
+
+            cur = data.get('current', {})
+            if not cur:
+                return
+
+            provider = data.get('meta', {}).get('provider', 'Open-Meteo')
+
+            dt_str = cur.get('time') or data.get('meta', {}).get('fetched_at')
+            obs_dt = None
+            if dt_str:
+                obs_dt = parse_datetime(dt_str)
+            if not obs_dt:
+                obs_dt = timezone.now()
+            elif timezone.is_naive(obs_dt):
+                obs_dt = timezone.make_aware(obs_dt)
+
+            obs_dt = obs_dt.replace(microsecond=0)
+
+            soil_pct = data.get('soil', {}).get('moisture_percent')
+            hourly = data.get('hourly', [])
+            vpd = hourly[0].get('vpd') if hourly else None
+            et0 = data.get('today', {}).get('et0') or (hourly[0].get('et0') if hourly else None)
+
+            WeatherObservation.objects.get_or_create(
+                farm=farm,
+                observation_datetime=obs_dt,
+                data_source=provider,
+                defaults={
+                    'temperature': cur.get('temperature'),
+                    'relative_humidity': cur.get('humidity'),
+                    'apparent_temperature': cur.get('feels_like'),
+                    'precipitation': cur.get('precipitation'),
+                    'wind_speed': cur.get('wind_speed'),
+                    'wind_direction': cur.get('wind_direction'),
+                    'soil_moisture': soil_pct,
+                    'vapour_pressure_deficit': vpd,
+                    'et0_fao': et0,
+                    'weather_code': cur.get('weather_code'),
+                }
+            )
+        except Exception as e:
+            logger.warning("Could not persist weather observation for farm %s: %s", farm.id, e)
+
+    @classmethod
+    def fetch_coordinates(cls, lat: float, lon: float, provider: str = None) -> dict:
+        """Fetch live weather for arbitrary coordinates."""
+        provider = provider or getattr(settings, 'WEATHER_PROVIDER', 'open-meteo')
+        key = f'agrismart_weather_coord_{provider}_{round(lat, 3)}_{round(lon, 3)}'
+        cached = cache.get(key)
+        if cached:
+            return cached
+        if provider == 'open-meteo':
+            data = cls.fetch_open_meteo(lat, lon)
+        else:
+            data = cls._fetch(lat, lon, provider=provider)
+        cache.set(key, data, CACHE_TTL)
+        return data
+
+    @classmethod
+    def _fetch(cls, lat: float, lon: float, provider: str = None) -> dict:
+        provider = provider or getattr(settings, 'WEATHER_PROVIDER', 'open-meteo')
+        api_key = getattr(settings, 'WEATHER_API_KEY', '093b53ee057a4907ab9104918261209')
+
+        if provider == 'weatherapi' and api_key:
+            try:
+                return cls._fetch_weatherapi(lat, lon, api_key)
+            except Exception as e:
+                logger.warning('WeatherAPI failed (%s), falling back to Open-Meteo', e)
+
+        return cls.fetch_open_meteo(lat, lon)
 
 
     @classmethod
@@ -280,6 +400,7 @@ class WeatherService:
         wc = cur_raw.get('weather_code', 0) or 0
         weather_type = get_weather_type(wc)
         current = {
+            'time':          cur_raw.get('time') or now.isoformat(),
             'temperature':   cls._r(cur_raw.get('temperature_2m', 0)),
             'humidity':      round(cur_raw.get('relative_humidity_2m', 0) or 0),
             'feels_like':    cls._r(cur_raw.get('apparent_temperature', 0)),

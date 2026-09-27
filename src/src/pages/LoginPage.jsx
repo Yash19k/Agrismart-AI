@@ -4,6 +4,7 @@ import { Mail, Lock, LogIn, Eye, EyeOff, ArrowLeft, X, CheckCircle, AlertCircle,
 import { useAuth } from '../context/AuthContext';
 import authService from '../services/authService';
 import { GoogleTranslateDropdown } from '../components/common/GoogleTranslate';
+import { getDashboardPathForRole } from '../config/navigation';
 
 export const LoginPage = () => {
   const { login } = useAuth();
@@ -46,9 +47,12 @@ export const LoginPage = () => {
     setResetSuccessMsg(null);
 
     try {
-      await login(formData.email, formData.password);
-      const from = location.state?.from?.pathname || '/dashboard';
-      navigate(from, { replace: true });
+      const loginRes = await login(formData.email, formData.password);
+      const role = loginRes?.user?.role || 'farmer';
+      const roleDashboard = getDashboardPathForRole(role);
+      const from = location.state?.from?.pathname;
+      const target = (from && from !== '/dashboard') ? from : roleDashboard;
+      navigate(target, { replace: true });
     } catch (err) {
       setErrorMsg(err.friendlyMessage || err.response?.data?.detail || 'Invalid login details. Please try again.');
     } finally {

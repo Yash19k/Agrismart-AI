@@ -1,14 +1,32 @@
 import client from './client';
 
 /**
- * Fetch weather data for a farm or specific coordinates through Django gateway.
+ * Fetch weather data for a farm through Django gateway connected to Open-Meteo.
  * React MUST NOT call Open-Meteo directly.
  *
  * @param {number|null} farmId
  */
-export async function getWeather(farmId = null, provider = null) {
-  const params = farmId ? { farm_id: farmId } : {};
-  if (provider) params.provider = provider;
+export async function getFarmWeather(farmId = null) {
+  const url = farmId ? `/farms/${farmId}/weather/` : '/farms/weather/';
+  const res = await client.get(url);
+  return res.data;
+}
+
+export async function getWeather(farmId = null, provider = 'open-meteo') {
+  if (farmId) {
+    try {
+      const res = await client.get(`/farms/${farmId}/weather/`);
+      return res.data;
+    } catch (err) {
+      if (err.response?.status === 400 || err.response?.status === 404) {
+        throw err;
+      }
+      const params = { farm_id: farmId, provider };
+      const res = await client.get('/weather/', { params });
+      return res.data;
+    }
+  }
+  const params = provider ? { provider } : {};
   const res = await client.get('/weather/', { params });
   return res.data;
 }

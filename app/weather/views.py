@@ -23,39 +23,60 @@ from .engine import config
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def weather_view(request):
-    """GET /api/weather/?farm_id=<id> — current + hourly + daily weather for a farm."""
+    """GET /api/weather/?farm_id=<id> — current + hourly + daily Open-Meteo weather for a farm."""
     farm_id = request.query_params.get('farm_id')
-    farm = (
-        Farm.objects.filter(id=farm_id, user=request.user).first()
-        if farm_id
-        else Farm.objects.filter(user=request.user).first()
-    )
-    requested_provider = request.query_params.get('provider')
-    provider = requested_provider if requested_provider in {'open-meteo', 'weatherapi'} else None
-
-    if not farm:
-        try:
-            data = WeatherService.fetch_coordinates(22.5645, 72.9289, provider=provider)
-            if 'meta' in data:
-                data['meta']['has_farm'] = False
-                data['meta']['location'] = 'Anand, Gujarat'
-            return Response(data)
-        except Exception as e:
+    if farm_id:
+        farm = Farm.objects.filter(id=farm_id, user=request.user).first()
+        if not farm:
             return Response(
-                {'detail': 'No farm found. Please add your farm first.', 'error': str(e)},
+                {'detail': 'Farm not found or does not belong to you.'},
                 status=status.HTTP_404_NOT_FOUND,
             )
+    else:
+        farm = Farm.objects.filter(user=request.user).first()
+
+    if not farm:
+        return Response(
+            {'detail': 'No farm found for your account. Please create a farm first.'},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    if farm.latitude is None or farm.longitude is None:
+        return Response(
+            {'detail': f'Farm "{farm.farm_name}" has no latitude and longitude coordinates saved.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        lat = float(farm.latitude)
+        lon = float(farm.longitude)
+    except (ValueError, TypeError):
+        return Response(
+            {'detail': f'Farm "{farm.farm_name}" has invalid coordinates ({farm.latitude}, {farm.longitude}).'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+        return Response(
+            {'detail': f'Farm coordinates ({lat}, {lon}) are out of range (-90 to 90 lat, -180 to 180 lon).'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    requested_provider = request.query_params.get('provider', 'open-meteo')
+    provider = requested_provider if requested_provider in {'open-meteo', 'weatherapi'} else 'open-meteo'
 
     try:
         data = WeatherService.fetch_farm_weather(farm, provider=provider)
-        if 'meta' in data:
-            data['meta']['has_farm'] = True
-            data['meta']['location'] = farm.location_name or 'Anand, Gujarat'
-        return Response(data)
+        return Response(data, status=status.HTTP_200_OK)
     except WeatherServiceError as e:
         return Response(
-            {'error': str(e), 'detail': 'Weather data temporarily unavailable.'},
+            {'error': str(e), 'detail': str(e)},
             status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
+    except Exception as e:
+        return Response(
+            {'error': str(e), 'detail': f'Unexpected error fetching weather: {str(e)}'},
+            status=status.HTTP_502_BAD_GATEWAY,
         )
 
 

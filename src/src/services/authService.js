@@ -1,9 +1,9 @@
 import api from './api';
 
 export const authService = {
-  async register(name, email, password) {
+  async register(name, email, password, role = 'farmer') {
     try {
-      const response = await api.post('/auth/register/', { name, email, password });
+      const response = await api.post('/auth/register/', { name, email, password, role });
       return response.data;
     } catch (error) {
       throw error;

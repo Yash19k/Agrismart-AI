@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation, matchPath } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { getNavItemsForRole } from '../../config/navigation';
+import { getNavItemsForRole, getDashboardPathForRole } from '../../config/navigation';
 import { Sprout, LogOut, X, ChevronRight } from 'lucide-react';
 
 const ROLE_LABELS = {
@@ -81,7 +81,10 @@ export default function AppSidebar({
     <div className="flex flex-col h-full justify-between bg-white border-r border-gray-100 w-60 flex-shrink-0 select-none overflow-y-auto">
       <div>
         {/* Brand Header */}
-        <div className="flex items-center gap-2.5 px-4 py-5 border-b border-gray-100">
+        <div
+          onClick={() => navigate(getDashboardPathForRole(userRole))}
+          className="flex items-center gap-2.5 px-4 py-5 border-b border-gray-100 cursor-pointer hover:bg-gray-50/60 transition-colors"
+        >
           <div className="w-9 h-9 rounded-xl bg-[#047857] flex items-center justify-center text-white shadow-sm flex-shrink-0">
             <Sprout className="w-5 h-5 stroke-[2.2]" />
           </div>

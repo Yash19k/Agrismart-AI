@@ -214,8 +214,13 @@ CACHES = {
 }
 # Responses cached for 30 minutes to avoid repeated API calls
 WEATHER_CACHE_TIMEOUT = int(os.environ.get('WEATHER_CACHE_TIMEOUT', 60 * 30))
-WEATHER_API_KEY = os.environ.get('WEATHER_API_KEY', '093b53ee057a4907ab9104918261209')
 WEATHER_PROVIDER = os.environ.get('WEATHER_PROVIDER', 'weatherapi')
+
+# ── NASA Earthdata / ECOSTRESS Configuration ──────────────────────────────────
+NASA_EARTHDATA_USERNAME = os.environ.get('NASA_EARTHDATA_USERNAME', '')
+NASA_EARTHDATA_PASSWORD = os.environ.get('NASA_EARTHDATA_PASSWORD', '')
+NASA_EARTHDATA_TOKEN = os.environ.get('NASA_EARTHDATA_TOKEN', '')
+
 
 # ── Groq LLM Configuration ──────────────────────────────────────────────────
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')

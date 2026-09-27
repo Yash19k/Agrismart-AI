@@ -128,10 +128,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (name, email, password) => {
+  const register = async (name, email, password, role = 'farmer') => {
     setLoading(true);
     try {
-      const response = await authService.register(name.trim(), email.trim(), password);
+      const response = await authService.register(name.trim(), email.trim(), password, role);
       return { success: true, data: response };
     } catch (error) {
       console.error('API register error:', error);

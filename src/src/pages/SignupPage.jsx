@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, Eye, EyeOff, ArrowLeft, ArrowRight, CheckCircle, AlertCircle } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff, ArrowLeft, ArrowRight, CheckCircle, AlertCircle, Sprout, Microscope, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { GoogleTranslateDropdown } from '../components/common/GoogleTranslate';
 
@@ -12,6 +12,7 @@ export const SignupPage = () => {
     name: '',
     email: '',
     password: '',
+    role: 'farmer',
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -39,8 +40,8 @@ export const SignupPage = () => {
     setSuccessMsg(null);
 
     try {
-      await register(formData.name, formData.email, formData.password);
-      navigate('/login', { state: { registered: true, name: formData.name } });
+      await register(formData.name, formData.email, formData.password, formData.role);
+      navigate('/login', { state: { registered: true, name: formData.name, role: formData.role } });
     } catch (err) {
       setErrorMsg(err.friendlyMessage || err.response?.data?.detail || 'Unable to create account. Please try again.');
     } finally {
@@ -228,6 +229,82 @@ export const SignupPage = () => {
                 </div>
               </div>
 
+              {/* Role Selection */}
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[#0c2720] mb-2" id="role-selection-label">
+                  Account Type / Role
+                </label>
+                <div className="grid grid-cols-3 gap-2.5" role="radiogroup" aria-labelledby="role-selection-label">
+                  {[
+                    {
+                      id: 'farmer',
+                      title: 'Farmer',
+                      subtitle: 'Grower / Field',
+                      icon: Sprout,
+                      color: 'text-emerald-700',
+                      badgeBg: 'bg-emerald-100/70',
+                      borderActive: 'border-emerald-600 bg-emerald-50/60 ring-2 ring-emerald-600/20',
+                    },
+                    {
+                      id: 'expert',
+                      title: 'Expert',
+                      subtitle: 'Agronomist',
+                      icon: Microscope,
+                      color: 'text-blue-700',
+                      badgeBg: 'bg-blue-100/70',
+                      borderActive: 'border-blue-600 bg-blue-50/60 ring-2 ring-blue-600/20',
+                    },
+                    {
+                      id: 'officer',
+                      title: 'Officer',
+                      subtitle: 'Surveillance',
+                      icon: ShieldCheck,
+                      color: 'text-purple-700',
+                      badgeBg: 'bg-purple-100/70',
+                      borderActive: 'border-purple-600 bg-purple-50/60 ring-2 ring-purple-600/20',
+                    },
+                  ].map((item) => {
+                    const isSelected = formData.role === item.id;
+                    const IconComp = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={isSelected}
+                        onClick={() => setFormData({ ...formData, role: item.id })}
+                        className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                          isSelected
+                            ? item.borderActive
+                            : 'bg-white border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/60'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className={`p-1.5 rounded-lg ${isSelected ? item.badgeBg : 'bg-slate-100'}`}>
+                            <IconComp className={`w-4 h-4 ${isSelected ? item.color : 'text-slate-500'}`} />
+                          </span>
+                          <span
+                            className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
+                              isSelected ? 'border-emerald-600 bg-emerald-600' : 'border-slate-300'
+                            }`}
+                          >
+                            {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                          </span>
+                        </div>
+                        <div>
+                          <div className={`text-xs font-bold leading-tight ${isSelected ? 'text-slate-900' : 'text-slate-700'}`}>
+                            {item.title}
+                          </div>
+                          <div className="text-[10px] text-slate-500 leading-tight mt-0.5">
+                            {item.subtitle}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               {/* Submit Button */}
               <div className="pt-2">
                 <button
@@ -260,14 +337,10 @@ export const SignupPage = () => {
               </p>
             </div>
 
-            {/* Extension / Officer Account Info */}
+            {/* Multi-role notice */}
             <div className="mt-4 pt-3 border-t border-slate-100 text-center">
               <p className="text-[11.5px] text-slate-500 leading-relaxed">
-                🏛️ <strong>Agricultural Officer or Extension Specialist?</strong><br />
-                Staff accounts are verified and credentialed by the Department of Agriculture. Please{' '}
-                <Link to="/login" className="text-[#1b4d3e] font-semibold underline underline-offset-2">
-                  sign in with your staff credentials
-                </Link>.
+                🌱 <strong>Role Permissions:</strong> Farmers access diagnostic tools and farm schedules; Experts validate diagnoses and provide clinical reviews; Officers monitor regional disease surveillance.
               </p>
             </div>
           </section>

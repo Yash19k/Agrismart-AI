@@ -16,6 +16,10 @@ groq>=0.37.0
 torch>=2.0
 torchvision>=0.15
 matplotlib>=3.7
+shapely>=2.0
+pyproj>=3.6
+tifffile>=2024.1.1
+python-dateutil>=2.8.2
 
 # Production Deployment Dependencies
 gunicorn>=21.2.0

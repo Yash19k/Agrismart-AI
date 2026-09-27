@@ -19,6 +19,11 @@ import { useAuth } from '../context/AuthContext';
 import { getFarms } from '../api/farms';
 import { getFarmRisk } from '../api/risk';
 import DiseaseForecast from '../components/disease/DiseaseForecast';
+import ThermalConditionCard from '../components/weather/ThermalConditionCard';
+import EnvironmentalStressSection from '../components/weather/EnvironmentalStressSection';
+
+
+
 
 export default function RiskForecastPage() {
   const { user } = useAuth();
@@ -233,7 +238,24 @@ export default function RiskForecastPage() {
                 <DiseaseForecast forecast={riskData.forecast} />
               </div>
 
+              {/* Rule-Based Environmental Stress Analysis & Historical Time-Series */}
+              {selectedFarmId && (
+                <EnvironmentalStressSection
+                  farmId={selectedFarmId}
+                  farmName={riskData.farm_name}
+                />
+              )}
+
+              {/* NASA ECOSTRESS Land Surface Temperature Thermal Condition */}
+              {selectedFarmId && (
+                <ThermalConditionCard
+                  farmId={selectedFarmId}
+                  farmName={riskData.farm_name}
+                />
+              )}
+
               {/* Breakdown Table */}
+
               <div className="bg-white rounded-3xl p-6 border border-[#DCE8DF] shadow-xs">
                 <h3 className="font-editorial text-lg font-bold text-[#003629] mb-4">
                   Multi-Factor Agronomic Weighting Matrix
