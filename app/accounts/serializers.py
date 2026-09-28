@@ -5,15 +5,11 @@ from .models import User
 
 
 class RegisterSerializer(serializers.Serializer):
-    """Public registration supporting role selection (farmer, expert, officer)."""
+    """Public registration — creates farmer accounts."""
     name = serializers.CharField()
     email = serializers.CharField()
     password = serializers.CharField(write_only=True, min_length=6)
-    role = serializers.ChoiceField(
-        choices=['farmer', 'expert', 'officer'],
-        required=False,
-        default='farmer'
-    )
+    role = serializers.CharField(required=False, default='farmer')
 
     def validate_email(self, value):
         val = value.strip()
@@ -26,16 +22,13 @@ class RegisterSerializer(serializers.Serializer):
         return val
 
     def validate_role(self, value):
-        val = (value or 'farmer').strip().lower()
-        if val not in ('farmer', 'expert', 'officer'):
-            return 'farmer'
-        return val
+        # Public signup creates standard farmer accounts
+        return 'farmer'
 
     def create(self, validated_data):
         name = validated_data.pop('name', '')
         identifier = validated_data['email'].strip()
         password = validated_data['password']
-        role = validated_data.get('role', 'farmer')
         parts = name.strip().split(' ', 1)
         first = parts[0]
         last = parts[1] if len(parts) > 1 else ''
@@ -50,8 +43,7 @@ class RegisterSerializer(serializers.Serializer):
             first_name=first,
             last_name=last,
             phone=phone,
-            role=role,
-            is_verified_expert=(role == 'expert'),
+            is_verified_expert=False,
         )
         return user
 
@@ -110,6 +102,7 @@ class StaffRegisterSerializer(serializers.Serializer):
             first_name=first,
             last_name=last,
             role=role,
+            is_staff=(role == 'officer'),
             is_verified_expert=validated_data.get('is_verified_expert', role == 'expert'),
             credentials_note=validated_data.get('credentials_note', ''),
             assigned_region=validated_data.get('assigned_region', ''),
@@ -153,6 +146,7 @@ class LoginSerializer(serializers.Serializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
+    role = serializers.CharField(read_only=True)
 
     class Meta:
         model = User

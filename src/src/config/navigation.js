@@ -213,36 +213,16 @@ export const NAV_ITEMS = [
 ];
 
 /**
- * Return default dashboard path for a given role.
- * - Agronomist / Expert: /expert (Validation / Review Queue)
- * - Agriculture Officer: /regional-monitoring (Regional Surveillance Dashboard)
- * - Farmer: /dashboard (Farm Health & Disease Analytics)
+ * Return default dashboard path (Farmer Dashboard).
  */
-export const getDashboardPathForRole = (role) => {
-  switch (role?.toLowerCase()) {
-    case 'expert':
-      return '/expert';
-    case 'officer':
-      return '/regional-monitoring';
-    case 'farmer':
-    default:
-      return '/dashboard';
-  }
-};
+export const getDashboardPathForRole = () => '/dashboard';
 
 /**
- * Filter items by user role.
- * Empty roles list means accessible to all authenticated users.
+ * Filter items for the farmer dashboard view.
  */
-export const getNavItemsForRole = (role) => {
-  if (!role) return [];
-  const normalized = role.toLowerCase();
+export const getNavItemsForRole = () => {
   return NAV_ITEMS.filter((item) => {
-    // For expert and officer, hide the farmer '/dashboard' link so they use their dedicated dashboard
-    if (item.id === 'dashboard' && normalized !== 'farmer') {
-      return false;
-    }
-    return item.roles.length === 0 || item.roles.includes(normalized);
+    return item.roles.length === 0 || item.roles.includes('farmer');
   });
 };
 

@@ -24,20 +24,17 @@ import RegionalMonitoringPage from './pages/RegionalMonitoringPage';
 import FarmPage from './pages/FarmPage';
 import RiskForecastPage from './pages/RiskForecastPage';
 import ReferralPage from './pages/ReferralPage';
-import { getDashboardPathForRole } from './config/navigation';
-
 // Protected route: redirect to login if not authenticated
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
 
-// Public-only route: redirect authenticated users to their respective role dashboard
+// Public-only route: redirect authenticated users to farmer dashboard
 const PublicOnlyRoute = ({ children }) => {
-  const { isAuthenticated, userRole } = useAuth();
+  const { isAuthenticated } = useAuth();
   if (isAuthenticated) {
-    const roleDashboard = getDashboardPathForRole(userRole);
-    return <Navigate to={roleDashboard} replace />;
+    return <Navigate to="/dashboard" replace />;
   }
   return children;
 };

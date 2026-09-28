@@ -373,8 +373,9 @@ class DiseasePredictView(APIView):
                 from accounts.models import User as AuthUser
                 from hotspots.services import haversine_km
 
+                from django.db.models import Q
                 staff_users = AuthUser.objects.filter(
-                    role__in=['expert', 'officer'],
+                    Q(is_verified_expert=True) | Q(is_staff=True),
                     assigned_region_lat__isnull=False,
                     assigned_region_lon__isnull=False,
                 )

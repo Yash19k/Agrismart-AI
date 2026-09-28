@@ -4,19 +4,40 @@ from django.db import models
 
 
 class User(AbstractUser):
-    ROLE_CHOICES = [
-        ('farmer', 'Farmer'),
-        ('expert', 'Agronomist / Expert'),
-        ('officer', 'Agricultural Officer'),
-    ]
-
     phone = models.CharField(max_length=15, blank=True, null=True)
     preferred_language = models.CharField(max_length=10, default='en')
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='farmer')
     is_demo = models.BooleanField(
         default=False,
         help_text='True if this account is a demonstration profile'
     )
+
+    def __init__(self, *args, **kwargs):
+        role_val = kwargs.pop('role', None)
+        super().__init__(*args, **kwargs)
+        if role_val:
+            self.role = role_val
+
+    @property
+    def role(self):
+        """Dynamic role property backward-compatible with agronomist/officer backend logic."""
+        if self.is_superuser or self.is_staff:
+            return 'officer'
+        if self.is_verified_expert:
+            return 'expert'
+        return 'farmer'
+
+    @role.setter
+    def role(self, value):
+        val = (value or '').strip().lower()
+        if val == 'expert':
+            self.is_verified_expert = True
+            self.is_staff = False
+        elif val == 'officer':
+            self.is_staff = True
+            self.is_verified_expert = False
+        elif val == 'farmer':
+            self.is_verified_expert = False
+            self.is_staff = False
 
     # Expert verification (set by officer/admin when creating expert accounts)
     is_verified_expert = models.BooleanField(

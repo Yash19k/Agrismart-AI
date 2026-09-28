@@ -40,8 +40,8 @@ export default function AppSidebar({
   const primaryItems = visibleItems.filter((i) => i.group !== 'more_tools');
   const moreToolsItems = visibleItems.filter((i) => i.group === 'more_tools');
 
-  const roleLabel = ROLE_LABELS[userRole] || 'User';
-  const roleBgColor = ROLE_COLORS[userRole] || 'bg-emerald-700';
+  const roleLabel = user?.email || 'Farmer';
+  const roleBgColor = 'bg-emerald-700';
 
   const renderNavButton = (item) => {
     const Icon = item.icon;

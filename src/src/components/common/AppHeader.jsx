@@ -57,7 +57,7 @@ export default function AppHeader({
   const initial = farmerName.charAt(0).toUpperCase();
   const mod = MODULE_ICONS[moduleId] || MODULE_ICONS.dashboard;
   const ModIcon = mod.icon;
-  const roleLabel = ROLE_LABELS[userRole] || '';
+  const roleLabel = '';
 
   // Fetch unread alert count
   const fetchUnreadCount = useCallback(async () => {
