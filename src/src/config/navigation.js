@@ -5,15 +5,9 @@ import {
   Bug,
   Activity,
   CloudSun,
-  CalendarCheck,
-  Building2,
   UserCheck,
   Flame,
-  Database,
-  Droplets,
-  Sprout,
-  Leaf,
-  Bot
+  Database
 } from 'lucide-react';
 
 /**
@@ -28,21 +22,16 @@ import {
  *   Stage 1b: Pest & Sensor (/pests)
  *   Stage 2/4: Risk Forecast (/risk)
  *   Weather Context (/weather)
- *   Stage 7: Follow-ups (/followups)
- *   Stage 6: Referrals (/referrals)
- *   More Tools: Irrigation, Crop Recommendation, Sustainability, AI Agronomist
  *
  * Expert Workflow:
  *   Dashboard (/dashboard)
  *   Stage 5: Review Queue (/expert)
- *   Stage 6: Referrals (/referrals)
  *   Stage 9: Hotspots (/hotspots)
  *
  * Officer Workflow:
  *   Dashboard (/dashboard)
  *   Stage 9: Regional Monitoring (/regional-monitoring)
  *   Stage 5: Review Queue (/expert)
- *   Stage 6: Referrals (/referrals)
  *   Stage 9: Hotspots (/hotspots)
  *   Stage 8: Feedback Dataset (/feedback)
  */
@@ -109,26 +98,6 @@ export const NAV_ITEMS = [
     roles: ['farmer', 'expert', 'officer'],
     group: 'workflow',
   },
-  {
-    id: 'followups',
-    path: '/followups',
-    label: 'Follow-ups',
-    labelKey: 'nav.followups',
-    icon: CalendarCheck,
-    roles: ['farmer'],
-    group: 'workflow',
-    stage: 7,
-  },
-  {
-    id: 'referrals',
-    path: '/referrals',
-    label: 'Referrals',
-    labelKey: 'nav.referrals',
-    icon: Building2,
-    roles: ['farmer', 'expert', 'officer'],
-    group: 'workflow',
-    stage: 6,
-  },
 
   // --- Officer / Expert Specialized Views ---
   {
@@ -170,45 +139,6 @@ export const NAV_ITEMS = [
     roles: ['officer'],
     group: 'workflow',
     stage: 8,
-  },
-
-  // --- Farmer More Tools Group ---
-  {
-    id: 'irrigation',
-    path: '/irrigation',
-    label: 'Smart Irrigation',
-    labelKey: 'nav.irrigation',
-    icon: Droplets,
-    roles: ['farmer'],
-    group: 'more_tools',
-  },
-  {
-    id: 'crop-recommendation',
-    path: '/crop-recommendation',
-    label: 'Crop Recommendation',
-    labelKey: 'nav.crop',
-    icon: Sprout,
-    roles: ['farmer'],
-    group: 'more_tools',
-  },
-  {
-    id: 'sustainability',
-    path: '/sustainability',
-    label: 'Sustainability',
-    labelKey: 'nav.sustainability',
-    icon: Leaf,
-    roles: ['farmer'],
-    group: 'more_tools',
-  },
-  {
-    id: 'assistant',
-    path: '/assistant',
-    label: 'AI Agronomist',
-    labelKey: 'nav.assistant',
-    icon: Bot,
-    badge: 'Groq',
-    roles: ['farmer'],
-    group: 'more_tools',
   },
 ];
 

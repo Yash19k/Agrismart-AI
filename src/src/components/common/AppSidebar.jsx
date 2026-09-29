@@ -37,8 +37,6 @@ export default function AppSidebar({
   };
 
   const visibleItems = getNavItemsForRole(userRole);
-  const primaryItems = visibleItems.filter((i) => i.group !== 'more_tools');
-  const moreToolsItems = visibleItems.filter((i) => i.group === 'more_tools');
 
   const roleLabel = user?.email || 'Farmer';
   const roleBgColor = 'bg-emerald-700';
@@ -118,17 +116,7 @@ export default function AppSidebar({
           <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-3 py-1">
             Workflow Stages
           </div>
-          {primaryItems.map(renderNavButton)}
-
-          {/* Secondary Tools Group */}
-          {moreToolsItems.length > 0 && (
-            <div className="pt-4 space-y-1">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-3 py-1">
-                More Tools
-              </div>
-              {moreToolsItems.map(renderNavButton)}
-            </div>
-          )}
+          {visibleItems.map(renderNavButton)}
         </nav>
       </div>
 
