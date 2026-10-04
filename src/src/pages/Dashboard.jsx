@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard,
   CloudSun,
   Droplets,
   Sprout,
@@ -11,8 +10,6 @@ import {
   Sun,
   ChevronDown,
   ArrowRight,
-  LogOut,
-  Menu,
   X,
   Plus,
   AlertTriangle,
@@ -20,23 +17,11 @@ import {
   CheckCircle,
   CloudRain,
   Layers,
-  ShieldAlert,
   Check,
   Printer,
   Sliders,
-  Calendar,
-  Search,
   Bell,
-  Sparkles,
-  Bot,
-  ExternalLink,
-  ChevronRight,
-  Droplet,
-  Bug,
-  Flame,
-  UserCheck,
-  CalendarCheck,
-  Database
+  Droplet
 } from 'lucide-react';
 
 import '../styles/disease.css';
@@ -858,246 +843,6 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
-
-            {/* ═════════════════════════════════════════════════════════════ */}
-            {/* 5. OPERATIONAL ENGINES / QUICK WORKFLOWS                      */}
-            {/* ═════════════════════════════════════════════════════════════ */}
-            <section className="space-y-4 pt-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-[11px] font-semibold text-[#2fa874] uppercase tracking-wider">
-                    Operational Engines
-                  </span>
-                  <h2 className="font-editorial text-2xl font-bold text-[#16352D]">
-                    AgriSmart AI Suites
-                  </h2>
-                </div>
-                <span className="text-xs text-[#6C7D76]">
-                  Integrated with {location} Telemetry Hub
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Tool 1: Disease Detection */}
-                <div
-                  onClick={() => navigate('/disease')}
-                  className="group p-5 rounded-2xl bg-white hover:bg-[#ecfef3] transition-all duration-200 shadow-editorial border border-[#DCE8DF] flex flex-col justify-between cursor-pointer"
-                >
-                  <div className="space-y-3">
-                    <div className="w-10 h-10 rounded-xl bg-[#ecfef3] border border-[#d2f4e0] flex items-center justify-center text-[#1b4d3e] group-hover:bg-[#1b4d3e] group-hover:text-white transition-colors">
-                      <ShieldAlert className="w-5 h-5" />
-                    </div>
-                    <div className="space-y-1">
-                      <h3 className="font-bold text-sm text-[#16352D]">Disease Detection</h3>
-                      <p className="text-xs text-[#527d6a] line-clamp-2 leading-relaxed">
-                        Scan crop leaves for instant pathology diagnosis and prescriptive treatment.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-4 pt-2 flex items-center gap-1 text-[#2fa874] text-xs font-semibold group-hover:translate-x-1 transition-transform">
-                    <span>Diagnose Leaf</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </div>
-                </div>
-
-                {/* Tool 2: AI Agronomist */}
-                <div
-                  onClick={() => navigate('/assistant')}
-                  className="group p-5 rounded-2xl bg-white hover:bg-[#ecfef3] transition-all duration-200 shadow-editorial border border-[#DCE8DF] flex flex-col justify-between cursor-pointer"
-                >
-                  <div className="space-y-3">
-                    <div className="w-10 h-10 rounded-xl bg-[#ecfef3] border border-[#d2f4e0] flex items-center justify-center text-[#1b4d3e] group-hover:bg-[#1b4d3e] group-hover:text-white transition-colors">
-                      <Bot className="w-5 h-5" />
-                    </div>
-                    <div className="space-y-1">
-                      <h3 className="font-bold text-sm text-[#16352D]">AI Agronomist</h3>
-                      <p className="text-xs text-[#527d6a] line-clamp-2 leading-relaxed">
-                        Access research-grounded advisory desk and ICAR/TNAU certified agronomic evidence.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-4 pt-2 flex items-center gap-1 text-[#2fa874] text-xs font-semibold group-hover:translate-x-1 transition-transform">
-                    <span>Consult Assistant</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </div>
-                </div>
-
-                {/* Tool 3: Smart Irrigation */}
-                <div
-                  onClick={() => navigate('/irrigation')}
-                  className="group p-5 rounded-2xl bg-white hover:bg-[#ecfef3] transition-all duration-200 shadow-editorial border border-[#DCE8DF] flex flex-col justify-between cursor-pointer"
-                >
-                  <div className="space-y-3">
-                    <div className="w-10 h-10 rounded-xl bg-[#ecfef3] border border-[#d2f4e0] flex items-center justify-center text-[#1b4d3e] group-hover:bg-[#1b4d3e] group-hover:text-white transition-colors">
-                      <Droplets className="w-5 h-5" />
-                    </div>
-                    <div className="space-y-1">
-                      <h3 className="font-bold text-sm text-[#16352D]">Smart Irrigation</h3>
-                      <p className="text-xs text-[#527d6a] line-clamp-2 leading-relaxed">
-                        Inspect real-time soil moisture and automated precipitation decoupling telemetry.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-4 pt-2 flex items-center gap-1 text-[#2fa874] text-xs font-semibold group-hover:translate-x-1 transition-transform">
-                    <span>Manage Valves</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </div>
-                </div>
-
-                {/* Tool 4: Crop Recommendation */}
-                <div
-                  onClick={() => navigate('/crop')}
-                  className="group p-5 rounded-2xl bg-white hover:bg-[#ecfef3] transition-all duration-200 shadow-editorial border border-[#DCE8DF] flex flex-col justify-between cursor-pointer"
-                >
-                  <div className="space-y-3">
-                    <div className="w-10 h-10 rounded-xl bg-[#ecfef3] border border-[#d2f4e0] flex items-center justify-center text-[#1b4d3e] group-hover:bg-[#1b4d3e] group-hover:text-white transition-colors">
-                      <Sprout className="w-5 h-5" />
-                    </div>
-                    <div className="space-y-1">
-                      <h3 className="font-bold text-sm text-[#16352D]">Crop Recommendation</h3>
-                      <p className="text-xs text-[#527d6a] line-clamp-2 leading-relaxed">
-                        Analyze multi-variable N-P-K soil chemistry and climate factors for seasonal sowings.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-4 pt-2 flex items-center gap-1 text-[#2fa874] text-xs font-semibold group-hover:translate-x-1 transition-transform">
-                    <span>Plan Next Season</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </div>
-                </div>
-
-                {/* Tool 5: Pest Trap Surveillance */}
-                <div
-                  onClick={() => navigate('/pests')}
-                  className="group p-5 rounded-2xl bg-white hover:bg-[#ecfef3] transition-all duration-200 shadow-editorial border border-[#DCE8DF] flex flex-col justify-between cursor-pointer"
-                >
-                  <div className="space-y-3">
-                    <div className="w-10 h-10 rounded-xl bg-[#ecfef3] border border-[#d2f4e0] flex items-center justify-center text-[#1b4d3e] group-hover:bg-[#1b4d3e] group-hover:text-white transition-colors">
-                      <Bug className="w-5 h-5" />
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1.5">
-                        <h3 className="font-bold text-sm text-[#16352D]">Pest Traps &amp; Vectors</h3>
-                        <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
-                          IPM
-                        </span>
-                      </div>
-                      <p className="text-xs text-[#527d6a] line-clamp-2 leading-relaxed">
-                        Log sticky trap counts, monitor Economic Injury Levels &amp; vector pressure.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-4 pt-2 flex items-center gap-1 text-[#2fa874] text-xs font-semibold group-hover:translate-x-1 transition-transform">
-                    <span>Inspect Traps</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </div>
-                </div>
-
-                {/* Tool 6: Outbreak Hotspots GIS */}
-                <div
-                  onClick={() => navigate('/hotspots')}
-                  className="group p-5 rounded-2xl bg-white hover:bg-[#ecfef3] transition-all duration-200 shadow-editorial border border-[#DCE8DF] flex flex-col justify-between cursor-pointer"
-                >
-                  <div className="space-y-3">
-                    <div className="w-10 h-10 rounded-xl bg-[#ecfef3] border border-[#d2f4e0] flex items-center justify-center text-[#1b4d3e] group-hover:bg-[#1b4d3e] group-hover:text-white transition-colors">
-                      <Flame className="w-5 h-5 text-orange-600" />
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1.5">
-                        <h3 className="font-bold text-sm text-[#16352D]">Outbreak Hotspots</h3>
-                        <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-50 text-orange-800 border border-orange-200">
-                          GIS
-                        </span>
-                      </div>
-                      <p className="text-xs text-[#527d6a] line-clamp-2 leading-relaxed">
-                        Haversine proximity clustering across Gujarat agricultural surveillance belts.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-4 pt-2 flex items-center gap-1 text-[#2fa874] text-xs font-semibold group-hover:translate-x-1 transition-transform">
-                    <span>View Cluster Map</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </div>
-                </div>
-
-                {/* Tool 7: Expert Validation */}
-                <div
-                  onClick={() => navigate('/expert')}
-                  className="group p-5 rounded-2xl bg-white hover:bg-[#ecfef3] transition-all duration-200 shadow-editorial border border-[#DCE8DF] flex flex-col justify-between cursor-pointer"
-                >
-                  <div className="space-y-3">
-                    <div className="w-10 h-10 rounded-xl bg-[#ecfef3] border border-[#d2f4e0] flex items-center justify-center text-[#1b4d3e] group-hover:bg-[#1b4d3e] group-hover:text-white transition-colors">
-                      <UserCheck className="w-5 h-5 text-purple-600" />
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1.5">
-                        <h3 className="font-bold text-sm text-[#16352D]">Agronomist Validation</h3>
-                        <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-purple-50 text-purple-800 border border-purple-200">
-                          KVK
-                        </span>
-                      </div>
-                      <p className="text-xs text-[#527d6a] line-clamp-2 leading-relaxed">
-                        Clinical verification queue auditing AI inferences and generating ground truth.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-4 pt-2 flex items-center gap-1 text-[#2fa874] text-xs font-semibold group-hover:translate-x-1 transition-transform">
-                    <span>Review Queue</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </div>
-                </div>
-
-                {/* Tool 8: Follow-ups & Recheck */}
-                <div
-                  onClick={() => navigate('/followups')}
-                  className="group p-5 rounded-2xl bg-white hover:bg-[#ecfef3] transition-all duration-200 shadow-editorial border border-[#DCE8DF] flex flex-col justify-between cursor-pointer"
-                >
-                  <div className="space-y-3">
-                    <div className="w-10 h-10 rounded-xl bg-[#ecfef3] border border-[#d2f4e0] flex items-center justify-center text-[#1b4d3e] group-hover:bg-[#1b4d3e] group-hover:text-white transition-colors">
-                      <CalendarCheck className="w-5 h-5 text-teal-600" />
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1.5">
-                        <h3 className="font-bold text-sm text-[#16352D]">Treatment Follow-up</h3>
-                        <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-teal-50 text-teal-800 border border-teal-200">
-                          Recovery
-                        </span>
-                      </div>
-                      <p className="text-xs text-[#527d6a] line-clamp-2 leading-relaxed">
-                        Track 5-7 day recheck outcomes, intervention efficacy &amp; recovery %.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-4 pt-2 flex items-center gap-1 text-[#2fa874] text-xs font-semibold group-hover:translate-x-1 transition-transform">
-                    <span>Track Recovery</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* ═════════════════════════════════════════════════════════════ */}
-            {/* 6. EDITORIAL FOOTER SIGN-OFF                                  */}
-            {/* ═════════════════════════════════════════════════════════════ */}
-            <footer className="pt-6 pb-8 flex flex-col sm:flex-row items-center justify-between text-xs text-[#6C7D76] gap-4 border-t border-[#DCE8DF]">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-[#2fa874]" />
-                <span>
-                  Advisory calculated via AgroVerdant Engine v4.2 · Certified for local Agro-Climatic Zone
-                </span>
-              </div>
-              <div className="flex items-center gap-4">
-                <span>Next Telemetry Ping: 07:00 IST</span>
-                <span>·</span>
-                <button
-                  type="button"
-                  onClick={() => window.print()}
-                  className="text-[#1b4d3e] hover:underline font-semibold cursor-pointer"
-                >
-                  Export Season Archive
-                </button>
-              </div>
-            </footer>
           </div>
         </main>
       </div>

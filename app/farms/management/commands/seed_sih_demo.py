@@ -113,7 +113,7 @@ class Command(BaseCommand):
                     'crop': crop,
                     'crop_variety': varieties.get(crop, "Improved Local Selection"),
                     'crop_stage': stage,
-                    'farm_size': size,
+                    'farm_area_acres': size,
                     'irrigation_type': irrig,
                     'soil_type': soil,
                     'soil_ph': 6.8,

@@ -35,7 +35,7 @@ class Command(BaseCommand):
                 'location_name': 'Anand, Gujarat',
                 'crop': 'Tomato',
                 'soil_type': 'black',
-                'farm_size': 4.5,
+                'farm_area_acres': 4.5,
                 'irrigation_type': 'drip',
             }
         )

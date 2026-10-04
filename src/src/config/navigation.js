@@ -82,7 +82,7 @@ export const NAV_ITEMS = [
   {
     id: 'risk',
     path: '/risk',
-    label: 'Risk Forecast',
+    label: 'SANKET',
     labelKey: 'nav.risk',
     icon: Activity,
     roles: ['farmer'],
